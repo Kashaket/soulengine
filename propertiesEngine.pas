@@ -6,9 +6,7 @@ uses
   {$IFDEF typelib} System.ShareMem, {$ENDIF}
   SysUtils, WinAPI.Windows,
   Dialogs, Forms, Graphics, Classes, Controls, StdCtrls, TypInfo, Variants,
-  mainLCL, RTTI, ZendApi, UnitClass, php4delphi
-  //, EventHook
-  ;
+  mainLCL, RTTI, ZendApi, php4delphi;
 function setProperty(id: integer; prop: string; Value: variant): boolean;
 function getProperty(id: integer; prop: string): variant;
 function existProperty(id: integer; prop: string): boolean;
@@ -49,20 +47,6 @@ implementation
 type
   FindType = function(ClassName: string): TRttiType;
   LibModuleListAddres = function(): PLibModule;
-var uc: TUnitClass;
-{
-function gui_set_event(id: integer; value: string): Boolean;
-var hobj: TObject;
-begin
-  Result := False;
-  hobj := TObject(id);
-  if Assigned(hobj) then
-     Result := HEventObj.EAdd(hobj, 'OnKeyPress',
-    procedure(Base: TEventObject; Params: TArray<TValue>)
-    begin
-      //Inc(Params[0].AsObject.ClassName, Base.EventName);
-    end);
-end;}
 procedure form_fixwm(Handle: THandle);
 begin
   if Handle <> 0 then
@@ -224,12 +208,7 @@ end;
 procedure get_all_classes_u(arr: PWSDate);
 var x: TUnitType;
 begin
-    for x in UnitClass.TClassUnits.GetList do
-  begin
-      SetLength(arr^, Length(arr^)+1);
-      arr^[High(arr^)] := x.lowerName2;
-
-  end;
+//Sorry, but you're not permited to edit or download this!
 end;
 function evt_params(classname: string; propname: string): String; overload;
 type
