@@ -1,0 +1,69 @@
+#include "..\sstrings.pas"
+LANGUAGE LANG_RUSSIAN,1
+STRINGTABLE
+{
+  s_MsgDlgOK, "OK"
+  s_MsgDlgCancel, "Отмена"
+  s_MsgDlgHelp, "&Помощь"
+
+  s_RestoreStr, "Восстановить"
+  s_MoveStr, "Переместить"
+  s_SizeStr, "Размер"
+  s_MinimizeStr, "Свернуть"
+  s_MaximizeStr, "Развернуть"
+  s_CloseStr, "Закрыть"
+  s_FileOpen, "Открытие файла"
+  s_Calculator, "Калькулятор"
+  s_AvailSkins, "Доступные скины"
+  s_InternalSkin, "(внутренний)"
+  s_ErrorSettingCount, "Error setting %s.Count"
+  s_ListBoxMustBeVirtual, "Listbox (%s) style must be virtual in order to set Count"
+  // Color dialog
+  s_ColorDlgAdd, "Добавить в свой набор"
+  s_ColorDlgDefine, "Определить цвета"
+  s_ColorDlgMainPal, "Основная палитра :"
+  s_ColorDlgAddPal, "Дополнительный набор цветов :"
+  s_ColorDlgTitle, "Цвет"
+  s_ColorDlgRed, "Красный :"
+  s_ColorDlgGreen, "Зеленый :"
+  s_ColorDlgBlue, "Синий :"
+  s_ColorDlgDecimal, "Десятичное - "
+  s_ColorDlgHex, "Hex - "  
+ 
+  // Frame adapter
+  s_FrameAdapterError1, "Компонент TsFrameAdapter должен быть положен на соответствующий фрейм";
+  // Hint designer
+  s_HintDsgnTitle, "Дизайнер подсказок"
+  s_HintDsgnPreserved, "Стд. установки:"
+  s_HintDsgnStyle, "Стиль :"
+  s_HintDsgnBevelWidth, "Ширина края"
+  s_Blur, "Размытие"
+  s_HintDsgnArrowLength, "Длина указ."
+  s_HintDsgnHorizMargin, "Гориз. отступ"
+  s_HintDsgnVertMargin, "Верт. отступ"
+  s_HintDsgnRadius, "Скругление"
+  s_HintDsgnMaxWidth, "Макс. шир."
+  s_HintDsgnPauseHide, "Задержка (ms)"
+  s_Percent, "Процент"
+  s_HintDsgnOffset, "Смещение"
+  s_HintDsgnTransparency, "Прозрачность"
+  s_HintDsgnNoPicture, "Нет доступного изображения"
+  s_Font, "Шрифт"
+  s_Texture, "Текстура"
+  s_HintDsgnLoad, "Загрузить файл"
+  s_HintDsgnSave, "Сохранить..."
+  s_HintDsgnColor, "Цвет"
+  s_HintDsgnBorderTop, "Верхн. край"
+  s_HintDsgnBorderBottom, "Нижний край"
+  s_Shadow, "Тень"
+  s_Background, "Фон"
+  s_Gradient, "Градиент"
+  s_PreviewHint, "Окно предварительного просмотра"
+  
+  s_InvalidDate, "Неверная дата"
+
+  // File dialogs
+  s_SelectDir, "Выбрать директорию"
+  s_Create, "Создать"
+    
+}

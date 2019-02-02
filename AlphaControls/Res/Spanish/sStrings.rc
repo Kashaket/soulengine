@@ -1,0 +1,70 @@
+#include "..\sstrings.pas"
+LANGUAGE LANG_SPANISH,SUBLANG_NEUTRAL
+STRINGTABLE
+{
+  s_MsgDlgOK, "OK"
+  s_MsgDlgCancel, "Cancelar"
+  s_MsgDlgHelp, "&Ayuda"
+
+  s_RestoreStr, "Restaurar"
+  s_MoveStr, "Mover"
+  s_SizeStr, "Tamaño"
+  s_MinimizeStr, "Minimize"
+  s_MaximizeStr, "Maximizar"
+  s_CloseStr, "Cerrar"
+
+  s_FileOpen, "Abrir archivo"
+  s_Calculator, "Calculadora"
+
+  s_AvailSkins, "Skins disponibles"
+  s_InternalSkin, "(interno)"
+  s_ErrorSettingCount, "Error de seteo en %s.Count"
+
+  s_ListBoxMustBeVirtual, "La definicion del Listbox (%s) debe ser Virtual para poder establecer Count"
+  // Color dialog
+  s_ColorDlgAdd, "Incorporar al set de colores definidos"
+  s_ColorDlgDefine, "Definir colores"
+  s_ColorDlgMainPal, "Paleta principal :"
+  s_ColorDlgAddPal, "Colores adicionales :"
+  s_ColorDlgTitle, "Color"
+  s_ColorDlgRed, "(R) Rojo :"
+  s_ColorDlgGreen, "(G) Verde :"
+  s_ColorDlgBlue, "(B) Azul :"
+  s_ColorDlgDecimal, "Decimal - "
+  s_ColorDlgHex, "Hex - "  
+  
+  // Frame adapter
+  s_FrameAdapterError1, "el adaptador TsFrameAdapter debe ser colocado en el marco (Frame) contenedor";
+  // Hint designer
+  s_HintDsgnTitle, "Form de diseño de Hint"
+  s_HintDsgnPreserved, "Configuracion predefinida :"
+  s_HintDsgnStyle, "Estilo :"
+  s_HintDsgnBevelWidth, "Ancho del Bevel"
+  s_Blur, "Blur"
+  s_HintDsgnArrowLength, "Tamaño de Flecha"
+  s_HintDsgnHorizMargin, "Margen Horiz."
+  s_HintDsgnVertMargin, "Margen Vert."
+  s_HintDsgnRadius, "radio de la esquina"
+  s_HintDsgnMaxWidth, "Ancho maximo"
+  s_HintDsgnPauseHide, "Pausa de desaparicion (ms)"
+  s_Percent, "Porciento"
+  s_HintDsgnOffset, "Offset"
+  s_HintDsgnTransparency, "Transparencia"
+  s_HintDsgnNoPicture, "Imagen no disponible"
+  s_Font, "Fuente"
+  s_Texture, "Textura"
+  s_HintDsgnLoad, "Cargar de un archivo"
+  s_HintDsgnSave, "Guardar archivo como..."
+  s_HintDsgnColor, "Color"
+  s_HintDsgnBorderTop, "Borde superior"
+  s_HintDsgnBorderBottom, "Borde inferior"
+  s_Shadow, "Sombra"
+  s_Background, "Fondo"
+  s_Gradient, "Gradiente"
+  s_PreviewHint, "Previsualizacion de la ventana Hint"
+
+  // File dialogs
+  s_SelectDir, "Seleccionar directororio/carpeta"
+  s_Create, "Crear"
+  
+}

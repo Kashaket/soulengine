@@ -1,0 +1,70 @@
+#include "..\sstrings.pas"
+LANGUAGE LANG_FRENCH,10
+STRINGTABLE
+{
+  s_MsgDlgOK, "Ok"
+  s_MsgDlgCancel, "Annuler"
+  s_MsgDlgHelp, "&Aide"
+
+  s_RestoreStr, "Restaurer"
+  s_MoveStr, "Déplacer"
+  s_SizeStr, "Taille"
+  s_MinimizeStr, "Réduire"
+  s_MaximizeStr, "Agrandir"
+  s_CloseStr, "Fermer"
+
+  s_FileOpen, "Ouvrir le fichier"
+  s_Calculator, "Calculer"
+
+  s_AvailSkins, "skins disponibles"
+  s_InternalSkin, "(Interne)"
+  s_ErrorSettingCount, "Erreur lors de la définition de la valeur %s.Count"
+  s_ListBoxMustBeVirtual, "Le style de la ListBox (%s) doit être virtuel afin de pouvoir définir la valeur Count"
+
+  // Color dialog
+  s_ColorDlgAdd, "Ajouter aux couleurs"
+  s_ColorDlgDefine, "Définir les couleurs personnalisées"
+  s_ColorDlgMainPal, "Couleurs de base :"
+  s_ColorDlgAddPal, "Couleurs personnalisées :"
+  s_ColorDlgTitle, "Couleurs"
+  s_ColorDlgRed, "Rouge :"
+  s_ColorDlgGreen, "Vert :"
+  s_ColorDlgBlue, "Bleu :"
+  s_ColorDlgDecimal, "Décimal - "
+  s_ColorDlgHex, "Hex - "  
+  
+  // Frame adapter
+  s_FrameAdapterError1, "TsFrameAdapter adapter doit être placé sur le cadre handled";
+  // Hint designer
+  s_HintDsgnTitle, "Hint Designer Form"
+  s_HintDsgnPreserved, "Paramètres préservés :"
+  s_HintDsgnStyle, "Style :"
+  s_HintDsgnBevelWidth, "Largeur Bevel"
+  s_Blur, "flou"
+  s_HintDsgnArrowLength, "Arrow longueur"
+  s_HintDsgnHorizMargin, "marge Horiz."
+  s_HintDsgnVertMargin, "marge Vert."
+  s_HintDsgnRadius, "Rayons d''angle"
+  s_HintDsgnMaxWidth, "Largeur Max"
+  s_HintDsgnPauseHide, "Pause hide (ms)"
+  s_Percent, "Percentage"
+  s_HintDsgnOffset, "Offset"
+  s_HintDsgnTransparency, "Transparence"
+  s_HintDsgnNoPicture, "Aucune image disponible"
+  s_Font, "Font"
+  s_Texture, "Texture"
+  s_HintDsgnLoad, "Charger à partir du fichier"
+  s_HintDsgnSave, "Enregistrer dans un fichier..."
+  s_HintDsgnColor, "Couleur"
+  s_HintDsgnBorderTop, "Bordure Top"
+  s_HintDsgnBorderBottom, "Bordure Bottom"
+  s_Shadow, "Ombre"
+  s_Background, "Background"
+  s_Gradient, "Gradient"
+  s_PreviewHint, "Aperçu du futur hint window"
+
+  // File dialogs
+  s_SelectDir, "Sélectionner un dossier"
+  s_Create, "Créer"
+
+}

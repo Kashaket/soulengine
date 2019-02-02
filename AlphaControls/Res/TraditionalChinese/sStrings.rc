@@ -1,0 +1,70 @@
+#include "..\sstrings.pas"
+LANGUAGE LANG_ENGLISH,0
+STRINGTABLE
+{
+  s_MsgDlgOK, "確定"
+  s_MsgDlgCancel, "取消"
+  s_MsgDlgHelp, "幫助(&H)"
+
+  s_RestoreStr, "恢復"
+  s_MoveStr, "移動"
+  s_SizeStr, "大小"
+  s_MinimizeStr, "最小化"
+  s_MaximizeStr, "最大化"
+  s_CloseStr, "關閉"
+
+  s_FileOpen, "打開文件"
+  s_Calculator, "計算器"
+
+  s_AvailSkins, "皮膚"
+  s_InternalSkin, "(內建皮膚)"
+  s_ErrorSettingCount, "錯誤設置 %s.Count"
+  s_ListBoxMustBeVirtual, "列表(%s)的風格必須爲虛擬才可以設置Count"
+
+  // Color dialog
+  s_ColorDlgAdd, "增加到定制顔色集"
+  s_ColorDlgDefine, "定義顔色"
+  s_ColorDlgMainPal, "主調色板:"
+  s_ColorDlgAddPal, "其它顔色:"
+  s_ColorDlgTitle, "顔色"
+  s_ColorDlgRed, "紅 :"
+  s_ColorDlgGreen, "綠 :"
+  s_ColorDlgBlue, "藍 :"
+  s_ColorDlgDecimal, "十進制 - "
+  s_ColorDlgHex, "十六進制 - "  
+  
+  // Frame adapter
+  s_FrameAdapterError1, "TsFrameAdapter 適配器必須放置在目標框架(frame)中";
+  // Hint designer
+  s_HintDsgnTitle, "提示設計表"
+  s_HintDsgnPreserved, "保留設置 :"
+  s_HintDsgnStyle, "風格 :"
+  s_HintDsgnBevelWidth, "斜邊寬度"
+  s_Blur, "模糊"
+  s_HintDsgnArrowLength, "箭頭長度"
+  s_HintDsgnHorizMargin, "水平邊緣空白"
+  s_HintDsgnVertMargin, "垂直邊緣空白"
+  s_HintDsgnRadius, "對角半徑"
+  s_HintDsgnMaxWidth, "最大寬度"
+  s_HintDsgnPauseHide, "暫停隱藏(ms)"
+  s_Percent, "百分比"
+  s_HintDsgnOffset, "位移"
+  s_HintDsgnTransparency, "透明度"
+  s_HintDsgnNoPicture, "沒有可用圖片"
+  s_Font, "字體"
+  s_Texture, "紋理"
+  s_HintDsgnLoad, "加載文件"
+  s_HintDsgnSave, "保存文件爲..."
+  s_HintDsgnColor, "顔色"
+  s_HintDsgnBorderTop, "頂邊"
+  s_HintDsgnBorderBottom, "底邊"
+  s_Shadow, "陰影"
+  s_Background, "背景"
+  s_Gradient, "漸變"
+  s_PreviewHint, "提示窗預覽"
+
+  // File dialogs
+  s_SelectDir, "選擇目錄"
+  s_Create, "新建"
+
+}

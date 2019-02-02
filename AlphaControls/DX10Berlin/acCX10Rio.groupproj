@@ -1,0 +1,48 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <ProjectGuid>{CAC6BC00-CF35-4264-ADDF-B58CF290CCE1}</ProjectGuid>
+    </PropertyGroup>
+    <ItemGroup>
+        <Projects Include="acntCX10Rio.cbproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="acntCX10Rio_R.cbproj">
+            <Dependencies/>
+        </Projects>
+    </ItemGroup>
+    <ProjectExtensions>
+        <Borland.Personality>Default.Personality.12</Borland.Personality>
+        <Borland.ProjectType/>
+        <BorlandProject>
+            <Default.Personality/>
+        </BorlandProject>
+    </ProjectExtensions>
+    <Target Name="acntCX10Rio">
+        <MSBuild Projects="acntCX10Rio.cbproj"/>
+    </Target>
+    <Target Name="acntCX10Rio:Clean">
+        <MSBuild Projects="acntCX10Rio.cbproj" Targets="Clean"/>
+    </Target>
+    <Target Name="acntCX10Rio:Make">
+        <MSBuild Projects="acntCX10Rio.cbproj" Targets="Make"/>
+    </Target>
+    <Target Name="acntCX10Rio_R">
+        <MSBuild Projects="acntCX10Rio_R.cbproj"/>
+    </Target>
+    <Target Name="acntCX10Rio_R:Clean">
+        <MSBuild Projects="acntCX10Rio_R.cbproj" Targets="Clean"/>
+    </Target>
+    <Target Name="acntCX10Rio_R:Make">
+        <MSBuild Projects="acntCX10Rio_R.cbproj" Targets="Make"/>
+    </Target>
+    <Target Name="Build">
+        <CallTarget Targets="acntCX10Rio;acntCX10Rio_R"/>
+    </Target>
+    <Target Name="Clean">
+        <CallTarget Targets="acntCX10Rio:Clean;acntCX10Rio_R:Clean"/>
+    </Target>
+    <Target Name="Make">
+        <CallTarget Targets="acntCX10Rio:Make;acntCX10Rio_R:Make"/>
+    </Target>
+    <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
+</Project>

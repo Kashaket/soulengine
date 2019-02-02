@@ -1,0 +1,57 @@
+package acntDX10Rio;
+{$R *.res}
+{$R 'acnt.dcr'}
+{$IFDEF IMPLICITBUILDING This IFDEF should not be used by users}
+{$ALIGN 8}
+{$ASSERTIONS ON}
+{$BOOLEVAL OFF}
+{$DEBUGINFO OFF}
+{$EXTENDEDSYNTAX ON}
+{$IMPORTEDDATA OFF}
+{$IOCHECKS ON}
+{$LOCALSYMBOLS ON}
+{$LONGSTRINGS ON}
+{$OPENSTRINGS ON}
+{$OPTIMIZATION OFF}
+{$OVERFLOWCHECKS OFF}
+{$RANGECHECKS OFF}
+{$REFERENCEINFO ON}
+{$SAFEDIVIDE OFF}
+{$STACKFRAMES ON}
+{$TYPEDADDRESS OFF}
+{$VARSTRINGCHECKS ON}
+{$WRITEABLECONST OFF}
+{$MINENUMSIZE 1}
+{$IMAGEBASE $400000}
+{$DEFINE DEBUG}
+{$ENDIF IMPLICITBUILDING}
+{$DESCRIPTION 'AlphaControls'}
+{$DESIGNONLY}
+{$IMPLICITBUILD OFF}
+
+requires
+  acntDX10Rio_R,
+  dclstd,
+  dcl31w,
+  vcl,
+  vclx;
+
+contains
+  sRegisterIt in 'sRegisterIt.pas',
+  sPropEditors in 'sPropEditors.pas',
+  sInternalSkins in 'sInternalSkins.pas' {FormInternalSkins},
+  sGradBuilder in 'sGradBuilder.pas' {GradBuilder},
+  sStrEdit in 'sStrEdit.pas' {StrEditDlg},
+  acRootEdit in 'acRootEdit.pas' {acRootPathEditDlg},
+  acSkinInfo in 'acSkinInfo.pas' {SkinInfoForm},
+  ac3dNewClass in 'ac3dNewClass.pas' {FormNewThirdClass},
+  ac3rdPartyEditor in 'ac3rdPartyEditor.pas' {Form3rdPartyEditor},
+  sImgListEditor in 'sImgListEditor.pas' {FormImgListEditor},
+  acAlphaHintsEdit in 'acAlphaHintsEdit.pas' {TAlphaHintsEdit},
+  acCharListEditor in 'acCharListEditor.pas',
+  acFontStoreEditor in 'acFontStoreEditor.pas',
+  acCharMap in 'acCharMap.pas',
+  acDesignData in 'acDesignData.pas',
+  acHintPage in 'acHintPage.pas' {TFrameHintPage};
+
+end.
