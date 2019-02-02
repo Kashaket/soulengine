@@ -82,6 +82,11 @@ Mozilla Public License Version 2.0
     whether by contract or otherwise, or (b) ownership of more than
     fifty percent (50%) of the outstanding shares or beneficial
     ownership of such entity.
+1.15 Non-official, non-Kashaket editions means child editions, non-forked projects
+     or projects without mention about original autors (Dim-Software and Kashaket Corporation members),
+     in which used all or part of current project (parent project) source code, which doesn't points
+     to 3rd-party elements
+     (e.g PHP4Delphi, AlphaControls, CEF|Chromium Embedded Framework, Synedit|Synapse Editor|Syntax Editor).
 
 2. License Grants and Conditions
 --------------------------------
