@@ -2,7 +2,6 @@
 
 GUI Tool kit for PHP and DevelStudio.
 
-
 #### Инструкции
 
 Данная версия SoulEngine не совместима с DevelStudio (3.0.2),
@@ -41,6 +40,7 @@ GUI Tool kit for PHP and DevelStudio.
 
 ### Использование значение (в sDef.inc)
 1) ADD_SYN - добавлять SynEdit
+
    ADD_SYN_OPT - добавлять набор подсветок SynEdit
 2) ADD_AC, ADD_SKINS - добавлять AlphaControls
 3) ADD_CHROMIUM - добавлять CEF
