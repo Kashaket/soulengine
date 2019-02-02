@@ -77,6 +77,24 @@ object phpMOD: TphpMOD
           end>
         OnExecute = PHPLibraryFunctions4Execute
       end
+	  item
+        FunctionName = '__rtii_set'
+        Tag = 0
+        Parameters = <
+          item
+            Name = 'obj'
+            ParamType = tpUnknown
+          end
+          item
+            Name = 'prop'
+            ParamType = tpUnknown
+          end
+          item
+            Name = 'val'
+            ParamType = tpUnknown
+          end>
+        OnExecute = PHPLibraryFunctions3Execute
+      end
       item
         FunctionName = '__rtti_get'
         Tag = 0
@@ -91,6 +109,20 @@ object phpMOD: TphpMOD
           end>
         OnExecute = PHPLibraryFunctions5Execute
       end
+	  item
+        FunctionName = '__rtii_get'
+        Tag = 0
+        Parameters = <
+          item
+            Name = 'obj'
+            ParamType = tpUnknown
+          end
+          item
+            Name = 'prop'
+            ParamType = tpUnknown
+          end>
+        OnExecute = PHPLibraryFunctions3Execute
+      end
       item
         FunctionName = '__rtti_exists'
         Tag = 0
@@ -104,6 +136,34 @@ object phpMOD: TphpMOD
             ParamType = tpUnknown
           end>
         OnExecute = PHPLibraryFunctions6Execute
+      end
+	  item
+        FunctionName = '__rtii_exists'
+        Tag = 0
+        Parameters = <
+          item
+            Name = 'obj'
+            ParamType = tpUnknown
+          end
+          item
+            Name = 'prop'
+            ParamType = tpUnknown
+          end>
+        OnExecute = PHPLibraryFunctions3Execute
+      end
+	  item
+        FunctionName = '__rtii_exists'
+        Tag = 0
+        Parameters = <
+          item
+            Name = 'obj'
+            ParamType = tpUnknown
+          end
+          item
+            Name = 'prop'
+            ParamType = tpUnknown
+          end>
+        OnExecute = PHPLibraryFunctions3Execute
       end
       item
         FunctionName = 'cntr_owner5'
@@ -129,8 +189,32 @@ object phpMOD: TphpMOD
           end>
         OnExecute = PHPLibraryFunctions8Execute
       end
+	  item
+        FunctionName = '__rtii_link'
+        Tag = 0
+        Parameters = <
+          item
+            Name = 'Param1'
+            ParamType = tpUnknown
+          end
+          item
+            Name = 'Param2'
+            ParamType = tpUnknown
+          end>
+        OnExecute = PHPLibraryFunctions8Execute
+      end
       item
         FunctionName = '__rtti_class'
+        Tag = 0
+        Parameters = <
+          item
+            Name = 'Param1'
+            ParamType = tpUnknown
+          end>
+        OnExecute = PHPLibraryFunctions9Execute
+      end
+	  item
+        FunctionName = '__rtii_class'
         Tag = 0
         Parameters = <
           item
@@ -170,6 +254,34 @@ object phpMOD: TphpMOD
             ParamType = tpUnknown
           end>
         OnExecute = PHPLibraryFunctions11Execute
+      end
+	  item
+        FunctionName = '__rtii_is_class'
+        Tag = 0
+        Parameters = <
+          item
+            Name = 'obj'
+            ParamType = tpUnknown
+          end
+          item
+            Name = 'class'
+            ParamType = tpUnknown
+          end>
+        OnExecute = PHPLibraryFunctions11Execute
+      end
+	  item
+        FunctionName = '__rtii_is_class'
+        Tag = 0
+        Parameters = <
+          item
+            Name = 'obj'
+            ParamType = tpUnknown
+          end
+          item
+            Name = 'class'
+            ParamType = tpUnknown
+          end>
+        OnExecute = PHPLibraryFunctions3Execute
       end
       item
         FunctionName = 'control_repaint'
