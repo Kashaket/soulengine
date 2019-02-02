@@ -38,3 +38,10 @@ GUI Tool kit for PHP and DevelStudio.
 2) Указать данный репозиторий в Github и состав членов команды <a href="https://github.com/KashaketCompany">Kashaket</a>
 3) Указать данный репозиторий в Github и <a href="https://github.com/KashaketCompany/DevelStudio-3.0-beta">репозиторий</a> <a href="https://github.com/KashaketCompany/DevelStudio-3.0-beta">студии</a>
 4) Упомянуть создателей элементов студии - Nyashik, 3rd party license(s), Kashaket, KurandX, Armen Productions, Dim-S.
+
+### Использование значение (в sDef.inc)
+1) ADD_SYN - добавлять SynEdit
+   ADD_SYN_OPT - добавлять набор подсветок SynEdit
+2) ADD_AC, ADD_SKINS - добавлять AlphaControls
+3) ADD_CHROMIUM - добавлять CEF
+4) PHP540 - добавлять поддержку PHP 5.4.0
