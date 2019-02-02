@@ -7,6 +7,7 @@ GUI Tool kit for PHP and DevelStudio.
 
 Данная версия SoulEngine не совместима с DevelStudio (3.0.2),
 Только с DevelStudio (3.0.3) - DevelStudio Ke.
+
 Процент совместимости составляет 73 балла (движок совместим на 73%).
 
 #### Сборка
