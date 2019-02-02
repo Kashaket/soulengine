@@ -1,12 +1,16 @@
 unit uMainForm;
 
-interface
+{$I 'sDef.inc'}
 
-{.$DEFINE LOAD_DS}
+interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ExeMod, EncdDecd, MD5, Utils;
+  Dialogs, ExeMod, EncdDecd, mdsUtils, System.NetEncoding{$IFDEF ADD_SKINS}
+  ,sSkinProvider, sSkinManager,
+
+    sSpeedButton, sBitBtn, acProgressBar, sTrackBar, sBevel, sLabel
+{$ENDIF};
 
 function Base64_Decode(cStr: ansistring): ansistring;
 function Base64_Encode(cStr: ansistring): ansistring;
@@ -20,29 +24,20 @@ type
   public
     { Public declarations }
     procedure WMHotKey(var Msg: TMessage); message WM_HOTKEY;
-    procedure ReceiveMessage(var Msg: TMessage); message WM_COPYDATA;
+    procedure WndProc(var Msg: TMessage); message WM_COPYDATA;
   end;
 
 var
   __mainForm: T__mainForm;
   selfScript: string = '';
-  selfMD5Hash: string;
   selfEnabled: boolean = False;
   dllPHPPath: string = '';
-
-  selfModules: TStringList;
-  selfModulesMD5: TStringList;
-  selfModulesHash: string;
-
-  selfPHP5tsMD5: string;
-  selfPHP5tsSize: integer;
 
 implementation
 
 uses uMain, uPHPMod;
 
 {$R *.dfm}
-
 
 function Base64_Decode(cStr: ansistring): ansistring;
 const
@@ -53,7 +48,7 @@ var
   ResStr: ansistring;
 
   DecStr: ansistring;
-  RecodeLine: array[1..76] of byte;
+  RecodeLine: array [1 .. 76] of byte;
   f1: word;
   l: integer;
 begin
@@ -84,49 +79,41 @@ begin
   __mainForm.BringToFront;
 end;
 
-
 procedure T__mainForm.FormActivate(Sender: TObject);
 var
-  f, s: string;
+  f: string;
 begin
   if appShow then
     exit;
-
   appShow := True;
 
-  {$IFDEF LOAD_DS}
+{$IFDEF LOAD_DS}
   f := ExtractFilePath(ParamStr(0)) + 'system\include.pse';
-  {$ELSE}
+{$ELSE}
   f := ParamStr(1);
-  {$ENDIF}
-
-
+{$ENDIF}
   if selfEnabled then
   begin
 
-    if (xMD5(selfScript) = selfMD5Hash) then
-    begin
-      __fMain.Button1.Destroy;
-      __fMain.MainMenu.Destroy;
-      __fMain.b_Restart.Destroy;
-      __fMain.b_Run.Destroy;
-      __fMain.Memo1.Destroy;
-      __fMain.Width := 0;
-      __fMain.Height := 0;
-      __fMain.BorderStyle := bsNone;
+    __fMain.n.Destroy;
+    __fMain.b_R0.Destroy;
+    __fMain.b_R1.Destroy;
+    __fMain.fr.Destroy;
+    __fMain.sd.Destroy;
+    __fMain.od.Destroy;
+    __fMain.M1.Destroy;
+    __fMain.Width := 0;
+    __fMain.Height := 0;
+    __fMain.BorderStyle := bsNone;
 
+    phpMOD.RunCode(selfScript);
+    selfEnabled := True;
 
-      phpMOD.RunCode(selfScript);
-      selfEnabled := True;
-
-      appShow := True;
-      //__fMain.Destroy;
-    end;
+    appShow := True;
   end
   else if ExtractFileExt(f) = '.pse' then
   begin
-    s := File2String(f);
-    phpMOD.RunCode(s);
+    phpMOD.RunCode(File2String(f));
   end
   else if ParamStr(1) <> '-run' then
   begin
@@ -147,12 +134,11 @@ var
 begin
 
   Self.Left := -999;
-  {$IFDEF LOAD_DS}
+{$IFDEF LOAD_DS}
   f := ExtractFilePath(ParamStr(0)) + 'system\include.pse';
-  {$ELSE}
+{$ELSE}
   f := ParamStr(1);
-  {$ENDIF}
-
+{$ENDIF}
   selfScript := '';
   EM := TExeStream.Create(ParamStr(0));
 
@@ -162,46 +148,17 @@ begin
   if DirectoryExists(progDir + 'core\') then
     engineDir := progDir + 'core\';
 
-
   selfScript := EM.ExtractToString('$PHPSOULENGINE\inc.php');
-  selfMD5Hash := EM.ExtractToString('$PHPSOULENGINE\inc.php.hash');
   if (selfScript <> '') then
   begin
-    //selfScript := myDecode(Base64_Decode(selfScript));
-    selfModulesHash := EM.ExtractToString('$PHPSOULENGINE\mods.hash');
-
-    if (xMD5(EM.ExtractToString('$PHPSOULENGINE\mods')) <>
-      selfModulesHash) then
-    begin
-      selfMD5Hash := '';
-      selfScript := '';
-      selfEnabled := True;
-      exit;
-    end;
-
-
-    selfModules := TStringList.Create;
-    selfModules.Text :=
-      StringReplace(EM.ExtractToString('$PHPSOULENGINE\mods'), ',',
-      #13, [rfReplaceAll]);
-
-    selfModulesMD5 := TStringList.Create;
-    selfModulesMD5.Text :=
-      StringReplace(EM.ExtractToString('$PHPSOULENGINE\mods_m'),
-      ',', #13, [rfReplaceAll]);
-
-
-    selfPHP5tsMD5 := EM.ExtractToString('$PHPSOULENGINE\phpts.hash');
-    selfPHP5tsSize := StrToIntDef(EM.ExtractToString('$PHPSOULENGINE\phpts.size'), -1);
 
     selfEnabled := True;
     T__fMain.extractPHPEngine(EM);
   end;
 
-
   if (ExtractFileExt(f) = '.pse') and (selfScript = '') then
   begin
-    if Pos(':', F) > 0 then
+    if pos(':', f) > 0 then
       progDir := ExtractFilePath(f)
     else
       progDir := progDir + ExtractFilePath(f);
@@ -211,15 +168,14 @@ begin
   else if f <> '' then
     progDir := ExtractFilePath(f);
 end;
-
-procedure T__mainForm.ReceiveMessage(var Msg: TMessage);
+procedure T__mainForm.WndProc(var Msg: TMessage);
 var
   pcd: PCopyDataStruct;
-  s: ansistring;
+  s: AnsiString;
 begin
+  inherited;
   pcd := PCopyDataStruct(Msg.LParam);
-  s := PChar(pcd.lpData);
-
+  s := PAnsiChar(pcd.lpData);
   phpMOD.RunCode('Receiver::event(' + IntToStr(Msg.WParam) + ',''' +
     AddSlashes(s) + ''');');
 end;
@@ -228,17 +184,16 @@ procedure T__mainForm.WMHotKey(var Msg: TMessage);
 var
   idHotKey: integer;
   fuModifiers: word;
-  uVirtKey: word; 
+  uVirtKey: word;
 begin
-  idHotkey := Msg.wParam;
-  fuModifiers := LOWORD(Msg.lParam);
-  uVirtKey := HIWORD(Msg.lParam);
+  idHotKey := Msg.WParam;
+  fuModifiers := LOWORD(Msg.LParam);
+  uVirtKey := HIWORD(Msg.LParam);
 
   phpMOD.RunCode('HotKey::event(' + IntToStr(fuModifiers) + ',' +
     IntToStr(uVirtKey) + ');');
 
   inherited;
 end;
-
 
 end.

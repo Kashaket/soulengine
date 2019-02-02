@@ -1609,7 +1609,7 @@ var
   WinV: word;
 begin
   WinV := GetVersion and $0000FFFF;
-  Result := StrToFloat(IntToStr(Lo(WinV)) + DecimalSeparator + IntToStr(Hi(WinV)));
+  Result := StrToFloat(IntToStr(Lo(WinV)) + FormatSettings.DecimalSeparator + IntToStr(Hi(WinV)));
 end;
 
 procedure TSizeCtrl.DoMouseMove(Sender: TObject; Shift: TShiftState);

@@ -15,7 +15,9 @@ interface
 
       {$IFDEF VS_EDITOR}
               ,NxPropertyItems, NxPropertyItemClasses, NxScrollControl,
-                NxInspector, SynEditTypes, SynEdit, SynCompletionProposal,
+                NxInspector,{$IFDEF ADD_SYN_EV}
+                SynEditTypes, SynEdit, SynCompletionProposal,
+                {$ENDIF}
                 CategoryButtons
       {$ENDIF}
     ;
@@ -34,7 +36,7 @@ type
   { ----------- key events -------------- }
   TKeyEvent = procedure (Sender: TObject; var Key: Word;
             Shift: TShiftState) of object;
-  TKeyEnterEvent = procedure (Sender: TObject; var Key: Char) of object;
+  TKeyEnterEvent = procedure (Sender: TObject; var Key: AnsiChar) of object;
   TChangingEvent = procedure (Sender: TObject; var AllowChange: Boolean) of object;
 
   { ----------- form events -------------- }
@@ -75,8 +77,10 @@ type
 
 
   {$IFDEF VS_EDITOR}
+  {$IFDEF ADD_SYN_EV}
   TMouseCursorEvent = procedure (Sender: TObject; const aLineCharPos: TBufferCoord;
                                  var aCursor: TCursor) of object;
+  {$ENDIF}
 
   TVSInsChangeEvent = procedure (Sender: TObject; Item: TNxPropertyItem; Value: WideString) of object;
   TVSInsEditEvent = procedure (Sender: TObject; Item: TNxPropertyItem; Value: WideString; var Accept: Boolean) of object;
@@ -150,7 +154,7 @@ type
             Shift: TShiftState);
         procedure onKeyUp(Sender: TObject; var Key: Word;
             Shift: TShiftState);
-        procedure onKeyEnter(Sender: TObject; var Key: Char);
+        procedure onKeyEnter(Sender: TObject; var Key: AnsiChar);
 
         { ----- mouse events ------ }
         procedure onMouseDown(Sender: TObject; Button: TMouseButton;
@@ -216,8 +220,10 @@ type
                         State: TDragState; var Accept: Boolean);
 
         {$IFDEF VS_EDITOR}
+        {$IFDEF ADD_SYN_EV}
         procedure onMouseCursor(Sender: TObject; const aLineCharPos: TBufferCoord;
                                  var aCursor: TCursor);
+        {$ENDIF}
 
         procedure onVSInsChange(Sender: TObject;
                                 Item: TNxPropertyItem; Value: WideString);
@@ -281,7 +287,7 @@ implementation
 uses uPHPMod;
 
 { TEventItem }
-function GetSym(S: String; N: Integer): Char;
+function GetSym(S: String; N: Integer): AnsiChar;
 begin
   Result := S[N];
 end;
@@ -414,7 +420,9 @@ function TEventItem.SetEvent(Obj: TObject; Event, Func: String): Boolean;
   PEditingEvent: ^TEditingEvent;
 
   {$IFDEF VS_EDITOR}
+  {$IFDEF ADD_SYN_EV}
   PMouseCursorEvent: ^TMouseCursorEvent;
+  {$ENDIF}
   PVSInsEvent: ^TVSInsChangeEvent;
   PVSInsEditEvent: ^TVSInsEditEvent;
   PVSInsToolbarClick: ^TVSInsToolbarClick;
@@ -488,8 +496,8 @@ begin
     PEditingEvent := MP
 
    {$IFDEF VS_EDITOR}
-   else if Event = 'OnMouseCursor' then
-    PMouseCursorEvent := MP
+   {$IFDEF ADD_SYN_EV} else if Event = 'OnMouseCursor' then
+    PMouseCursorEvent := MP {$ENDIF}
    else if in_Array(Event,['ONVSINSPECTORCHANGE']) then
     PVSInsEvent := MP
    else if in_Array(Event,['OnVsInspectorEdit']) then
@@ -501,17 +509,21 @@ begin
     PEvent := MP;
 
    {$IFDEF VS_EDITOR}
+   {$IFDEF ADD_SYN_EV}
    if in_Array(Event,['OnClose']) and (obj is TSynCompletionProposal) then
         PEvent := MP;
+   {$ENDIF}
    if Event = 'ONBUTTONCLICKED' then
         PButtonClicked := Mp;
    {$ENDIF}
 
 
    {$IFDEF VS_EDITOR}
+   {$IFDEF ADD_SYN_EV}
    if (Event = 'ONCLOSE') and (Obj is TSynCompletionProposal) then
       PEvent^ := onCloseEx
    else
+   {$ENDIF}
    {$ENDIF}
    if Event = 'ONCLICK' then
       PEvent^ := onClick
@@ -604,9 +616,12 @@ begin
 
 
    {$IFDEF VS_EDITOR}
+   {$IFDEF ADD_SYN_EV}
    if Event = 'ONMOUSECURSOR' then
         PMouseCursorEvent^ := onMouseCursor
-   else if Event = 'ONVSINSPECTORCHANGE' then
+   else
+   {$ENDIF}
+   if Event = 'ONVSINSPECTORCHANGE' then
         PVSInsEvent^ := onVSInsChange
    else if Event = 'ONVSINSPECTOREDIT' then
         PVSInsEditEvent^ := onVSInsEdit
@@ -659,9 +674,11 @@ begin
       if LowerCase(Event)='onclose' then begin
 
       {$IFDEF VS_EDITOR}
+      {$IFDEF ADD_SYN_EV}
       if Obj is TSynBaseCompletionProposalForm then
         phpMOD.RunCode(GetEvent(TComponent(Obj).Owner,Event)+'('+implode(',',Params)+');' + addStr)
       else
+      {$ENDIF}
       {$ENDIF}
         phpMOD.RunCode(GetEvent(Obj,Event)+'('+implode(',',Params)+');' + addStr);
 
@@ -845,7 +862,7 @@ doEvent( Sender,'OnKeyDown',[integer(Sender),Key,Shift2Str(Shift)],'');
 Key := __varEx;
 end;
 
-procedure TEventItem.onKeyEnter(Sender: TObject; var Key: Char);
+procedure TEventItem.onKeyEnter(Sender: TObject; var Key: AnsiChar);
 begin
 __varEx := Key;
 doEvent( Sender,'OnKeyPress',[integer(Sender),Key],'');
@@ -996,11 +1013,13 @@ begin
 end;
 
 {$IFDEF VS_EDITOR}
+{$IFDEF ADD_SYN_EV}
 procedure TEventItem.onMouseCursor(Sender: TObject;
   const aLineCharPos: TBufferCoord; var aCursor: TCursor);
 begin
-  doEvent( Sender,'OnMouseCursor',[integer(Sender),aLineCharPos.Char,aLineCharPos.Line],'');
+  doEvent( Sender,'OnMouseCursor',[integer(Sender),aLineCharPos.AnsiChar,aLineCharPos.Line],'');
 end;
+{$ENDIF}
 {$ENDIF}
 
 procedure TEventItem.onMoved(Sender: TObject);

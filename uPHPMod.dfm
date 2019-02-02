@@ -60,7 +60,7 @@ object phpMOD: TphpMOD
         OnExecute = PHPLibraryFunctions3Execute
       end
       item
-        FunctionName = '__rtii_set'
+        FunctionName = '__rtti_set'
         Tag = 0
         Parameters = <
           item
@@ -78,7 +78,7 @@ object phpMOD: TphpMOD
         OnExecute = PHPLibraryFunctions4Execute
       end
       item
-        FunctionName = '__rtii_get'
+        FunctionName = '__rtti_get'
         Tag = 0
         Parameters = <
           item
@@ -92,7 +92,7 @@ object phpMOD: TphpMOD
         OnExecute = PHPLibraryFunctions5Execute
       end
       item
-        FunctionName = '__rtii_exists'
+        FunctionName = '__rtti_exists'
         Tag = 0
         Parameters = <
           item
@@ -116,7 +116,7 @@ object phpMOD: TphpMOD
         OnExecute = PHPLibraryFunctions7Execute
       end
       item
-        FunctionName = '__rtii_link'
+        FunctionName = '__rtti_link'
         Tag = 0
         Parameters = <
           item
@@ -130,7 +130,7 @@ object phpMOD: TphpMOD
         OnExecute = PHPLibraryFunctions8Execute
       end
       item
-        FunctionName = '__rtii_class'
+        FunctionName = '__rtti_class'
         Tag = 0
         Parameters = <
           item
@@ -140,7 +140,7 @@ object phpMOD: TphpMOD
         OnExecute = PHPLibraryFunctions9Execute
       end
       item
-        FunctionName = '__rtii_set_object'
+        FunctionName = '__rtti_set_object'
         Tag = 0
         Parameters = <
           item
@@ -158,7 +158,7 @@ object phpMOD: TphpMOD
         OnExecute = PHPLibraryFunctions10Execute
       end
       item
-        FunctionName = '__rtii_is_class'
+        FunctionName = '__rtti_is_class'
         Tag = 0
         Parameters = <
           item
@@ -777,6 +777,7 @@ object phpMOD: TphpMOD
             Name = 'Param2'
             ParamType = tpUnknown
           end>
+        OnExecute = PHPLibraryFunctions62Execute
       end
       item
         FunctionName = 'thread_include_enc2'
@@ -845,7 +846,7 @@ object phpMOD: TphpMOD
         Parameters = <
           item
             Name = 'Param1'
-            ParamType = tpUnknown
+            ParamType = tpString
           end>
         OnExecute = PHPLibraryFunctions68Execute
       end>
@@ -973,15 +974,6 @@ object phpMOD: TphpMOD
         OnExecute = guiFunctions9Execute
       end
       item
-        FunctionName = '______phpfunction1'
-        Tag = 0
-        Parameters = <
-          item
-            Name = 'Param1'
-            ParamType = tpUnknown
-          end>
-      end
-      item
         FunctionName = 'control_count'
         Tag = 0
         Parameters = <
@@ -1026,6 +1018,7 @@ object phpMOD: TphpMOD
             Name = 'Param1'
             ParamType = tpUnknown
           end>
+        OnExecute = guiFunctions14Execute
       end
       item
         FunctionName = 'gui_stringtocomponent'
@@ -1039,6 +1032,7 @@ object phpMOD: TphpMOD
             Name = 'Param2'
             ParamType = tpUnknown
           end>
+        OnExecute = guiFunctions15Execute
       end
       item
         FunctionName = 'gui_getscrollpos'
@@ -1076,7 +1070,7 @@ object phpMOD: TphpMOD
           end>
         OnExecute = guiFunctions17Execute
       end>
-    Left = 536
+    Left = 544
     Top = 72
   end
   object libForms: TPHPLibrary
@@ -1378,6 +1372,12 @@ object phpMOD: TphpMOD
             ParamType = tpUnknown
           end>
         OnExecute = libApplicationFunctions11Execute
+      end
+      item
+        FunctionName = 'app_find_components'
+        Tag = 0
+        Parameters = <>
+        OnExecute = libApplicationFunctions12Execute
       end>
     Left = 408
     Top = 16
@@ -2064,6 +2064,7 @@ object phpMOD: TphpMOD
             Name = 'Param1'
             ParamType = tpUnknown
           end>
+        OnExecute = _TPictureLibFunctions10Execute
       end
       item
         FunctionName = 'picture_bitmap'
@@ -2306,6 +2307,12 @@ object phpMOD: TphpMOD
             ParamType = tpUnknown
           end>
         OnExecute = _TPictureLibFunctions27Execute
+      end
+      item
+        FunctionName = 'tpicture_create'
+        Tag = 0
+        Parameters = <>
+        OnExecute = _TPictureLibFunctions28Execute
       end>
     Left = 264
     Top = 16
@@ -2671,7 +2678,6 @@ object phpMOD: TphpMOD
     Top = 240
   end
   object PHPEngine: TPHPEngine
-    OnScriptError = PHPEngineScriptError
     RegisterGlobals = False
     Constants = <>
     ReportDLLError = False
@@ -3099,7 +3105,7 @@ object phpMOD: TphpMOD
         Parameters = <
           item
             Name = 'Param1'
-            ParamType = tpUnknown
+            ParamType = tpString
           end>
         OnExecute = OSApiFunctions29Execute
       end
@@ -3150,6 +3156,22 @@ object phpMOD: TphpMOD
             ParamType = tpUnknown
           end>
         OnExecute = OSApiFunctions33Execute
+      end
+      item
+        FunctionName = 'getwindowprocessid'
+        Tag = 0
+        Parameters = <
+          item
+            Name = 'hwnd'
+            ParamType = tpInteger
+          end>
+        OnExecute = OSApiFunctions34Execute
+      end
+      item
+        FunctionName = 'param_count'
+        Tag = 0
+        Parameters = <>
+        OnExecute = OSApiFunctions35Execute
       end>
     Left = 408
     Top = 248
@@ -4878,19 +4900,19 @@ object phpMOD: TphpMOD
           end
           item
             Name = 'Param2'
-            ParamType = tpUnknown
+            ParamType = tpInteger
           end
           item
             Name = 'Param3'
-            ParamType = tpUnknown
+            ParamType = tpInteger
           end
           item
             Name = 'Param4'
-            ParamType = tpUnknown
+            ParamType = tpInteger
           end
           item
             Name = 'Param5'
-            ParamType = tpUnknown
+            ParamType = tpInteger
           end>
         OnExecute = _DockingFunctions1Execute
       end
@@ -5045,6 +5067,16 @@ object phpMOD: TphpMOD
             ParamType = tpUnknown
           end>
         OnExecute = _DockingFunctions13Execute
+      end
+      item
+        FunctionName = 'control_setupdock'
+        Tag = 0
+        Parameters = <
+          item
+            Name = 'cntrl'
+            ParamType = tpInteger
+          end>
+        OnExecute = _DockingFunctions14Execute
       end>
     Left = 408
     Top = 320

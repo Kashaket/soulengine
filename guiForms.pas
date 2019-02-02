@@ -7,7 +7,7 @@ unit guiForms;
 interface
 
 uses
-  Classes, SysUtils, Dialogs, Controls, Forms,
+  Classes, SysUtils, UITypes, Dialogs, Controls, Forms,
 
   {$ifdef fpc}
   LCLType,

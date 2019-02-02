@@ -12,7 +12,6 @@ uses
 
 type
   TArrayString = array of string;
-  TArrayVariant = array of variant;
 
 var
   tmpAR: TArrayVariant;
@@ -47,22 +46,22 @@ end;
 
 procedure regConstL(Name: string; Value: integer);
 begin
-  REGISTER_MAIN_LONG_CONSTANT(PChar(Name), Value, 0, ts_resource(0));
+  REGISTER_MAIN_LONG_CONSTANT(PAnsiChar(Name), Value, 0, ts_resource(0));
 end;
 
 procedure regConstD(Name: string; Value: double);
 begin
-  REGISTER_MAIN_DOUBLE_CONSTANT(PChar(Name), Value, 0, ts_resource(0));
+  REGISTER_MAIN_DOUBLE_CONSTANT(PAnsiChar(Name), Value, 0, ts_resource(0));
 end;
 
 procedure regConstS(Name: string; Value: string);
 begin
-  REGISTER_MAIN_STRING_CONSTANT(PChar(Name), PChar(Value), 0, ts_resource(0));
+  REGISTER_MAIN_STRING_CONSTANT(PAnsiChar(Name), PAnsiChar(Value), 0, ts_resource(0));
 end;
 
 procedure evalCode(Code: string);
 begin
-  zend_eval_string(PChar(Code), nil, 'eval code', ts_resource(0));
+  zend_eval_string(PAnsiChar(Code), nil, 'eval code', ts_resource(0));
 end;
 
 

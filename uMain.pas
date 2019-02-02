@@ -5,53 +5,54 @@ unit uMain;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, PHPCustomLibrary, phpLibrary, php4delphi, PHPCommon,
+  Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
+  Dialogs, StdCtrls, php4delphi, PHPCommon,
   phpFunctions, ZENDTypes, zendAPI, uPhpEvents,
-  ExtCtrls, Menus, ComCtrls, Buttons, ToolWin, SizeControl, ExeMod,
-  AppEvnts, MD5, XPMan, phpAPI, Clipbrd,
-  core;
+  Menus, Buttons, ExeMod,
+  AppEvnts, phpAPI, Clipbrd, System.UITypes,
+  core, SynEditHighlighter, SynHighlighterPHP, SynEdit, SynMemo, Vcl.ExtCtrls
+  {$IFDEF ADD_SKINS}
+  ,sSkinProvider, sSkinManager,
 
-function TempDir: string;
+    sSpeedButton, sBitBtn, acProgressBar, sTrackBar, sBevel, sLabel
+{$ENDIF};
+
+function TempDir: Ansistring;
 
 type
   T__fMain = class(TForm)
-    b_Run: TButton;
-    Button1: TButton;
-    b_Restart: TButton;
-    MainMenu: TMainMenu;
-    File1: TMenuItem;
+    b_R1: TButton;
+    b_R0: TButton;
+    n: TMainMenu;
+    fi: TMenuItem;
     Script1: TMenuItem;
-    Open1: TMenuItem;
-    Save: TMenuItem;
-    Saveas1: TMenuItem;
-    N1: TMenuItem;
-    Exit1: TMenuItem;
-    Run1: TMenuItem;
-    N2: TMenuItem;
-    Examples1: TMenuItem;
-    N3: TMenuItem;
-    About1: TMenuItem;
-    Restart: TMenuItem;
-    OpenDialog: TOpenDialog;
-    MainMenu1: TMainMenu;
-    PopupMenu1: TPopupMenu;
-    lkjk1: TMenuItem;
+    o1: TMenuItem;
+    s: TMenuItem;
+    s1: TMenuItem;
+    r: TMenuItem;
+    r1: TMenuItem;
+    od: TOpenDialog;
     ApplicationEvents: TApplicationEvents;
-    Memo1: TMemo;
-    Timer1: TTimer;
-    Timer2: TTimer;
-    procedure b_RunClick(Sender: TObject);
-    procedure PHPLibraryFunctions1Execute(Sender: TObject;
-      Parameters: TFunctionParams; var ReturnValue: variant;
-      ZendVar: TZendVariable; TSRMLS_DC: Pointer);
+    sd: TSaveDialog;
+    M1: TSynMemo;
+    sps: TSynPHPSyn;
+    fr: TBevel;
+    sc: TMenuItem;
+    Close: TMenuItem;
+    Exits: TMenuItem;
+    R2: TMenuItem;
+    procedure b_R1Click(Sender: TObject);
     procedure FormShow(Sender: TObject);
-    procedure b_RestartClick(Sender: TObject);
-    procedure SaveClick(Sender: TObject);
-    procedure FormClose(Sender: TObject; var Action: TCloseAction);
-    procedure Open1Click(Sender: TObject);
-    procedure Timer1Timer(Sender: TObject);
-    procedure Timer2Timer(Sender: TObject);
+    procedure b_R0Click(Sender: TObject);
+    procedure sClick(Sender: TObject);
+    procedure o1Click(Sender: TObject);
+    procedure s1Click(Sender: TObject);
+    procedure M1DropFiles(Sender: TObject; X, Y: Integer; AFiles: TStrings);
+    procedure scClick(Sender: TObject);
+    procedure CloseClick(Sender: TObject);
+    procedure ExitsClick(Sender: TObject);
+    procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
+    procedure R2Click(Sender: TObject);
   private
     { Private declarations }
   public
@@ -63,6 +64,7 @@ type
 var
   __fMain: T__fMain;
   appShow: boolean;
+  LFile: string;
 
 implementation
 
@@ -70,7 +72,7 @@ uses uPHPMod, uMainForm;
 
 {$R *.dfm}
 
-procedure T__fMain.b_RestartClick(Sender: TObject);
+procedure T__fMain.b_R0Click(Sender: TObject);
 begin
   if not selfEnabled then
   begin
@@ -80,32 +82,71 @@ begin
   end;
 end;
 
-procedure T__fMain.b_RunClick(Sender: TObject);
+procedure T__fMain.b_R1Click(Sender: TObject);
 begin
   if not selfEnabled then
   begin
     phpMOD.psvPHP.UseDelimiters := False;
-    phpMOD.RunCode(Memo1.Lines.Text);
+    phpMOD.RunCode('$self = c(' + IntToStr(integer(Sender)) + ');' + #10 + #13
+    + 'if(!isset($GLOBALS["__echoController"])) $GLOBALS["__echoController"] = "pre"; ob_start();'
+    + M1.Lines.Text + #10 + #13 +
+    '$controller = $GLOBALS["__echoController"]; $_rt = ob_get_contents(); ob_end_clean();'
+    + 'if (is_numeric($controller)) $controller = c($controller);'
+    + 'if ($controller) if (is_object($controller)){'
+    + #10 + #13
+    + 'if ($controller instanceof TChromium) $controller->html = $_rt; else $controller->text = $_rt;'
+    + #10 + #13
+    + '} elseif (is_callable($controller)){'
+    + 'if ($_rt) call_user_func($controller, $_rt); '
+    + #10 + #13 + ' }'
+    );
     phpMOD.psvPHP.UseDelimiters := True;
   end;
 end;
 
-procedure T__fMain.FormClose(Sender: TObject; var Action: TCloseAction);
+
+
+procedure T__fMain.CloseClick(Sender: TObject);
 begin
-  //  SaveClick(nil);
+  M1.Lines.Clear;
+  LFile            := '!';
+  Self.Caption     := 'Soul Engine';
+  sc.Enabled       := False;
+  close.Enabled    := False;
+end;
+
+procedure T__fMain.ExitsClick(Sender: TObject);
+begin
+ if not LFile.Equals('!') then
+ begin
+  MessageBeep(3);
+  case MessageDlg('Do you want to save the file before the exit?', mtConfirmation, mbYesNoCancel, 0) of
+     mrYes: M1.Lines.SaveToFile(LFile);
+     mrCancel: Exit;
+  end;
+ end;
+  Application.Terminate;
+end;
+
+procedure T__fMain.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
+begin
+ if not LFile.Equals('!') then begin
+    MessageBeep(33);
+    case MessageDlg('Do you want to save the file before the exit?', mtConfirmation, mbYesNoCancel, 0) of
+       mrYes: M1.Lines.SaveToFile(LFile);
+       mrCancel: CanClose := False;
+    end;
+  end;
 end;
 
 procedure T__fMain.FormShow(Sender: TObject);
 begin
-  if not selfEnabled and FileExists('code.php') then
-    Memo1.Lines.LoadFromFile('code.php');
+  if not selfEnabled and FileExists(LFile) then
+  begin
+    M1.Lines.LoadFromFile(LFile);
+    Self.Caption     := 'Soul Engine - ' + LFile;
+  end;
 end;
-
-function myMD5(selfScript: string): string;
-begin
-  Result := xMD5(selfScript);
-end;
-
 
 class procedure T__fMain.loadEngine(DLLFolder: string = '');
 
@@ -113,7 +154,7 @@ class procedure T__fMain.loadEngine(DLLFolder: string = '');
   var
     sr: TSearchRec;
   begin
-    if FindFirst(filename, faAnyFile - faDirectory, sr) = 0 then
+    if FindFirst(Filename, faAnyFile - faDirectory, sr) = 0 then
       Result := sr.Size
     else
       Result := -1;
@@ -121,42 +162,30 @@ class procedure T__fMain.loadEngine(DLLFolder: string = '');
   end;
 
 begin
-  // PHPEngine.AddFunction('my_call', @ex_dec);
+
+  /// /  PHPEngine.AddFunction('my_call', @ex_dec);
   // InitializeEventSystem( PHPEngine );
 
-  if (ParamStr(2) = '-errors') then
-  begin
-    PHPEngine.HandleErrors := True;
-  end
-  else
-    PHPEngine.HandleErrors := True;
+  PHPEngine.HandleErrors := True;
 
-  //phpMOD.RunFile(engineDir+'include.php');
+  // phpMOD.RunFile(engineDir+'include.php');
   if (DLLFolder = '') then
     DLLFolder := ExtractFilePath(ParamStr(0));
 
-  PHPEngine.DLLFolder := DLLFolder;
+  PHPEngine.DLLFolder := AnsiString(DLLFolder);
 
   if FileExists(engineDir + '\php.ini') then
-    PHPEngine.IniPath := engineDir + '\php.ini'
+    PHPEngine.IniPath := AnsiString(engineDir + '\php.ini')
   else if FileExists(iniDir + '\php.ini') then
-    PHPEngine.IniPath := iniDir
+    PHPEngine.IniPath := AnsiString(iniDir)
   else if FileExists(progDir + '\php.ini') then
-    PHPEngine.IniPath := progDir
+    PHPEngine.IniPath := AnsiString(progDir)
   else
-    PHPEngine.IniPath := PHPEngine.DLLFolder;
+    PHPEngine.IniPath := AnsiString(PHPEngine.DLLFolder);
 
-  //  FS := TFileStream.Create(PHPEngine.IniPath, fmOpenRead, fmShareDenyWrite);
-
-  if selfEnabled and (selfPHP5tsSize <> Trunc((FindFileSize('php5ts.dll') * 3) / 4)) then
-  begin
-    Application.Terminate;
-    exit;
-  end;
-
+  /// FS := TFileStream.Create(PHPEngine.IniPath, fmOpenRead, fmShareDenyWrite);
 
   core_Init(PHPEngine, phpMOD.psvPHP);
-  //PHPEngine.StartupEngine;
 
   addVar('progDir', progDir);
   addVar('moduleDir', moduleDir);
@@ -166,153 +195,141 @@ begin
     phpMOD.RunFile(engineDir + 'include.php');
 end;
 
-function TempDir: string;
-var
-  Buffer: array[0..1023] of char;
+
+procedure T__fMain.M1DropFiles(Sender: TObject; X, Y: Integer;
+  AFiles: TStrings);
+var ext: PWideChar;
+splits: TArray<System.string>;
 begin
-  SetString(Result, Buffer, GetTempPath(Sizeof(Buffer) - 1, Buffer));
+splits := AFiles.ToStringArray[0].Split(['.']);
+ext    := PWideChar( splits[High(splits)].ToLower );
+if (ext = 'php') or (ext = 'phpe') or (ext = 'pse') or (ext = 'php3') or (ext = 'psex') or (ext = 'psec') then
+begin
+  sc.Enabled       := True;
+  close.Enabled    := True;
+  if  AFiles.ToStringArray[0] = LFile then  begin
+    MessageBeep(3);
+    case MessageDlg('Do you just want to reload the file?', mtConfirmation, mbYesNo, 0) of
+       mrYes: M1.Lines.LoadFromFile(LFile);
+       mrNo: Exit;
+    end;
+  end;
+  MessageBeep(3);
+  case MessageDlg('When you load new file, the changes in the old may not be saved.'
+    + #10 + #13 + 'Save changes in "' +LFile+ '"?', mtConfirmation, mbYesNoCancel, 1) of
+    mrYes: M1.Lines.SaveToFile(LFile);
+    mrCancel: Exit;
+  end;
+
+  if FileExists(  AFiles.ToStringArray[0] ) then
+  begin
+      M1.Lines.LoadFromFile(  AFiles.ToStringArray[0] );
+      LFile :=  AFiles.ToStringArray[0];
+      Self.Caption     := 'Soul Engine - ' + LFile;
+  end
+  else
+  begin
+      MessageBeep(37);
+      MessageDlg('Where did you move "' +  AFiles.ToStringArray[0] + '"?' + #10 + #13 + 'Program cannot load it anymore!', mtError, mbOKCancel, 10);
+  end;
+end
+else
+begin
+  MessageBeep(1);
+  MessageDlg('Sorry, try another file format', mtError, [mbOk], 1);
+end;
+end;
+
+function TempDir: Ansistring;
+var
+  WinDir: array [0 .. 1023] of char;
+begin
+  GetTempPath(1023, WinDir);
+  Result := AnsiString(StrPas(WinDir));
 end;
 
 class procedure T__fMain.extractPHPEngine(EM: TExeStream);
 
-var
-  dir, INI, HASH: string;
-  PHP5tsExists: boolean;
-  t: integer;
-label
-  1;
 begin
-  INI := EM.ExtractToString('$PHPSOULENGINE\phpini');
-  HASH := EM.ExtractToString('$PHPSOULENGINE\phpini.hash');
 
-  if (INI <> '') then
-  begin
-    if (myMD5(INI) <> HASH) then
-      halt;
+end;
 
-    dir := TempDir + '\PSE30\';
-    iniDir := dir + xMD5(exe) + '\';
-
-    if FileExists(iniDir + 'php.ini') then
-    begin
-      if (File2String(iniDir + 'php.ini') = INI) then
-        goto 1;
+procedure T__fMain.o1Click(Sender: TObject);
+begin
+if od.Execute then
+begin
+  sc.Enabled       := True;
+  close.Enabled    := True;
+  if  od.FileName = LFile then begin
+    MessageBeep(3);
+    case MessageDlg('Do you just want to reload the file?', mtConfirmation, mbYesNo, 0) of
+       mrYes: M1.Lines.LoadFromFile(LFile);
+       mrNo: Exit;
     end;
-
-    ForceDirectories(iniDir);
-    String2File(INI, iniDir + 'php.ini');
-    //TFileStream.Create(iniDir + 'php.ini', fmOpenRead, fmShareDenyWrite);
   end;
 
-  1: ;
-   (*EM.ExtractToList('$PHPENGINE',l);
-   mDir := EM.ExtractToString('$PHP_MODULEDIR');
+  if not Lfile.Equals('!') then begin
+    MessageBeep(3);
+    case MessageDlg('When you load new file, the changes in the old may not be saved.'
+      + #10 + #13 + 'Save changes in "' +LFile+ '"?', mtConfirmation, mbYesNoCancel, 1) of
+      mrYes: M1.Lines.SaveToFile(LFile);
+      mrCancel: Exit;
+    end;
+  end;
 
-   PHP5tsExists := false;
-   mDir := StringReplace(mDir,'{pse}',dir,[rfIgnoreCase]);
-   mDir := StringReplace(mDir,'{progdir}',progDir,[rfIgnoreCase]);
-   mDir := StringReplace(mDir,'{temp}',TempDir,[rfIgnoreCase]);
-
-   if L.Count = 0 then begin
-        dllPHPPath := progDir;
-        //dllPHPPath := dir + '';
-        moduleDir  := progDir + '\php\modules\';
-   end else begin
-        dllPHPPath := dir + '';
-        moduleDir  := dir + 'php\modules\';
-
-        for i:=0 to l.Count-1 do begin
-                f := l[i];
-                f := StringReplace(f,'/','\',[rfReplaceAll]);
-
-                if f = '\php5ts.dll' then
-                  PHP5tsExists := true;
-
-
-                if (not FileExists(dir + 'php\' + f)) or (f='\php.ini') then
-                begin
-
-                   if f = '\php.ini' then begin
-
-                     String2File(  StringReplace(EM.ExtractToString('$PSE'+l[i]),
-                                        '.\php\modules\', mDir, [rfReplaceAll]),
-                                    iniDir + f   );
-                   end else
-                   begin
-                    EM.ExtractToFile('$PSE' + l[i],
-                       StringReplace(dir + 'php\' + f,'\\','\',[rfReplaceAll]));
-                   end;
-                end;
-        end;
-
-        if not PHP5tsExists then
-          dllPHPPath := '';
-   end;      *)
-
-  //ShowMessage(IntToStr(GetTickCount-t));
-end;
-
-procedure T__fMain.Open1Click(Sender: TObject);
-begin
-  if not OpenDialog.Execute then
-    exit;
-
-  Memo1.Lines.LoadFromFile(OpenDialog.FileName);
-end;
-
-procedure T__fMain.PHPLibraryFunctions1Execute(Sender: TObject;
-  Parameters: TFunctionParams; var ReturnValue: variant; ZendVar: TZendVariable;
-  TSRMLS_DC: Pointer);
-begin
-  with phpMod.Variables.Add do
+  if FileExists(  od.FileName ) then
   begin
-    Name := Parameters[0].Value;
-    Value := Parameters[1].Value;
-  end;
-end;
-
-procedure T__fMain.SaveClick(Sender: TObject);
-begin
-  Memo1.Lines.SaveToFile('code.php');
-end;
-
-procedure T__fMain.Timer1Timer(Sender: TObject);
-begin
-  Application.Terminate;
-end;
-
-
-function DebuggerPresent: boolean;
-type
-  TDebugProc = function: boolean; stdcall;
-var
-  Kernel32: HMODULE;
-  DebugProc: TDebugProc;
-begin
-  Result := False;
-  Kernel32 := GetModuleHandle('kernel32.dll');
-  if Kernel32 <> 0 then
+      M1.Lines.LoadFromFile(  od.FileName );
+      LFile :=  od.FileName;
+      Self.Caption     := 'Soul Engine - ' + LFile;
+  end
+  else
   begin
-    @DebugProc := GetProcAddress(Kernel32, 'IsDebuggerPresent');
-    if Assigned(DebugProc) then
-      Result := DebugProc;
+      MessageBeep( 7 );
+      MessageDlg('Where did you move "' +  od.FileName + '"?' + #10 + #13 + 'Program cannot load it anymore!', mtError, mbOKCancel, 10);
   end;
 end;
+end;
 
-procedure T__fMain.Timer2Timer(Sender: TObject);
+procedure T__fMain.R2Click(Sender: TObject);
 begin
-{$IFDEF NO_DEBUG}
-  if DebuggerPresent then
+if od.Execute then
+    phpMOD.RunFile(od.FileName);
+end;
+
+procedure T__fMain.s1Click(Sender: TObject);
+begin
+  if sd.Execute then
   begin
-    Timer1.interval := random(10000) + 3000;
-    Timer1.Enabled := True;
+    M1.Lines.SaveToFile( sd.FileName );
+    M1.Modified := False;
+    LFile := sd.FileName;
   end;
-{$ENDIF}
+end;
+
+procedure T__fMain.scClick(Sender: TObject);
+begin
+  if LFile.Equals('!') then
+  Exit;
+  M1.Lines.SaveToFile(LFile);
+  M1.Modified := False;
+  M1.Lines.Clear;
+  LFile            := '!';
+  Self.Caption     := 'Soul Engine';
+  sc.Enabled       := False;
+  close.Enabled    := False;
+end;
+
+procedure T__fMain.sClick(Sender: TObject);
+begin
+  if LFile.Equals('!') then Exit;
+
+  M1.Lines.SaveToFile(LFile);
+  M1.Modified := False;
 end;
 
 
-{
-initialization
-  ReportMemoryLeaksOnShutdown := True; }
-
+  initialization
+  ReportMemoryLeaksOnShutdown := True;
+  LFile := GetLocaleFile('code.php');
 end.

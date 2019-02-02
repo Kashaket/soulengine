@@ -91,7 +91,7 @@ var
 
 procedure InitTables;
 var
-  I, K: char;
+  I, K: AnsiChar;
   Temp: integer;
 begin
   for I := #0 to #255 do
@@ -103,7 +103,7 @@ begin
   for I := #1 to #255 do
   begin
     repeat
-      K := char(Random(255));
+      K := AnsiChar(Random(255));
     until K <> #0;
     Temp := HashTable[I];
     HashTable[I] := HashTable[K];

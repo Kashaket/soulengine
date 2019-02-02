@@ -1531,7 +1531,7 @@ type
     // (see http://msdn.microsoft.com/en-us/library/ms646286(VS.85).aspx). If
     // |isAfterJavaScript| is true (1) then JavaScript in the page has had a
     // chance to handle the event and has chosen not to. Only RAWKEYDOWN, KEYDOWN
-    // and CHAR events will be sent with |isAfterJavaScript| set to true (1).
+    // and AnsiChar events will be sent with |isAfterJavaScript| set to true (1).
     // Return true (1) if the keyboard event was handled or false (0) to allow
     // continued handling of the event by the renderer.
 

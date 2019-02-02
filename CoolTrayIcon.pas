@@ -58,7 +58,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
-  Menus, ShellApi, ExtCtrls, SimpleTimer {$IFDEF DELPHI_4_UP}, ImgList{$ENDIF};
+  Menus, ShellApi, ExtCtrls, SimpleTimer, AnsiStrings {$IFDEF DELPHI_4_UP}, ImgList{$ENDIF};
 
 const
   // User-defined message sent by the trayicon
@@ -103,7 +103,7 @@ type
   TBalloonHintIcon = (bitNone, bitInfo, bitWarning, bitError, bitCustom);
   TBalloonHintTimeOut = 10..60;   // Windows defines 10-60 secs. as min-max
   TBehavior = (bhWin95, bhWin2000);
-  THintString = AnsiString;       // 128 bytes, last char should be #0
+  THintString = AnsiString;       // 128 bytes, last AnsiChar should be #0
 
   TCycleEvent = procedure(Sender: TObject; NextIndex: Integer) of object;
   TStartupEvent = procedure(Sender: TObject; var ShowMainForm: Boolean) of object;
@@ -1232,7 +1232,7 @@ begin
     end;
     if (FHint <> '') and (FShowHint) then
     begin
-      StrLCopy(IconData.szTip, PChar(String(FHint)), SizeOf(IconData.szTip)-1);
+      AnsiStrings.StrLCopy(IconData.szTip, PAnsiChar(String(FHint)), SizeOf(IconData.szTip)-1);
       { StrLCopy must be used since szTip is only 128 bytes. }
       { From IE ver. 5 szTip is 128 chars, before that only 64 chars. I suppose
         I could use GetComCtlVersion to check the version and then truncate
@@ -1308,8 +1308,8 @@ begin
   with IconData do
   begin
     uFlags := uFlags or NIF_INFO;
-    StrLCopy(szInfo, PChar(Text), SizeOf(szInfo)-1);
-    StrLCopy(szInfoTitle, PChar(Title), SizeOf(szInfoTitle)-1);
+    AnsiStrings.StrLCopy(szInfo, PAnsiChar(Text), SizeOf(szInfo)-1);
+    AnsiStrings.StrLCopy(szInfoTitle, PAnsiChar(Title), SizeOf(szInfoTitle)-1);
     TimeoutOrVersion.uTimeout := TimeoutSecs * 1000;
     dwInfoFlags := aBalloonIconTypes[IconType];
   end;
@@ -1336,11 +1336,11 @@ begin
     uFlags := uFlags or NIF_INFO;
     FillChar(szInfo, 0, SizeOf(szInfo));
     for I := 0 to SizeOf(szInfo)-1 do
-      szInfo[I] := Char(Text[I]);
+      szInfo[I] := AnsiChar(Text[I]);
     szInfo[0] := #1;
     FillChar(szInfoTitle, 0, SizeOf(szInfoTitle));
     for I := 0 to SizeOf(szInfoTitle)-1 do
-      szInfoTitle[I] := Char(Title[I]);
+      szInfoTitle[I] := AnsiChar(Title[I]);
     szInfoTitle[0] := #1;
     TimeoutOrVersion.uTimeout := TimeoutSecs * 1000;
     dwInfoFlags := aBalloonIconTypes[IconType];
@@ -1357,7 +1357,7 @@ begin
   with IconData do
   begin
     uFlags := uFlags or NIF_INFO;
-    StrPCopy(szInfo, '');
+    AnsiStrings.StrPCopy(szInfo, '');
   end;
   Result := ModifyIcon;
 end;

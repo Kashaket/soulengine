@@ -75,7 +75,7 @@ unit RyMenus;
 interface
 
 uses Windows, Classes, Graphics, ImgList, Controls, Commctrl,
-  Menus, Forms;
+  Menus, Forms, mdsUtils;
 
 type
   TRyMenu = class(TComponent)
@@ -127,8 +127,6 @@ var
   свой TRyMenu. он инициализируется сам и рисует все в стандартные цвета.}
 
 implementation
-
-uses Utils;
 
 var
   BmpCheck: {array[Boolean] of} TBitmap; {две bmp 12x12 для чекнутых пунктов меню}

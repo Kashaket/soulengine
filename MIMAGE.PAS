@@ -13,7 +13,8 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Controls, ExtCtrls, Graphics;
-
+{$M+}
+{$TypeInfo On}
 type
   TMImage = class(TGraphicControl)
   private
@@ -83,8 +84,6 @@ type
     property OnStartDock;
     property OnStartDrag;
   end;
-
-procedure Register;
 
 implementation
 
@@ -346,11 +345,6 @@ begin
     if Align in [alNone, alTop, alBottom] then
       NewHeight := Picture.Height;
   end;
-end;
-
-procedure Register;
-begin
-  RegisterComponents('Samples', [TMImage]);
 end;
 
 end.

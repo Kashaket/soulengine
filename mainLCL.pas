@@ -3,7 +3,7 @@ unit mainLCL;
 interface
 
 uses
-  SysUtils, Controls, Classes, Types
+  SysUtils, Controls, Classes, Types, VCL.Forms, VCL.Dialogs
 
  {$ifdef fpc}
   ,fileUtil
@@ -39,7 +39,7 @@ end;
 function encStr(S: string): string;
 begin
   if fromANSI then
-    s := AnsiToUtf8(s);
+    s := String(AnsiToUtf8(s));
 
   Result := s;
 end;
@@ -47,7 +47,7 @@ end;
 function ToStrA(V: variant): ansistring;
 begin
 
-  Result := V;
+  Result := AnsiString(V);
 end;
 
 function ToStr(S: PAnsiChar; Len: integer): ansistring; overload;
@@ -64,7 +64,7 @@ end;
 
 function ToStr(V: variant): ansistring;
 begin
-  Result := V;
+  Result := AnsiString(V);
 end;
 
 function ToPChar(V: variant): PAnsiChar;
@@ -106,10 +106,14 @@ end;
 
 function toObject(id: integer): TObject;
 begin
-  if id = 0 then
+  if (id = 0) or (id = -1) then
+  begin
     Result := nil
+  end
   else
-    Result := TObject(integer(id));
+  begin
+         Result := TObject(Pointer(id));
+  end;
 
 end;
 

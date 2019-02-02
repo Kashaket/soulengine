@@ -4,9 +4,10 @@ unit dsStdCtrl;
 
 interface
 
-uses Forms, Dialogs, SysUtils, Windows, TypInfo, Classes, Controls, Buttons,
-  Messages, StdCtrls, Graphics, ExtCtrls, ShellAPI, ComCtrls;
-
+uses Forms, Dialogs, SysUtils, Windows, Types, UITypes, TypInfo, Classes, Controls, Buttons,
+  Messages, StdCtrls, Graphics, ExtCtrls, ShellAPI, ComCtrls, Vcl.Themes;
+{$M+}
+{$TypeInfo On}
 type
   TComponentLabel = class(TCustomControl)
   private
@@ -44,7 +45,7 @@ type
     procedure Paint; override;
     procedure initLabel;
     procedure WMMove(var Msg: TWMMove); message WM_MOVE;
-    {процедура для обработки сообщения Wm_move, чтобы метка перемещалась вместе с кнопкой}
+    { процедура для обработки сообщения Wm_move, чтобы метка перемещалась вместе с кнопкой }
 
   public
     constructor Create(AOwner: TComponent); override;
@@ -53,7 +54,8 @@ type
   published
     property __iconName: string read FfileName write SetfileName;
     property realWidth: integer read FrealWidth write SetrealWidth default 26;
-    property realHeight: integer read FrealHeight write SetrealHeight default 26;
+    property realHeight: integer read FrealHeight write SetrealHeight
+      default 26;
     property Caption: string read FCaption write SetCaption;
     property OnDblClick: TNotifyEvent read FLabelDblClick write FLabelDblClick;
     property Font;
@@ -64,10 +66,10 @@ type
 type
   TDropFilesInfo = class(TPersistent)
   private
-    FControl: TWinControl;          // Drop action target control
-    FStamp: TDateTime;              // Timestamp of drop action
-    FPoint: TPoint;                 // Drop point
-    FFiles: TStrings;               // List with filenames
+    FControl: TWinControl; // Drop action target control
+    FStamp: TDateTime; // Timestamp of drop action
+    FPoint: TPoint; // Drop point
+    FFiles: TStrings; // List with filenames
   public
     constructor Create;
     destructor Destroy; override;
@@ -78,31 +80,32 @@ type
     property Stamp: TDateTime read FStamp;
   end;
 
-
-  TDropFilesEvent = procedure(Sender: TObject; Files: TStrings;
-    X: integer; Y: integer) of object;
+  TDropFilesEvent = procedure(Sender: TObject; Files: TStrings; X: integer;
+    Y: integer) of object;
 
   TDropFilesTarget = class(TComponent)
   private
-    FTargetControl: TWinControl;    // Target control to accept WM_DROPFILES
-    FEnabled: boolean;              // Enable/disable accepting
-    FOnDropFiles: TDropFilesEvent;  // Notification handler
-    FAcceptingWindow: HWND;         // Window handle that got "DragAcceptFiles"
-    FOldWndProc: TWndMethod;        // Old WindowProc method
-    procedure DropFiles(hDrop: HDROP);
+    FTargetControl: TWinControl; // Target control to accept WM_DROPFILES
+    FEnabled: boolean; // Enable/disable accepting
+    FOnDropFiles: TDropFilesEvent; // Notification handler
+    FAcceptingWindow: HWND; // Window handle that got "DragAcceptFiles"
+    FOldWndProc: TWndMethod; // Old WindowProc method
+    procedure DropFiles(hDrop: hDrop);
     procedure NewWndProc(var Msg: TMessage);
     procedure AttachControl;
     procedure DetachControl;
     procedure SetEnabled(AEnabled: boolean);
     procedure SetTargetControl(AControl: TWinControl);
   protected
-    procedure Notification(AComponent: TComponent; Operation: TOperation); override;
+    procedure Notification(AComponent: TComponent;
+      Operation: TOperation); override;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
   published
     property Enabled: boolean read FEnabled write SetEnabled default True;
-    property TargetControl: TWinControl read FTargetControl write SetTargetControl;
+    property TargetControl: TWinControl read FTargetControl
+      write SetTargetControl;
     property OnDropFiles: TDropFilesEvent read FOnDropFiles write FOnDropFiles;
   end;
 
@@ -141,7 +144,8 @@ type
     property TextHint: string read FTextHint write FTextHint;
     property Alignment: TAlignment read FAlignment write SetAlignment;
     property ColorOnEnter: TColor read FColorOnEnter write FColorOnEnter;
-    property FontColorOnEnter: TColor read FFontColorOnEnter write FFontColorOnEnter;
+    property FontColorOnEnter: TColor read FFontColorOnEnter
+      write FFontColorOnEnter;
 
     property TabOnEnter: boolean read FTabOnEnter write FTabOnEnter;
     property OnFocus: TNotifyEvent read FOnFocus write FOnFocus;
@@ -217,8 +221,8 @@ type
   protected
     procedure DoEnter; override;
     procedure DoExit; override;
-    procedure DrawItem(Index: integer; Rect: TRect; State: TOwnerDrawState);
-      override;
+    procedure DrawItem(Index: integer; Rect: TRect;
+      State: TOwnerDrawState); override;
 
   public
 
@@ -233,7 +237,8 @@ type
     procedure ClearFont(Index: integer);
   published
     property Alignment: TAlignment read FAlignment write SetAlignment;
-    property BorderSelected: boolean read FBorderSelected write SetBorderSelected;
+    property BorderSelected: boolean read FBorderSelected
+      write SetBorderSelected;
     property TwoColor: TColor read FTwoColor write SetTwoColor;
     property TwoFontColor: TColor read FTwoFontColor write SetTwoFontColor;
     property MarginLeft: integer read FMarginLeft write SetMarginLeft;
@@ -241,7 +246,6 @@ type
     property OnFocus: TNotifyEvent read FOnFocus write FOnFocus;
     property OnBlur: TNotifyEvent read FOnBlur write FOnBlur;
   end;
-
 
 type
   TCheckBox = class(StdCtrls.TCheckBox)
@@ -274,10 +278,20 @@ type
     property OnFocus: TNotifyEvent read FOnFocus write FOnFocus;
     property OnBlur: TNotifyEvent read FOnBlur write FOnBlur;
   end;
-
+type
+   TTransparentPanel = class(TPanel)
+private
+  procedure SetParent(AParent: TWinControl); override;
+  procedure WMEraseBkGnd(Var Message: TWMEraseBkGnd); message WM_EraseBkGnd;
+protected
+  procedure CreateParams(Var Params: TCreateParams); override;
+  procedure Paint; override;
+published
+  constructor Create(AOwner: TComponent); override;
+  procedure Invalidate; override;
+end;
 
 implementation
-
 
 constructor TEdit.Create(AOwner: TComponent);
 begin
@@ -292,11 +306,11 @@ begin
     Text := TextHint;
 
   FInitDraw := False;
-end; (*Create*)
+end; (* Create *)
 
 procedure TEdit.CreateParams(var Params: TCreateParams);
 const
-  Alignments: array[TAlignment] of longword = (ES_Left, ES_Right, ES_Center);
+  Alignments: array [TAlignment] of longword = (ES_Left, ES_Right, ES_Center);
 begin
   inherited CreateParams(Params);
   Params.Style := Params.Style or Alignments[FAlignment];
@@ -323,7 +337,7 @@ begin
   UpdateMargins;
 
   inherited;
-end; (*DoEnter*)
+end; (* DoEnter *)
 
 procedure TEdit.DoExit;
 begin
@@ -339,7 +353,7 @@ begin
   UpdateMargins;
 
   inherited;
-end; (*DoExit*)
+end; (* DoExit *)
 
 procedure TEdit.SetAlignment(Value: TAlignment);
 begin
@@ -386,11 +400,11 @@ end;
 procedure TEdit.KeyPress(var Key: char);
 begin
   inherited KeyPress(Key);
-  //UpdateMargins;
+  // UpdateMargins;
 
   if FTabOnEnter and (Owner is TWinControl) then
   begin
-    if Key = char(VK_RETURN) then
+    if Key = AnsiChar(VK_RETURN) then
     begin
       if HiWord(GetKeyState(VK_SHIFT)) <> 0 then
         PostMessage((Owner as TWinControl).Handle, WM_NEXTDLGCTL, 1, 0)
@@ -399,8 +413,7 @@ begin
       Key := #0;
     end;
   end;
-end; (*KeyPress*)
-
+end; (* KeyPress *)
 
 { TMemo }
 
@@ -411,7 +424,7 @@ end;
 
 procedure TMemo.CreateParams(var Params: TCreateParams);
 const
-  Alignments: array[TAlignment] of longword = (ES_Left, ES_Right, ES_Center);
+  Alignments: array [TAlignment] of longword = (ES_Left, ES_Right, ES_Center);
 begin
   inherited CreateParams(Params);
   Params.Style := Params.Style or Alignments[FAlignment];
@@ -439,7 +452,7 @@ begin
 
   if FTabOnEnter and (Owner is TWinControl) then
   begin
-    if Key = char(VK_RETURN) then
+    if Key = AnsiChar(VK_RETURN) then
     begin
       if HiWord(GetKeyState(VK_SHIFT)) <> 0 then
         PostMessage((Owner as TWinControl).Handle, WM_NEXTDLGCTL, 1, 0)
@@ -461,12 +474,10 @@ end;
 
 { TBitBtn }
 
-
 constructor TBitBtn.Create(AOwner: TComponent);
 begin
   inherited;
 end;
-
 
 procedure TBitBtn.DoEnter;
 begin
@@ -484,7 +495,6 @@ begin
   inherited;
 end;
 
-
 { TListBox }
 
 constructor TListBox.Create(AOwner: TComponent);
@@ -499,7 +509,6 @@ begin
   BorderSelected := True;
   FReadOnly := False;
 end;
-
 
 destructor TListBox.Destroy;
 var
@@ -532,7 +541,8 @@ begin
   inherited;
 end;
 
-procedure TListBox.DrawItem(Index: integer; Rect: TRect; State: TOwnerDrawState);
+procedure TListBox.DrawItem(Index: integer; Rect: TRect;
+  State: TOwnerDrawState);
 var
   MyColor, MyFontColor: TColor;
   H: integer;
@@ -556,7 +566,7 @@ begin
     MyFontColor := Canvas.Font.Color;
   end;
 
-  if not (odSelected in State) or FReadOnly then
+  if not(odSelected in State) or FReadOnly then
   begin
     if (Index + 1) mod 2 = 0 then
     begin
@@ -595,12 +605,14 @@ begin
   H := Rect.Top + ItemHeight div 2 - Canvas.TextHeight(Items[Index]) div 2;
 
   case FAlignment of
-    taLeftJustify: Canvas.TextOut(Rect.Left + MarginLeft, H, Items[Index]);
-    taRightJustify: Canvas.TextOut(Rect.Right -
-        MarginLeft - Canvas.TextWidth(Items[Index]), H, Items[Index]);
-    taCenter: Canvas.TextOut(Rect.Left + ((Rect.Right - Rect.Left) div
-        2) - (Canvas.TextWidth(Items[Index]) div 2),
+    taLeftJustify:
+      Canvas.TextOut(Rect.Left + MarginLeft, H, Items[Index]);
+    taRightJustify:
+      Canvas.TextOut(Rect.Right - MarginLeft - Canvas.TextWidth(Items[Index]),
         H, Items[Index]);
+    taCenter:
+      Canvas.TextOut(Rect.Left + ((Rect.Right - Rect.Left) div 2) -
+        (Canvas.TextWidth(Items[Index]) div 2), H, Items[Index]);
   end;
 end;
 
@@ -771,9 +783,55 @@ begin
 
   inherited;
 end;
+{ TTransparentPanel }
 
+constructor TTransparentPanel.Create(AOwner: TComponent);
+begin
+  Inherited Create(AOwner);
+  ControlStyle := ControlStyle - [csOpaque];
+end;
+
+procedure TTransparentPanel.CreateParams(Var Params: TCreateParams);
+begin
+  Inherited CreateParams(Params);
+  Params.ExStyle := Params.ExStyle or WS_EX_TRANSPARENT;
+end;
+
+procedure TTransparentPanel.WMEraseBkGnd(Var Message: TWMEraseBkGnd);
+begin
+    {Do Nothing}
+    Message.Result := 1;
+end;
+procedure TTransparentPanel.Paint;
+Begin
+Canvas.Brush.Style := bsClear;
+end;
+
+procedure TTransparentPanel.SetParent(AParent: TWinControl);
+begin
+  Inherited SetParent(AParent);
+  {The trick needed to make it all work! I don't know if changing the parent's
+  style is a good idea, but it only removes the WS_CLIPCHILDREN style which
+  shouldn't cause any problems.}
+  if Parent <> Nil then
+    SetWindowLong(
+      Parent.Handle,
+      GWL_STYLE,
+      GetWindowLong(Parent.Handle, GWL_STYLE) And Not WS_ClipChildren
+    );
+end;
+
+procedure TTransparentPanel.Invalidate;
+var
+  Rect:TRect;
+begin
+  Rect := BoundsRect;
+    if (Parent <> Nil) and Parent.HandleAllocated then
+      InvalidateRect(Parent.Handle, @Rect, True)
+    else
+      Inherited Invalidate;
+end;
 { TForm }
-
 
 { TDropFilesInfo }
 
@@ -814,11 +872,12 @@ end;
 
 destructor TDropFilesTarget.Destroy;
 begin
-  TargetControl := nil;  // This detaches any attached control
+  TargetControl := nil; // This detaches any attached control
   inherited;
 end;
 
-procedure TDropFilesTarget.Notification(AComponent: TComponent; Operation: TOperation);
+procedure TDropFilesTarget.Notification(AComponent: TComponent;
+  Operation: TOperation);
 begin
   inherited;
 
@@ -830,11 +889,11 @@ end;
 { Do the dropping. Note that DragFinish is called in the window
   procedure and not here.
 }
-procedure TDropFilesTarget.DropFiles(hDrop: HDROP);
+procedure TDropFilesTarget.DropFiles(hDrop: hDrop);
 var
   Info: TDropFilesInfo;
   Count, Index, Len: integer;
-  Filename: PChar;
+  fileName: PChar;
 begin
   Info := TDropFilesInfo.Create;
   try
@@ -842,16 +901,16 @@ begin
     Info.FControl := FTargetControl;
     DragQueryPoint(hDrop, Info.FPoint);
 
-    Count := DragQueryFile(hDrop, $ffffffff, nil, 0);
+    Count := DragQueryFile(hDrop, $FFFFFFFF, nil, 0);
     for Index := 0 to Count - 1 do
     begin
       Len := DragQueryFile(hDrop, Index, nil, 0);
-      Filename := AllocMem(Len + 1);
+      fileName := AllocMem(Len + 1);
       try
-        DragQueryFile(hDrop, Index, Filename, Len + 1);
-        TStringList(Info.FFiles).Add(StrPas(Filename));
+        DragQueryFile(hDrop, Index, fileName, Len + 1);
+        TStringList(Info.FFiles).Add(StrPas(fileName));
       finally
-        FreeMem(Filename);
+        FreeMem(fileName);
       end;
     end;
 
@@ -967,8 +1026,6 @@ begin
   end;
 end;
 
-
-
 { TComponentLabel }
 
 constructor TComponentLabel.Create(AOwner: TComponent);
@@ -997,7 +1054,6 @@ begin
   if not Visible then
     exit;
 
-
   Width := Canvas.TextWidth(Caption) + 2;
   Height := Canvas.TextHeight(Caption) + 2;
 
@@ -1013,14 +1069,13 @@ begin
   FCaption := Value;
 end;
 
-
 { __TNoVisual }
 
 constructor __TNoVisual.Create(AOwner: TComponent);
 begin
   inherited;
   FGlyph := TBitmap.Create;
-  FLabel := TComponentLabel.Create(self);
+  FLabel := TComponentLabel.Create(Self);
 
   FGlyph.Transparent := True;
   FGlyph.TransparentMode := tmAuto;
@@ -1034,7 +1089,7 @@ end;
 destructor __TNoVisual.Destroy;
 begin
 
-  //  FLabel.Free;
+  // FLabel.Free;
   FGlyph.Free;
   inherited;
 end;
@@ -1048,10 +1103,11 @@ begin
   FLabel.Font.Assign(Self.Font);
   FLabel.Color := Color;
   FLabel.Caption := Name;
-  FLabel.FPanel := self;
+  FLabel.FPanel := Self;
   FLabel.BringToFront;
 
-  FLabel.Left := Round(Left + (realWidth / 2) - (FLabel.Canvas.TextWidth(Name) / 2) - 1);
+  FLabel.Left := Round(Left + (realWidth / 2) - (FLabel.Canvas.TextWidth(Name)
+    / 2) - 1);
   FLabel.Top := Top + Height + 3;
   FLabel.OnDblClick := OnDblClick;
   FLabel.OnClick := OnClick;
@@ -1060,16 +1116,15 @@ end;
 procedure __TNoVisual.loadFromFile(fileName: string);
 begin
   FfileName := fileName;
-  FGlyph.LoadFromFile(fileName);
+  FGlyph.loadFromFile(fileName);
 end;
 
 procedure __TNoVisual.Paint;
 begin
-  //if not Visible then exit;
+  // if not Visible then exit;
   inherited;
   if Parent = nil then
     exit;
-
 
   Canvas.Pen.Style := psAlternate;
   Canvas.Pen.Width := 1;
@@ -1079,7 +1134,8 @@ begin
   if FLabel <> nil then
   begin
     FLabel.Caption := Name;
-    FLabel.Left := Round(Left + (realWidth / 2) - (Canvas.TextWidth(Name) / 2) - 1);
+    FLabel.Left := Round(Left + (realWidth / 2) -
+      (Canvas.TextWidth(Name) / 2) - 1);
     FLabel.Top := Top + Height + 3;
     FLabel.Paint;
   end;
@@ -1087,12 +1143,10 @@ begin
   if not FGlyph.Empty then
   begin
     Canvas.Draw(Round((Width / 2) - (FGlyph.Width / 2)),
-      Round((Height / 2) - (FGlyph.Height / 2)),
-      FGlyph);
+      Round((Height / 2) - (FGlyph.Height / 2)), FGlyph);
   end;
 
 end;
-
 
 procedure __TNoVisual.SetCaption(const Value: string);
 begin
@@ -1111,14 +1165,14 @@ begin
   initLabel;
 end;
 
-
 procedure __TNoVisual.SetName(const Value: TComponentName);
 begin
   inherited;
   if FLabel <> nil then
   begin
     FLabel.Caption := Name;
-    FLabel.Left := Round(Left + (realWidth / 2) - (Canvas.TextWidth(Name) / 2) - 1);
+    FLabel.Left := Round(Left + (realWidth / 2) -
+      (Canvas.TextWidth(Name) / 2) - 1);
     FLabel.Top := Top + Height + 3;
     FLabel.Paint;
   end;
@@ -1145,6 +1199,5 @@ begin
   inherited;
   initLabel;
 end;
-
 
 end.

@@ -117,7 +117,7 @@ begin
 {$IFDEF VS_EDITOR}
 
   v := Parameters[2].Value;
-  n := LowerCase(Parameters[1].ZendVariable.AsString);
+  n := AnsiLowerCase(string(Parameters[1].ZendVariable.AsString));
   vF := Parameters[3].ZendVariable.AsBoolean;
 
   if vF = False then

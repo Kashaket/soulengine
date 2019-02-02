@@ -14,7 +14,8 @@ uses
   PHPAPI,
   php4delphi,
   uPhpEvents,
-  pngimage, Graphics, dsStdCtrl;
+  vcl.imaging.pngimage, PngSpeedButton, PngBitBtn,
+  Graphics, dsStdCtrl, vcl.dialogs, vcl.buttons;
 
 procedure InitializeGuiComponents(PHPEngine: TPHPEngine);
 
@@ -255,8 +256,8 @@ procedure gui_destroy;
 var
   p: pzval_array;
   id: integer;
-  s: ansistring;
 begin
+
   if ht < 1 then
   begin
     zend_wrong_param_count(TSRMLS_DC);
@@ -268,7 +269,6 @@ begin
   if (id <> 0) and (TObject(ID) is TObject) then
   begin
     FreeEventController(TObject(id));
-    s := TObject(id).ClassName;
     TObject(id).Free;
     ZVAL_BOOL(return_value, True);
   end
@@ -416,7 +416,7 @@ begin
   end;
   zend_get_parameters_my(ht, p, TSRMLS_DC);
 
-  variant2zval(regGUI.ComponentToString(Z_LVAL(p[0]^)), return_value);
+  variant2zval(regGUI.ComponentToStringProc(Z_LVAL(p[0]^)), return_value);
 
   dispose_pzval_array(p);
 end;
@@ -432,7 +432,9 @@ begin
   end;
   zend_get_parameters_my(ht, p, TSRMLS_DC);
 
-  regGUI.StringToComponent(Z_LVAL(p[0]^), Z_STRVAL(p[1]^));
+   //   ShowMessage( Z_LVAL(p[0]^).ToString + #10#13 +  Z_STRVAL(p[1]^) );
+
+  regGUI.StringToComponentProc(Z_LVAL(p[0]^), Z_STRVAL(p[1]^));
 
   dispose_pzval_array(p);
 end;
@@ -477,7 +479,12 @@ begin
         SetFocus;
 
     end;
-  end;
+  end
+  else if (ID <> 0) and (TObject(ID) is TForm) then
+      begin
+          TForm(TObject(ID)).SetFocus;
+      end;
+       
 
 
   dispose_pzval_array(p);
@@ -500,7 +507,7 @@ begin
   begin
     if TObject(ID) is TForm then
     begin
-
+      ZVAL_BOOL(return_value, TForm(TObject(ID)).Focused);
     end
     else
       ZVAL_BOOL(return_value, TWinControl(Pointer(ID)).Focused);
@@ -1016,10 +1023,10 @@ begin
   if O <> nil then
   begin
     M := TStringStream.Create(Z_STRVAL(p[1]^));
-        {if O is TPngSpeedButton then
+        if O is TPngSpeedButton then
           TPngSpeedButton(O).PngImage.LoadFromStream(M)
         else if O is TPngBitBtn then
-          TPngBitBtn(O).PngImage.LoadFromStream(M);}
+          TPngBitBtn(O).PngImage.LoadFromStream(M);
     M.Free;
   end;
   dispose_pzval_array(p);
@@ -1043,10 +1050,10 @@ begin
 
   if O <> nil then
   begin
-        {if O is TPngSpeedButton then
+        if O is TPngSpeedButton then
           TPngSpeedButton(O).PngImage.LoadFromFile(S)
         else if O is TPngBitBtn then
-          TPngBitBtn(O).PngImage.LoadFromFile(S); }
+          TPngBitBtn(O).PngImage.LoadFromFile(S);
   end;
   dispose_pzval_array(p);
 end;
@@ -1068,10 +1075,10 @@ begin
   S := TStringStream.Create(#0);
   if O <> nil then
   begin
-       { if O is TPngSpeedButton then
+        if O is TPngSpeedButton then
           TPngSpeedButton(O).PngImage.SaveToStream(S)
         else if O is TPngBitBtn then
-          TPngBitBtn(O).PngImage.SaveToStream(S);  }
+          TPngBitBtn(O).PngImage.SaveToStream(S);
   end;
 
   ZVAL_STRINGL(return_value, PAnsiChar(S.DataString), S.Size, True);
@@ -1096,10 +1103,10 @@ begin
 
   if O <> nil then
   begin
-        {if O is TPngSpeedButton then
+        if O is TPngSpeedButton then
           ZVAL_BOOL(Return_value, not TPngSpeedButton(O).PngImage.Empty)
         else if O is TPngBitBtn then
-          ZVAL_BOOL(Return_value, not TPngBitBtn(O).PngImage.Empty);}
+          ZVAL_BOOL(Return_value, not TPngBitBtn(O).PngImage.Empty);
   end;
 
   dispose_pzval_array(p);
@@ -1128,16 +1135,16 @@ begin
   begin
     if D is TPicture then
     begin
-      if TPicture(D).Graphic is TPNGObject then
+      if TPicture(D).Graphic is TPNGIMage then
       begin
 
-              {if O is TPngSpeedButton then
+              if O is TPngSpeedButton then
               begin
-                 TPngSpeedButton(O).PngImage.Assign(TPicture(D).Graphic);
+                 TPngSpeedButton(O).PngImage.Assign( TPicture(D).Graphic );
                  TPngSpeedButton(O).Refresh;
               end
               else if O is TPngBitBtn then
-                 TPngBitBtn(O).PngImage.Assign(TPicture(D).Graphic);  }
+                 TPngBitBtn(O).PngImage.Assign( TPicture(D).Graphic );
 
         ZVAL_TRUE(return_value);
         goto _exit;
@@ -1185,6 +1192,12 @@ begin
 
   PHPEngine.AddFunction('gui_listSetColor', @gui_listSetColor);
   PHPEngine.AddFunction('gui_listGetColor', @gui_listGetColor);
+
+  PHPEngine.AddFunction('gui_btnPngIsEmpty', @gui_btnPngIsEmpty);
+  PHPEngine.AddFunction('gui_btnPNGAssign', @gui_btnPNGAssign);
+  PHPEngine.AddFunction('gui_btnPNGGetStr', @gui_btnPNGGetStr);
+  PHPEngine.AddFunction('gui_btnPNGLoadFile', @gui_btnPNGLoadFile);
+  PHPEngine.AddFunction('gui_btnPNGLoadStr', @gui_btnPNGLoadStr);
 
   PHPEngine.AddFunction('gui_criticalCreate', @gui_threadCriticalCreate);
   PHPEngine.AddFunction('gui_criticalEnter', @gui_threadCriticalEnter);

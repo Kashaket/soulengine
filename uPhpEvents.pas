@@ -1,9 +1,8 @@
 unit uPhpEvents;
 
 {$I 'sDef.inc'}
-
 {$ifdef fpc}
-        {$mode delphi}
+{$mode delphi}
 {$endif}
 
 interface
@@ -14,16 +13,17 @@ uses
   Forms, Dialogs, Buttons, Controls,
   dwsHashtables, zendAPI, phpApi, ZENDTypes, php4delphi
 
-
-      {$IFDEF ADD_CHROMIUM}
-  , ceflib, cefvcl
-      {$ENDIF}
-
-      {$IFDEF VS_EDITOR}
-  , NxPropertyItems, NxPropertyItemClasses, NxScrollControl,
-  NxInspector, SynEditTypes, SynEdit, SynCompletionProposal,
+{$IFDEF ADD_CHROMIUM}
+    , ceflib, cefvcl
+{$ENDIF}
+{$IFDEF VS_EDITOR}
+    , NxPropertyItems, NxPropertyItemClasses, NxScrollControl,
+  NxInspector,
+  {$IFDEF ADD_SYN_EV}
+  SynEditTypes, SynEdit, SynCompletionProposal,
+  {$ENDIF}
   CategoryButtons
-      {$ENDIF}    ;
+{$ENDIF};
 
 type
   THandlerFuncs = class(TObject)
@@ -35,12 +35,9 @@ type
     procedure onChanging(Sender: TObject; var AllowChange: boolean);
     procedure onMoved(Sender: TObject);
 
-    procedure onKeyDown(Sender: TObject; var Key: word;
-      Shift: TShiftState);
-    procedure onKeyUp(Sender: TObject; var Key: word;
-      Shift: TShiftState);
-    procedure onKeyPress(Sender: TObject; var Key: char);
-
+    procedure onKeyDown(Sender: TObject; var Key: word; Shift: TShiftState);
+    procedure onKeyUp(Sender: TObject; var Key: word; Shift: TShiftState);
+    procedure onKeyPress(Sender: TObject; var Key: AnsiChar);
 
     procedure onMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: integer);
@@ -55,14 +52,14 @@ type
       Shift: TShiftState; X, Y, HitTest: integer;
       var MouseActivate: TMouseActivate);
 
-
     procedure onScroll(Sender: TObject; ScrollCode: TScrollCode;
       var ScrollPos: integer);
     procedure onPopup(Sender: TObject);
 
     { --- edit --- }
     procedure onEdited(Sender: TObject; Item: TListItem; var S: string);
-    procedure onEditing(Sender: TObject; Item: TListItem; var AllowEdit: boolean);
+    procedure onEditing(Sender: TObject; Item: TListItem;
+      var AllowEdit: boolean);
 
     procedure onTimer(Sender: TObject);
     procedure onExecute(Sender: TObject);
@@ -72,8 +69,8 @@ type
     procedure onCloseQuery(Sender: TObject; var CanClose: boolean);
     procedure onClose(Sender: TObject);
     procedure onResize(Sender: TObject);
-    procedure onCanResize(Sender: TObject;
-      var NewWidth, NewHeight: integer; var Resize: boolean);
+    procedure onCanResize(Sender: TObject; var NewWidth, NewHeight: integer;
+      var Resize: boolean);
     procedure onShow(Sender: TObject);
     procedure onHide(Sender: TObject);
     procedure onPaint(Sender: TObject);
@@ -86,51 +83,51 @@ type
     procedure onEndDock(Sender, Target: TObject; X, Y: integer);
     procedure onUnDock(Sender: TObject; Client: TControl;
       NewTarget: TWinControl; var Allow: boolean);
-    procedure onDockDrop(Sender: TObject; Source: TDragDockObject; X, Y: integer);
+    procedure onDockDrop(Sender: TObject; Source: TDragDockObject;
+      X, Y: integer);
     procedure onDockOver(Sender: TObject; Source: TDragDockObject;
       X, Y: integer; State: TDragState; var Accept: boolean);
     procedure onDragDrop(Sender, Source: TObject; X, Y: integer);
     procedure onDragOver(Sender, Source: TObject; X, Y: integer;
       State: TDragState; var Accept: boolean);
 
-    procedure onDropFiles(Sender: TObject; Files: TStrings; X: integer; Y: integer);
+    procedure onDropFiles(Sender: TObject; Files: TStrings; X: integer;
+      Y: integer);
 
-    { --- size controls  }
-    procedure onDuringSizeMove(Sender: TObject; dx, dy: integer; State: TSCState);
+    { --- size controls }
+    procedure onDuringSizeMove(Sender: TObject; dx, dy: integer;
+      State: TSCState);
     procedure onStartSizeMove(Sender: TObject; State: TSCState);
     procedure onEndSizeMove(Sender: TObject; State: TSCState);
-    procedure onSetCursor(Sender: TObject; Target: TControl;
-      TargetPt: TPoint; var handled: boolean);
+    procedure onSetCursor(Sender: TObject; Target: TControl; TargetPt: TPoint;
+      var Handled: boolean);
     procedure onSizeMouseDown(Sender: TObject; Target: TControl;
-      TargetPt: TPoint; var handled: boolean);
+      TargetPt: TPoint; var Handled: boolean);
 
-
-    {-- synedit --}
-        {$IFDEF VS_EDITOR}
+    { -- synedit -- }
+{$IFDEF VS_EDITOR}
     procedure onSynClose(Sender: TObject);
-    procedure onMouseCursor(Sender: TObject;
-      const aLineCharPos: TBufferCoord; var aCursor: TCursor);
+    {$IFDEF ADD_SYN_EV}
+    procedure onMouseCursor(Sender: TObject; const aLineCharPos: TBufferCoord;
+      var aCursor: TCursor);
+      {$ENDIF}
 
-
-    procedure onVSInsChange(Sender: TObject;
-      Item: TNxPropertyItem; Value: WideString);
-    procedure onVSInsEdit(Sender: TObject;
-      Item: TNxPropertyItem; Value: WideString;
-      var Accept: boolean);
-    procedure onVSInsToolBarClick(Sender: TObject;
-      Item: TNxPropertyItem; ButtonIndex: integer);
+    procedure onVSInsChange(Sender: TObject; Item: TNxPropertyItem;
+      Value: WideString);
+    procedure onVSInsEdit(Sender: TObject; Item: TNxPropertyItem;
+      Value: WideString; var Accept: boolean);
+    procedure onVSInsToolBarClick(Sender: TObject; Item: TNxPropertyItem;
+      ButtonIndex: integer);
 
     procedure onButtonClick(Sender: TObject);
     procedure onCatButtonClicked(Sender: TObject; const Button: TButtonItem);
 
-        {$ENDIF}
-
-
-        {$IFDEF ADD_CHROMIUM}
+{$ENDIF}
+{$IFDEF ADD_CHROMIUM}
     procedure OnChromiumBeforePopup(Sender: TObject;
       const parentBrowser: ICefBrowser; var popupFeatures: TCefPopupFeatures;
-      var windowInfo: TCefWindowInfo; var url: ustring;
-      var client: ICefBase; out Result: boolean);
+      var windowInfo: TCefWindowInfo; var url: ustring; var Client: ICefBase;
+      out Result: boolean);
 
     procedure OnChromiumBeforeMenu(Sender: TObject; const browser: ICefBrowser;
       const menuInfo: PCefHandlerMenuInfo; out Result: boolean);
@@ -157,11 +154,11 @@ type
       const frame: ICefFrame; httpStatusCode: integer; out Result: boolean);
     procedure OnLoadError(Sender: TObject; const browser: ICefBrowser;
       const frame: ICefFrame; errorCode: TCefHandlerErrorcode;
-      const failedUrl: ustring; var errorText: ustring;
-      out Result: boolean);
+      const failedUrl: ustring; var errorText: ustring; out Result: boolean);
 
     procedure OnStatusMessage(Sender: TObject; const browser: ICefBrowser;
-      const Value: ustring; StatusType: TCefHandlerStatusType; out Result: boolean);
+      const Value: ustring; StatusType: TCefHandlerStatusType;
+      out Result: boolean);
 
     procedure OnAddressChange(Sender: TObject; const browser: ICefBrowser;
       const frame: ICefFrame; const url: ustring);
@@ -176,13 +173,9 @@ type
       const frame: ICefFrame; Width, Height: integer);
 
     procedure OnChromiumLibLoad(Sender: TObject);
-        {$ENDIF}
-
+{$ENDIF}
     procedure SafeOnTimer(Sender: TObject);
   end;
-
-
-
 
 type
   TScriptEventHandler = class;
@@ -195,8 +188,8 @@ type
     TSRMLS_DC: Pointer;
   public
     function GetEvent(const Name: ansistring): TPHPScriptEventHandler;
-    function RunEvent(const Name: ansistring;
-      Args: array of const): TPHPScriptEventHandler;
+    function RunEvent(const Name: ansistring; Args: array of const)
+      : TPHPScriptEventHandler;
     procedure ClearEvent(const Name: ansistring);
     procedure AddEvent(const Name: ansistring; Call: pzval;
       First: boolean = False; aIsThread: boolean = False);
@@ -205,7 +198,6 @@ type
     constructor Create(This, TSRMLS_DC: Pointer);
     destructor Destroy; override;
   end;
-
 
   TScriptEventHandler = class(TObject)
   protected
@@ -260,12 +252,18 @@ type
   public
     Data: ansistring;
     MyData: ansistring;
+    FsSuspended: Boolean;
     procedure Execute; override;
+    {$IFDEF SYSTEM.CLASSES.NOT_EDITED}
+    procedure Suspend; override;
+    procedure Resume; override;
+    {$ENDIF}
     procedure CallSyncFunc;
     constructor Create(Main: TScriptThread);
   end;
 
-  {$M+}
+{$M+}
+
   TScriptThread = class(TComponent)
   private
     FOnExecute: TNotifyEvent;
@@ -297,20 +295,22 @@ type
     constructor Create;
     destructor Destroy; override;
   published
-    property OnExecute: TNotifyEvent read FOnExecute write SetOnExecute;
+    property onExecute: TNotifyEvent read FOnExecute write SetOnExecute;
     property ImportFunctions: boolean read FImportFunctions
       write SetImportFunctions default True;
     property ImportConstants: boolean read FImportConstants
       write SetImportConstants default True;
-    property ImportClasses: boolean
-      read FImportClasses write SetImportClasses default True;
-    property ImportGlobals: boolean
-      read FImportGlobals write SetImportGlobals default True;
+    property ImportClasses: boolean read FImportClasses write SetImportClasses
+      default True;
+    property ImportGlobals: boolean read FImportGlobals write SetImportGlobals
+      default True;
   end;
 
-  {$M-}
-
-
+{$M-}
+function SuspendThread (hThread: THandle): DWORD; StdCall;
+External 'Kernel32.dll' Name 'SuspendThread';
+function ResumeThread (hThread: THandle): DWORD; StdCall;
+External 'Kernel32.dll' Name 'ResumeThread';
 function GetEventController(Obj: TObject; TSRMLS_DC: Pointer): TPHPScriptEvents;
 procedure FreeEventController(Obj: TObject);
 procedure InitializeEventSystem(PHPEngine: TPHPEngine);
@@ -370,24 +370,26 @@ var
 
 procedure zval_copy(var dest: pzval; src: pzval);
 var
-  tmp: pointer;
+  tmp: Pointer;
 begin
   dest._type := src._type;
   case src._type of
-    IS_LONG, IS_BOOL: dest.Value.lval := src.Value.lval;
-    IS_DOUBLE: dest.Value.dval := src.Value.dval;
+    IS_LONG, IS_BOOL:
+      dest.Value.lval := src.Value.lval;
+    IS_DOUBLE:
+      dest.Value.dval := src.Value.dval;
     IS_STRING:
-    begin
-      ZVAL_STRINGL(dest, src.Value.str.val, src.Value.str.len, True);
-    end;
+      begin
+        ZVAL_STRINGL(dest, src.Value.str.val, src.Value.str.len, True);
+      end;
     IS_ARRAY:
-    begin
-      tmp := nil;
-      zend_hash_copy(dest.Value.ht, src.Value.ht, @zend_addref_p,
-        tmp, sizeof(pzval));
-    end;
-    else
-      dest._type := IS_NULL;
+      begin
+        tmp := nil;
+        zend_hash_copy(dest.Value.ht, src.Value.ht, @zend_addref_p, tmp,
+          sizeof(pzval));
+      end;
+  else
+    dest._type := IS_NULL;
   end;
 end;
 
@@ -425,33 +427,32 @@ begin
 end;
 
 (*
-ZEND_API void _zval_ptr_dtor(zval **zval_ptr ZEND_FILE_LINE_DC)
-{
-#if DEBUG_ZEND>=2
-        printf("Reducing refcount for %x (%x):  %d->%d\n", *zval_ptr, zval_ptr, (*zval_ptr)->refcount, (*zval_ptr)->refcount-1);
-#endif
-        (*zval_ptr)->refcount--;
-        if ((*zval_ptr)->refcount==0) {
-                zval_dtor(*zval_ptr);
-                safe_free_zval_ptr_rel(*zval_ptr ZEND_FILE_LINE_RELAY_CC ZEND_FILE_LINE_CC);
-        } else if ((*zval_ptr)->refcount == 1) {
-                if ((*zval_ptr)->type == IS_OBJECT) {
-                        TSRMLS_FETCH();
+  ZEND_API void _zval_ptr_dtor(zval **zval_ptr ZEND_FILE_LINE_DC)
+  {
+  #if DEBUG_ZEND>=2
+  printf("Reducing refcount for %x (%x):  %d->%d\n", *zval_ptr, zval_ptr, (*zval_ptr)->refcount, (*zval_ptr)->refcount-1);
+  #endif
+  (*zval_ptr)->refcount--;
+  if ((*zval_ptr)->refcount==0) {
+  zval_dtor(*zval_ptr);
+  safe_free_zval_ptr_rel(*zval_ptr ZEND_FILE_LINE_RELAY_CC ZEND_FILE_LINE_CC);
+  } else if ((*zval_ptr)->refcount == 1) {
+  if ((*zval_ptr)->type == IS_OBJECT) {
+  TSRMLS_FETCH();
 
-                        if (EG(ze1_compatibility_mode)) {
-                                return;
-                        }
-                }
-                (*zval_ptr)->is_ref = 0;
-        }
-}     *)
-
+  if (EG(ze1_compatibility_mode)) {
+  return;
+  }
+  }
+  (*zval_ptr)->is_ref = 0;
+  }
+  } *)
 
 procedure zval_dtor_func(val: pzval);
 begin
-  //efree(val);
-   {Dec(val^.refcount);
-   if val^.refcount = 0 then }
+  // efree(val);
+  { Dec(val^.refcount);
+    if val^.refcount = 0 then }
   _zval_dtor(val, nil, 0);
 end;
 
@@ -507,8 +508,8 @@ begin
   if H <> nil then
   begin
     M := H.RunEvent(Event, []);
-     {if M <> nil then
-        M.ClearArgs; }
+    { if M <> nil then
+      M.ClearArgs; }
   end;
 end;
 
@@ -528,8 +529,7 @@ begin
     Result := nil;
 end;
 
-
-procedure EventAddNewType(Event: ansistring; Handler: Pointer;
+procedure EventAddNewType(Event: ansistring; handler: Pointer;
   TypeClass: TClass = nil; IsThread: byte = 0);
 begin
   if EventTypes = nil then
@@ -541,7 +541,7 @@ begin
 
   EventClassType.Add(TypeClass);
   EventTypesThread.Add(Pointer(IsThread));
-  EventTypes.AddObject(Event, TObject(Handler));
+  EventTypes.AddObject(Event, TObject(handler));
 end;
 
 // return true/false -
@@ -591,54 +591,53 @@ begin
   MT.Data := Obj;
   MT.Code := Func;
 
-  if (TypInfo.GetPropInfo(Obj, Event) = nil) then
+  if (typinfo.GetPropInfo(Obj, Event) = nil) then
     exit;
 
   Result := True;
   try
-    TypInfo.SetMethodProp(Obj, Event, MT);
+    typinfo.SetMethodProp(Obj, Event, MT);
   except
     Result := False;
   end;
 end;
 
-{-------------- PHP MODULE ----------------------- }
-
+{ -------------- PHP MODULE ----------------------- }
 
 procedure event_args(ht: integer; return_value: pzval; return_value_ptr: pzval;
-  this_ptr: pzval; return_value_used: integer; TSRMLS_DC: pointer); cdecl;
+  this_ptr: pzval; return_value_used: integer; TSRMLS_DC: Pointer); cdecl;
 var
   param: pzval_array;
-  arr: PHashTable;
-  obj: TObject;
+  Arr: PHashTable;
+  Obj: TObject;
   tmp: ^ppzval;
   i: integer;
 begin
   if zend_get_parameters_ex(ht, param) <> SUCCESS then
   begin
     zend_wrong_param_count(TSRMLS_DC);
-    Exit;
+    exit;
   end;
 
-  obj := TObject(Z_LVAL(param[0]^));
-  if obj <> nil then
-    with GetEventController(obj, TSRMLS_DC) do
+  Obj := TObject(Z_LVAL(param[0]^));
+  if Obj <> nil then
+    with GetEventController(Obj, TSRMLS_DC) do
     begin
       if param[2]^^._type = IS_ARRAY then
-        arr := param[2]^^.Value.ht
+        Arr := param[2]^^.Value.ht
       else
-        arr := nil;
+        Arr := nil;
 
-      if arr <> nil then
+      if Arr <> nil then
       begin
-        with GetEventController(obj, TSRMLS_DC).GetEvent(Z_STRVAL(param[1]^)) do
+        with GetEventController(Obj, TSRMLS_DC).GetEvent(Z_STRVAL(param[1]^)) do
         begin
-          SetLength(args, zend_hash_num_elements(arr));
+          SetLength(Args, zend_hash_num_elements(Arr));
           ClearAddArg;
           New(tmp);
-          for i := 0 to High(args) do
+          for i := 0 to High(Args) do
           begin
-            zend_hash_index_find(arr, i, tmp);
+            zend_hash_index_find(Arr, i, tmp);
             AddArg(tmp^^);
           end;
           Dispose(tmp);
@@ -652,70 +651,70 @@ begin
 end;
 
 procedure event_run(ht: integer; return_value: pzval; return_value_ptr: pzval;
-  this_ptr: pzval; return_value_used: integer; TSRMLS_DC: pointer); cdecl;
+  this_ptr: pzval; return_value_used: integer; TSRMLS_DC: Pointer); cdecl;
 var
   param: pzval_array;
-  arr: PHashTable;
-  obj: TObject;
-  args: array of TVarRec;
+  Arr: PHashTable;
+  Obj: TObject;
+  Args: array of TVarRec;
   tmp: ^ppzval;
   i: integer;
 begin
   if zend_get_parameters_ex(ht, param) <> SUCCESS then
   begin
     zend_wrong_param_count(TSRMLS_DC);
-    Exit;
+    exit;
   end;
 
-  obj := TObject(Z_LVAL(param[0]^));
-  if obj <> nil then
-    with GetEventController(obj, TSRMLS_DC) do
+  Obj := TObject(Z_LVAL(param[0]^));
+  if Obj <> nil then
+    with GetEventController(Obj, TSRMLS_DC) do
     begin
       if param[2]^^._type = IS_ARRAY then
-        arr := param[2]^^.Value.ht
+        Arr := param[2]^^.Value.ht
       else
-        arr := nil;
+        Arr := nil;
 
-      if arr <> nil then
+      if Arr <> nil then
       begin
 
-        SetLength(args, zend_hash_num_elements(arr));
+        SetLength(Args, zend_hash_num_elements(Arr));
         New(tmp);
-        for i := 0 to High(args) do
+        for i := 0 to High(Args) do
         begin
-          zend_hash_index_find(arr, i, tmp);
-          args[i] := Z_VARREC(tmp^^);
+          zend_hash_index_find(Arr, i, tmp);
+          Args[i] := Z_VARREC(tmp^^);
         end;
         Dispose(tmp);
 
       end;
 
-      EventRun(obj, Z_STRVAL(param[1]^), args);
+      EventRun(Obj, Z_STRVAL(param[1]^), Args);
     end;
 
   dispose_pzval_array(param);
 end;
 
 procedure event_add(ht: integer; return_value: pzval; return_value_ptr: pzval;
-  this_ptr: pzval; return_value_used: integer; TSRMLS_DC: pointer); cdecl;
+  this_ptr: pzval; return_value_used: integer; TSRMLS_DC: Pointer); cdecl;
 var
   param: pzval_array;
-  obj: TObject;
+  Obj: TObject;
 begin
   if zend_get_parameters_ex(ht, param) <> SUCCESS then
   begin
     zend_wrong_param_count(TSRMLS_DC);
-    Exit;
+    exit;
   end;
 
-  obj := TObject(Z_LVAL(param[0]^));
+  Obj := TObject(Z_LVAL(param[0]^));
 
-  if obj <> nil then
-    with GetEventController(obj, TSRMLS_DC) do
+  if Obj <> nil then
+    with GetEventController(Obj, TSRMLS_DC) do
     begin
       ZVAL_FALSE(return_value);
 
-      if (EventSet(obj, Z_STRVAL(param[1]^))) then
+      if (EventSet(Obj, Z_STRVAL(param[1]^))) then
       begin
         AddEvent(Z_STRVAL(param[1]^), param[2]^);
         ZVAL_TRUE(return_value);
@@ -727,26 +726,26 @@ begin
 end;
 
 procedure event_set(ht: integer; return_value: pzval; return_value_ptr: pzval;
-  this_ptr: pzval; return_value_used: integer; TSRMLS_DC: pointer); cdecl;
+  this_ptr: pzval; return_value_used: integer; TSRMLS_DC: Pointer); cdecl;
 var
   param: pzval_array;
-  obj: TObject;
+  Obj: TObject;
 begin
   if zend_get_parameters_ex(ht, param) <> SUCCESS then
   begin
     zend_wrong_param_count(TSRMLS_DC);
-    Exit;
+    exit;
   end;
-  obj := TObject(Z_LVAL(param[0]^));
-  if obj <> nil then
+  Obj := TObject(Z_LVAL(param[0]^));
+  if Obj <> nil then
 
-    with GetEventController(obj, TSRMLS_DC) do
+    with GetEventController(Obj, TSRMLS_DC) do
     begin
       ZVAL_FALSE(return_value);
 
       if param[2]^^._type = IS_NULL then
       begin
-        if EventExists(obj, Z_STRVAL(param[1]^)) then
+        if EventExists(Obj, Z_STRVAL(param[1]^)) then
         begin
           ClearEvent(Z_STRVAL(param[1]^));
           ZVAL_TRUE(return_value);
@@ -755,7 +754,7 @@ begin
       else
       begin
 
-        if EventSet(obj, Z_STRVAL(param[1]^)) then
+        if EventSet(Obj, Z_STRVAL(param[1]^)) then
         begin
           SetEvent(Z_STRVAL(param[1]^), param[2]^);
           ZVAL_TRUE(return_value);
@@ -767,21 +766,21 @@ begin
 end;
 
 procedure event_get(ht: integer; return_value: pzval; return_value_ptr: pzval;
-  this_ptr: pzval; return_value_used: integer; TSRMLS_DC: pointer); cdecl;
+  this_ptr: pzval; return_value_used: integer; TSRMLS_DC: Pointer); cdecl;
 var
   param: pzval_array;
-  obj: TObject;
+  Obj: TObject;
   r: pzval;
 begin
   if zend_get_parameters_ex(ht, param) <> SUCCESS then
   begin
     zend_wrong_param_count(TSRMLS_DC);
-    Exit;
+    exit;
   end;
-  obj := TObject(Z_LVAL(param[0]^));
-  if obj <> nil then
+  Obj := TObject(Z_LVAL(param[0]^));
+  if Obj <> nil then
 
-    with GetEventController(obj, TSRMLS_DC) do
+    with GetEventController(Obj, TSRMLS_DC) do
     begin
       ZVAL_FALSE(return_value);
 
@@ -795,12 +794,11 @@ begin
   dispose_pzval_array(param);
 end;
 
-
-
 procedure InitializeEventSystem(PHPEngine: TPHPEngine);
 var
   MT: TMethod;
 begin
+
   InitializeCriticalSection(SafeList_CRITICAL);
   InitializeCriticalSection(StartRequest_CRITICAL);
   InitializeCriticalSection(CntThreads_CRITICAL);
@@ -813,36 +811,35 @@ begin
   PHPEngine.AddFunction('event_run', @event_run);
   PHPEngine.AddFunction('event_args', @event_args);
 
-  EventAddNewType('OnClick', @THandlerFuncs.OnClick);
-  EventAddNewType('OnDblClick', @THandlerFuncs.OnDblClick);
+  EventAddNewType('OnClick', @THandlerFuncs.onClick);
+  EventAddNewType('OnDblClick', @THandlerFuncs.onDblClick);
 
-  EventAddNewType('OnKeyDown', @THandlerFuncs.OnKeyDown);
-  EventAddNewType('OnKeyUp', @THandlerFuncs.OnKeyUp);
-  EventAddNewType('OnKeyPress', @THandlerFuncs.OnKeyPress);
+  EventAddNewType('OnKeyDown', @THandlerFuncs.onKeyDown);
+  EventAddNewType('OnKeyUp', @THandlerFuncs.onKeyUp);
+  EventAddNewType('OnKeyPress', @THandlerFuncs.onKeyPress);
 
-  EventAddNewType('OnMouseDown', @THandlerFuncs.OnMouseDown);
-  EventAddNewType('OnMouseUp', @THandlerFuncs.OnMouseUp);
-  EventAddNewType('OnMouseMove', @THandlerFuncs.OnMouseMove);
-  EventAddNewType('OnMouseEnter', @THandlerFuncs.OnMouseEnter);
-  EventAddNewType('OnMouseLeave', @THandlerFuncs.OnMouseLeave);
-  EventAddNewType('OnMouseWheel', @THandlerFuncs.OnMouseWheel);
-  EventAddNewType('OnMouseActivate', @THandlerFuncs.OnMouseActivate);
+  EventAddNewType('OnMouseDown', @THandlerFuncs.onMouseDown);
+  EventAddNewType('OnMouseUp', @THandlerFuncs.onMouseUp);
+  EventAddNewType('OnMouseMove', @THandlerFuncs.onMouseMove);
+  EventAddNewType('OnMouseEnter', @THandlerFuncs.onMouseEnter);
+  EventAddNewType('OnMouseLeave', @THandlerFuncs.onMouseLeave);
+  EventAddNewType('OnMouseWheel', @THandlerFuncs.onMouseWheel);
+  EventAddNewType('OnMouseActivate', @THandlerFuncs.onMouseActivate);
 
-
-  EventAddNewType('OnExecute', @THandlerFuncs.OnExecute, TScriptThread, 1);
-  EventAddNewType('OnCloseQuery', @THandlerFuncs.OnCloseQuery, TForm);
-  EventAddNewType('OnClose', @THandlerFuncs.OnClose, TForm);
-  EventAddNewType('OnResize', @THandlerFuncs.OnResize, TForm);
-  EventAddNewType('OnCanResize', @THandlerFuncs.OnCanResize, TForm);
-  EventAddNewType('OnShow', @THandlerFuncs.OnShow, TForm);
-  EventAddNewType('OnHide', @THandlerFuncs.OnHide, TForm);
-  EventAddNewType('OnPaint', @THandlerFuncs.OnPaint);
+  EventAddNewType('OnExecute', @THandlerFuncs.onExecute, TScriptThread, 1);
+  EventAddNewType('OnCloseQuery', @THandlerFuncs.onCloseQuery, TForm);
+  EventAddNewType('OnClose', @THandlerFuncs.onClose, TForm);
+  EventAddNewType('OnResize', @THandlerFuncs.onResize, TForm);
+  EventAddNewType('OnCanResize', @THandlerFuncs.onCanResize, TForm);
+  EventAddNewType('OnShow', @THandlerFuncs.onShow, TForm);
+  EventAddNewType('OnHide', @THandlerFuncs.onHide, TForm);
+  EventAddNewType('OnPaint', @THandlerFuncs.onPaint);
   EventAddNewType('OnActivate', @THandlerFuncs.onActivate, TForm);
-  EventAddNewType('OnDeactivate', @THandlerFuncs.OnDeactivate, TForm);
+  EventAddNewType('OnDeactivate', @THandlerFuncs.onDeactivate, TForm);
 
-  EventAddNewType('OnScroll', @THandlerFuncs.OnScroll);
-  EventAddNewType('OnPopup', @THandlerFuncs.OnPopup);
-  EventAddNewType('OnMoved', @THandlerFuncs.OnMoved);
+  EventAddNewType('OnScroll', @THandlerFuncs.onScroll);
+  EventAddNewType('OnPopup', @THandlerFuncs.onPopup);
+  EventAddNewType('OnMoved', @THandlerFuncs.onMoved);
   EventAddNewType('onChange', @THandlerFuncs.onChange);
   EventAddNewType('onSelect', @THandlerFuncs.onSelect);
   EventAddNewType('onChanging', @THandlerFuncs.onChanging);
@@ -851,7 +848,6 @@ begin
 
   EventAddNewType('onEdited', @THandlerFuncs.onEdited, TListView);
   EventAddNewType('onEditing', @THandlerFuncs.onEditing, TListView);
-
 
   EventAddNewType('OnStartDock', @THandlerFuncs.onStartDock);
   EventAddNewType('OnEndDock', @THandlerFuncs.onEndDock);
@@ -862,17 +858,18 @@ begin
   EventAddNewType('OnDragOver', @THandlerFuncs.onDragOver);
   EventAddNewType('OnDropFiles', @THandlerFuncs.onDropFiles);
 
-  EventAddNewType('onDuringSizeMove', @THandlerFuncs.onDuringSizeMove, TSizeCtrl);
+  EventAddNewType('onDuringSizeMove', @THandlerFuncs.onDuringSizeMove,
+    TSizeCtrl);
   EventAddNewType('onStartSizeMove', @THandlerFuncs.onStartSizeMove, TSizeCtrl);
   EventAddNewType('onEndSizeMove', @THandlerFuncs.onEndSizeMove, TSizeCtrl);
   EventAddNewType('onSetCursor', @THandlerFuncs.onSetCursor, TSizeCtrl);
   EventAddNewType('onMouseDown', @THandlerFuncs.onSizeMouseDown, TSizeCtrl);
 
-   {$IFDEF VS_EDITOR}
+{$IFDEF VS_EDITOR}
+{$IFDEF ADD_SYN_EV}
   EventAddNewType('OnClose', @THandlerFuncs.onSynClose, TSynCompletionProposal);
   EventAddNewType('OnMouseCursor', @THandlerFuncs.onMouseCursor);
-
-
+{$ENDIF}
   EventAddNewType('OnChange', @THandlerFuncs.onVSInsChange, TNxCustomInspector);
   EventAddNewType('OnEdit', @THandlerFuncs.onVSInsEdit, TNxCustomInspector);
   EventAddNewType('OnToolbarClick', @THandlerFuncs.onVSInsToolBarClick,
@@ -881,18 +878,21 @@ begin
 
   EventAddNewType('OnButtonClicked', @THandlerFuncs.onCatButtonClicked,
     TCategoryButtons);
-   {$ENDIF}
+{$ENDIF}
+{$IFDEF ADD_CHROMIUM}
+  EventAddNewType('OnBeforePopup', @THandlerFuncs.OnChromiumBeforePopup,
+    TChromium);
+  EventAddNewType('OnBeforeBrowse', @THandlerFuncs.onChromiumBeforeBrowse,
+    TChromium);
+  EventAddNewType('OnBeforeMenu', @THandlerFuncs.OnChromiumBeforeMenu,
+    TChromium);
 
-
-   {$IFDEF ADD_CHROMIUM}
-  EventAddNewType('OnBeforePopup', @THandlerFuncs.onChromiumBeforePopup, TChromium);
-  EventAddNewType('OnBeforeBrowse', @THandlerFuncs.onChromiumBeforeBrowse, TChromium);
-  EventAddNewType('OnBeforeMenu', @THandlerFuncs.OnChromiumBeforeMenu, TChromium);
-
-  EventAddNewType('OnAuthCredentials', @THandlerFuncs.OnAuthCredentials, TChromium);
+  EventAddNewType('OnAuthCredentials', @THandlerFuncs.OnAuthCredentials,
+    TChromium);
   EventAddNewType('OnGetDownloadHandler', @THandlerFuncs.OnGetDownloadHandler,
     TChromium);
-  EventAddNewType('OnConsoleMessage', @THandlerFuncs.OnConsoleMessage, TChromium);
+  EventAddNewType('OnConsoleMessage', @THandlerFuncs.OnConsoleMessage,
+    TChromium);
 
   EventAddNewType('OnLoadStart', @THandlerFuncs.OnLoadStart, TChromium);
   EventAddNewType('OnLoadEnd', @THandlerFuncs.OnLoadEnd, TChromium);
@@ -906,12 +906,10 @@ begin
   EventAddNewType('OnContentsSizeChange', @THandlerFuncs.OnContentsSizeChange,
     TChromium);
 
-  EventAddNewType('OnChromiumLibLoad', @THandlerFuncs.OnChromiumLibLoad, TChromium);
-   {$ENDIF}
-
-
-
-  EventAddNewType('OnTimer', @THandlerFuncs.OnTimer);
+  EventAddNewType('OnChromiumLibLoad', @THandlerFuncs.OnChromiumLibLoad,
+    TChromium);
+{$ENDIF}
+  EventAddNewType('OnTimer', @THandlerFuncs.onTimer);
 
   SafeCommand := TList.Create;
   SafeTimer := TTimer.Create(Application);
@@ -1005,7 +1003,6 @@ begin
   inherited;
 end;
 
-
 function TScriptEventHandler.GetCallback(Data: Pointer): Pointer;
 begin
   Result := Data;
@@ -1021,7 +1018,6 @@ begin
   end;
 end;
 
-
 { TPHPScriptEventHandler }
 
 procedure TPHPScriptEventHandler.ClearAddArg;
@@ -1029,23 +1025,22 @@ var
   i: integer;
 begin
   for i := 0 to Length(AddArgs) - 1 do
-    zval_dtor_func(addArgs[i]);
+    zval_dtor_func(AddArgs[i]);
 end;
 
 procedure TPHPScriptEventHandler.ClearArgs;
 var
-  I, Cnt: integer;
+  i, Cnt: integer;
 begin
   Cnt := Length(Args);
   for i := 0 to Cnt - 1 do
   begin
     if Args[i] <> nil then
-      //ZVAL_EMPTY_STRING(Args[i]);
+      // ZVAL_EMPTY_STRING(Args[i]);
       zval_dtor_func(Args[i]);
   end;
   SetLength(Args, 0);
 end;
-
 
 constructor TPHPScriptEventHandler.Create;
 begin
@@ -1055,7 +1050,6 @@ begin
   Self.TSRMLS_DC := TSRMLS_DC;
   SetLength(Args, 0);
 end;
-
 
 procedure TPHPScriptEventHandler.Execute;
 var
@@ -1077,73 +1071,50 @@ begin
         cg := GetCompilerGlobals;
 
         eg.current_module := executor_globals.current_module;
-
-        //if FThread.Main.FImportFunctions then
-        begin
+        //Imports all functions from main ST-TS - php secured thread
           lastFunctions := eg.function_table;
           eg.function_table := executor_globals.function_table;
 
-          {zend_hash_clean( eg.function_table );
-          zend_hash_copy( eg.function_table, executor_globals.function_table,
-                                             @function_add_ref, nil, SizeOf(zend_function));}
-        end;
 
         if FThread.Main.FImportClasses then
         begin
           lastClasses := eg.class_table;
           eg.class_table := executor_globals.class_table;
-
-          {zend_hash_clean( eg.class_table );
-          zend_hash_copy( eg.class_table, executor_globals.class_table, @my_class_add_ref, nil,
-                        SizeOf(Tzend_class_entry) ); }
         end;
 
         if FThread.Main.FImportConstants then
         begin
           lastConstants := eg.zend_constants;
           eg.zend_constants := executor_globals.zend_constants;
-          {zend_hash_clean( eg.zend_constants );
-          zend_hash_copy(eg.zend_constants, executor_globals.zend_constants,
-                         @copy_zend_constant, @tmp, sizeof(TZendConstant)); }
         end;
 
         psv.thread := This;
         psv.RunCode('if (class_exists("TThread")) TThread::__init();');
 
         try
-          call_user_function(
-            cg.function_table,
-            nil,
-            Data,
-            pzval(Return),
-            Length(Args),
-            Args,
-            psv.TSRMLS_D
-            );
+          call_user_function(cg.function_table, nil, Data, pzval(Return),
+            Length(Args), Args, psv.TSRMLS_D);
         except
 
         end;
 
-        //zend_hash_clean( eg.class_table )
         if FImportClasses then
-          //zend_hash_clean( eg.class_table );
           eg.class_table := lastClasses;
 
         if FImportConstants then
           eg.zend_constants := lastConstants;
-          
+
         eg.function_table := lastFunctions;
         try
           psv.ShutdownRequest;
           psv.Free;
-          //Sleep(250);
         except
 
         end;
 
       finally
         try
-          ts_free_thread(); //for zend_timeout to kill timer
+          ts_free_thread(); // for zend_timeout to kill timer
         except
 
         end;
@@ -1155,17 +1126,10 @@ begin
   else
   begin
     try
-      call_user_function(
-        GetExecutorGlobals.function_table,
-        nil,
-        Data,
-        pzval(Return),
-        Length(Args),
-        Args,
-        TSRMLS_DC
-        );
+      call_user_function(GetExecutorGlobals.function_table, nil, Data,
+        pzval(Return), Length(Args), Args, TSRMLS_DC);
     except
-      //ShowMessage(Z_STRVAL(Data));
+      // ShowMessage(Z_STRVAL(Data));
     end;
   end;
 end;
@@ -1180,32 +1144,32 @@ begin
 
   case M._type of
     IS_ARRAY:
-    begin
-      tmp := nil;
-      _array_init(Return, nil, 0);
-      Return._type := IS_ARRAY;
-      zend_hash_init(Return.Value.ht, 0, nil, @_zval_dtor_func, False);
-      zend_hash_copy(Return.Value.ht, M.Value.ht, @zend_addref_p,
-        tmp, sizeof(zval));
-    end;
+      begin
+        tmp := nil;
+        _array_init(Return, nil, 0);
+        Return._type := IS_ARRAY;
+        zend_hash_init(Return.Value.ht, 0, nil, @_zval_dtor_func, False);
+        zend_hash_copy(Return.Value.ht, M.Value.ht, @zend_addref_p, tmp,
+          sizeof(zval));
+      end;
     IS_STRING:
-    begin
-      ZVAL_STRINGL(Return, M.Value.str.val, M.Value.str.len, True);
-    end;
+      begin
+        ZVAL_STRINGL(Return, M.Value.str.val, M.Value.str.len, True);
+      end;
     IS_OBJECT:
-    begin
-      Return._type := IS_OBJECT;
-      Return.Value.obj := M.Value.obj;
-      zend_objects_store_add_ref(M, TSRMLS_DC);
-    end;
+      begin
+        Return._type := IS_OBJECT;
+        Return.Value.Obj := M.Value.Obj;
+        zend_objects_store_add_ref(M, TSRMLS_DC);
+      end;
   end;
   Result := Return;
 end;
 
 function TPHPScriptEventHandler.ParamBool(Index: integer): boolean;
 begin
-  if Index < Length(args) then
-    Result := Z_BVAL(args[index])
+  if Index < Length(Args) then
+    Result := Z_BVAL(Args[index])
   else
     Result := False;
 end;
@@ -1214,7 +1178,7 @@ function TPHPScriptEventHandler.ParamChar(Index: integer): AnsiChar;
 var
   S: ansistring;
 begin
-  S := Z_STRVAL(args[index]);
+  S := Z_STRVAL(Args[index]);
   if Length(S) > 0 then
     Result := S[1]
   else
@@ -1223,25 +1187,23 @@ end;
 
 function TPHPScriptEventHandler.ParamDouble(Index: integer): double;
 begin
-  Result := Z_DVAL(args[index]);
+  Result := Z_DVAL(Args[index]);
 end;
 
 function TPHPScriptEventHandler.ParamInt(Index: integer): integer;
 begin
-  Result := Z_LVAL(args[index]);
+  Result := Z_LVAL(Args[index]);
 end;
 
 function TPHPScriptEventHandler.ParamPtr(Index: integer): Pointer;
 begin
-  Result := Pointer(Z_LVAL(args[index]));
+  Result := Pointer(Z_LVAL(Args[index]));
 end;
 
 function TPHPScriptEventHandler.ParamString(Index: integer): ansistring;
 begin
-  Result := Z_STRVAL(args[index]);
+  Result := Z_STRVAL(Args[index]);
 end;
-
-
 
 procedure TPHPScriptEventHandler.CopyVal(dest: integer; src: pzval);
 begin
@@ -1254,9 +1216,84 @@ begin
   zval_copy(Self.Args[dest], src);
 end;
 
+function CharToAnsiChar(Ch: AnsiChar): AnsiChar; inline;
+begin
+{$IFDEF UNICODE}
+  WideCharToMultiByte( { CP_ACP } DefaultSystemCodePage, 0, @Ch, 1, @Result, 1,
+    nil, nil);
+{$ELSE}
+  Result := Ch;
+{$ENDIF}
+end;
+
+function tvarrectoansistring(const Value: TVarRec): ansistring;
+begin
+  with Value do
+  begin
+    case vtype of
+      vtAnsiString:
+        begin
+          Result := ansistring(VAnsiString);
+        end;
+      vtInteger:
+        begin
+          Result := IntToStr(VInteger);
+        end;
+      vtBoolean:
+        begin
+          Result := booltostr(VBoolean);
+        end;
+      vtChar:
+        begin
+          Result := VChar;
+        end;
+      vtWideChar:
+        begin
+          Result := ansistring(VWideChar);
+        end;
+      vtString:
+        begin
+          Result := VString^;
+        end;
+      vtPChar:
+        begin
+          Result := VPChar;
+        end;
+      vtPWideChar:
+        begin
+          Result := ansistring(unicodestring(VPWideChar));
+        end;
+      vtCurrency:
+        begin
+          Result := currtostr(VCurrency^);
+        end;
+      vtVariant:
+        begin
+          Result := VVariant^;
+        end;
+      vtWideString:
+        begin
+          Result := ansistring(WideString(VWideString));
+        end;
+      vtInt64:
+        begin
+          Result := IntToStr(VInt64^);
+        end;
+      vtUnicodeString:
+        begin
+          Result := ansistring(unicodestring(VUnicodeString));
+        end;
+    else
+      begin
+        Result := '';
+      end;
+    end;
+  end;
+end;
+
 procedure TPHPScriptEventHandler.Run(Args: array of const);
 var
-  Cnt, I: integer;
+  Cnt, i: integer;
   S: ansistring;
 begin
   Cnt := Length(Args);
@@ -1269,7 +1306,6 @@ begin
   end;
   ZVAL_LONG(Self.Args[0], integer(This));
 
-
   for i := 1 to Cnt do
   begin
     if Self.Args[i] = nil then
@@ -1278,42 +1314,61 @@ begin
       INIT_PZVAL(Self.Args[i]);
     end;
 
-    case Args[i - 1].VType of
-      vtInteger: ZVAL_LONG(Self.Args[i], Args[i - 1].VInteger);
-      vtPointer, vtObject: ZVAL_LONG(Self.Args[i], integer(Args[i - 1].VPointer));
-      vtInt64: ZVAL_DOUBLE(Self.Args[i], Args[i - 1].VInt64^);
-      vtExtended: ZVAL_DOUBLE(Self.Args[i], Args[i - 1].VExtended^);
-      vtBoolean: ZVAL_BOOL(Self.Args[i], Args[i - 1].VBoolean);
-      vtString: ZVAL_STRINGL(Self.Args[i], @(Args[i - 1].VString^[0]),
+    case Args[i - 1].vtype of
+      vtInteger:
+        ZVAL_LONG(Self.Args[i], Args[i - 1].VInteger);
+      vtPointer, vtObject:
+        ZVAL_LONG(Self.Args[i], integer(Args[i - 1].VPointer));
+      vtInt64:
+        ZVAL_DOUBLE(Self.Args[i], Args[i - 1].VInt64^);
+      vtExtended:
+        ZVAL_DOUBLE(Self.Args[i], Args[i - 1].VExtended^);
+      vtBoolean:
+        ZVAL_BOOL(Self.Args[i], Args[i - 1].VBoolean);
+      vtString:
+        ZVAL_STRINGL(Self.Args[i], @(Args[i - 1].VString^[0]),
           Length(Args[i - 1].VString^), True);
       vtAnsiString:
-      begin
-        if Args[i - 1].VAnsiString = nil then
-          ZVAL_EMPTY_STRING(Self.Args[i])
-        else
-          ZVAL_STRINGL(Self.Args[i],
-            PAnsiChar(Args[i - 1].VAnsiString),
-            Length(ansistring(Args[i - 1].VAnsiString)),
-            True);
-      end;
+        begin
+          if Args[i - 1].VAnsiString = nil then
+            ZVAL_EMPTY_STRING(Self.Args[i])
+          else
+            ZVAL_STRINGL(Self.Args[i], PAnsiChar(Args[i - 1].VAnsiString),
+              Length(ansistring(Args[i - 1].VAnsiString)), True);
+        end;
       vtWideString:
-      begin
-        if Args[i - 1].VWideString = nil then
-          ZVAL_EMPTY_STRING(Self.Args[i])
-        else
-          ZVAL_STRINGLW(Self.Args[i],
-            PWideChar(Args[i - 1].VWideString),
-            Length(WideString(Args[i - 1].VWideString)),
-            True);
-      end;
-      vtCurrency: ZVAL_DOUBLE(Self.Args[i], double(Args[i - 1].VCurrency^));
+        begin
+          if Args[i - 1].VWideString = nil then
+            ZVAL_EMPTY_STRING(Self.Args[i])
+          else
+            ZVAL_STRINGLW(Self.Args[i], PWideChar(Args[i - 1].VWideString),
+              Length(WideString(Args[i - 1].VWideString)), True);
+        end;
+      vtUnicodeString:
+        begin
+          if Args[i - 1].VUnicodeString = nil then
+            ZVAL_EMPTY_STRING(Self.Args[i])
+          else
+            ZVAL_STRINGLW(Self.Args[i], PWideChar(Args[i - 1].VUnicodeString),
+              Length(ansistring(Args[i - 1].VUnicodeString)), True);
+        end;
+      vtWideChar:
+        begin
+          S := tvarrectoansistring(Args[i - 1]);
+          ZVAL_STRINGL(Self.Args[i], PAnsiChar(S), 1, True);
+        end;
+      vtCurrency:
+        ZVAL_DOUBLE(Self.Args[i], double(Args[i - 1].VCurrency^));
       vtChar:
+        begin
+          S := Args[i - 1].VChar;
+          ZVAL_STRINGL(Self.Args[i], PAnsiChar(S), 1, True);
+        end
+    else
       begin
-        S := Args[i - 1].VChar;
-        ZVAL_STRINGL(Self.Args[i], PAnsiChar(S), 1, True);
-      end
-      else
+        ShowMessage('Реализовать : ' + inttostr(ord(Args[i - 1].vtype)));
         ZVAL_NULL(Self.Args[i]);
+      end;
     end;
   end;
 
@@ -1326,8 +1381,8 @@ begin
   for i := 0 to CallBack.Count - 1 do
   begin
     Execute(CallBack[i]);
-     {if (PZval(Return)^._type <> IS_NULL) and not Z_BVAL(PZval(Return)) then
-       break; }
+    { if (PZval(Return)^._type <> IS_NULL) and not Z_BVAL(PZval(Return)) then
+      break; }
   end;
 
 end;
@@ -1354,7 +1409,7 @@ begin
   begin
     if Args[i] = nil then
       continue;
-    //ZVAL_EMPTY_STRING(Args[i]);
+    // ZVAL_EMPTY_STRING(Args[i]);
     zval_dtor_func(Args[i]);
     Args[i] := nil;
   end;
@@ -1364,18 +1419,18 @@ begin
     M := CallBack[i];
     case M._type of
       IS_ARRAY:
-      begin
-        zend_hash_clean(M.Value.ht);
-        zend_hash_destroy(M.Value.ht);
-      end;
+        begin
+          zend_hash_clean(M.Value.ht);
+          zend_hash_destroy(M.Value.ht);
+        end;
       IS_STRING:
-      begin
-        ZVAL_EMPTY_STRING(M);
-      end;
+        begin
+          ZVAL_EMPTY_STRING(M);
+        end;
       IS_OBJECT:
-      begin
-        zend_objects_store_del_ref(M, TSRMLS_DC);
-      end;
+        begin
+          zend_objects_store_del_ref(M, TSRMLS_DC);
+        end;
     end;
     zval_dtor_func(M);
   end;
@@ -1392,7 +1447,7 @@ begin
   with GetEvent(Name) do
   begin
     if First then
-      AddCallbackFirst(call)
+      AddCallbackFirst(Call)
     else
       AddCallback(Call);
 
@@ -1425,7 +1480,8 @@ begin
   inherited;
 end;
 
-function TPHPScriptEvents.GetEvent(const Name: ansistring): TPHPScriptEventHandler;
+function TPHPScriptEvents.GetEvent(const Name: ansistring)
+  : TPHPScriptEventHandler;
 var
   ID: integer;
 begin
@@ -1439,8 +1495,8 @@ begin
     Result := TPHPScriptEventHandler(Events.Objects[ID]);
 end;
 
-function TPHPScriptEvents.RunEvent(const Name: ansistring;
-  Args: array of const): TPHPScriptEventHandler;
+function TPHPScriptEvents.RunEvent(const Name: ansistring; Args: array of const)
+  : TPHPScriptEventHandler;
 var
   ID: integer;
 begin
@@ -1464,7 +1520,6 @@ begin
     IsThread := LowerCase(Name) = 'onexecute';
   end;
 end;
-
 
 function TPHPScriptEvents.GetFirstEvent(const Name: ansistring): pzval;
 begin
@@ -1572,15 +1627,15 @@ begin
 end;
 
 procedure THandlerFuncs.onSetCursor(Sender: TObject; Target: TControl;
-  TargetPt: TPoint; var handled: boolean);
+  TargetPt: TPoint; var Handled: boolean);
 var
   H: TPHPScriptEventHandler;
 begin
   H := EventRun(Sender, 'onSetCursor', [Target, TargetPt.X, TargetPt.Y,
-    handled], False);
+    Handled], False);
   if H <> nil then
   begin
-    handled := H.ParamBool(4);
+    Handled := H.ParamBool(4);
     H.ClearArgs;
   end;
 end;
@@ -1591,7 +1646,7 @@ begin
 end;
 
 procedure THandlerFuncs.onSizeMouseDown(Sender: TObject; Target: TControl;
-  TargetPt: TPoint; var handled: boolean);
+  TargetPt: TPoint; var Handled: boolean);
 begin
   EventRun(Sender, 'onMouseDown', [Target, TargetPt.X, TargetPt.Y]);
 end;
@@ -1606,7 +1661,8 @@ begin
   EventRun(Sender, 'OnDblClick');
 end;
 
-procedure THandlerFuncs.onKeyDown(Sender: TObject; var Key: word; Shift: TShiftState);
+procedure THandlerFuncs.onKeyDown(Sender: TObject; var Key: word;
+  Shift: TShiftState);
 var
   H: TPHPScriptEventHandler;
 begin
@@ -1618,7 +1674,8 @@ begin
   end;
 end;
 
-procedure THandlerFuncs.onKeyUp(Sender: TObject; var Key: word; Shift: TShiftState);
+procedure THandlerFuncs.onKeyUp(Sender: TObject; var Key: word;
+  Shift: TShiftState);
 var
   H: TPHPScriptEventHandler;
 begin
@@ -1630,14 +1687,14 @@ begin
   end;
 end;
 
-procedure THandlerFuncs.onKeyPress(Sender: TObject; var Key: char);
+procedure THandlerFuncs.onKeyPress(Sender: TObject; var Key: AnsiChar);
 var
   H: TPHPScriptEventHandler;
 begin
   H := EventRun(Sender, 'OnKeyPress', [Key], False);
   if H <> nil then
   begin
-    Key := H.ParamChar(1);
+    Key := AnsiChar(H.ParamChar(1));
     H.ClearArgs;
   end;
 end;
@@ -1658,12 +1715,13 @@ begin
 end;
 
 procedure THandlerFuncs.onMouseActivate(Sender: TObject; Button: TMouseButton;
-  Shift: TShiftState; X, Y, HitTest: integer; var MouseActivate: TMouseActivate);
+  Shift: TShiftState; X, Y, HitTest: integer;
+  var MouseActivate: TMouseActivate);
 var
   H: TPHPScriptEventHandler;
 begin
-  H := EventRun(Sender, 'OnMouseActivate', [integer(Button),
-    Shift2Str(Shift), X, Y, HitTest, integer(MouseActivate)], False);
+  H := EventRun(Sender, 'OnMouseActivate', [integer(Button), Shift2Str(Shift),
+    X, Y, HitTest, integer(MouseActivate)], False);
   if H <> nil then
   begin
     MouseActivate := TMouseActivate(H.ParamInt(6));
@@ -1677,13 +1735,14 @@ begin
   EventRun(Sender, 'OnMouseDown', [integer(Button), Shift2Str(Shift), X, Y]);
 end;
 
-procedure THandlerFuncs.OnMouseUp(Sender: TObject; Button: TMouseButton;
+procedure THandlerFuncs.onMouseUp(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: integer);
 begin
   EventRun(Sender, 'OnMouseUp', [integer(Button), Shift2Str(Shift), X, Y]);
 end;
 
-procedure THandlerFuncs.onMouseMove(Sender: TObject; Shift: TShiftState; X, Y: integer);
+procedure THandlerFuncs.onMouseMove(Sender: TObject; Shift: TShiftState;
+  X, Y: integer);
 begin
   EventRun(Sender, 'OnMouseMove', [Shift2Str(Shift), X, Y]);
 end;
@@ -1713,7 +1772,6 @@ begin
   end;
 end;
 
-
 procedure THandlerFuncs.onMoved(Sender: TObject);
 begin
   EventRun(Sender, 'OnMoved');
@@ -1729,7 +1787,8 @@ begin
   EventRun(Sender, 'OnPopup');
 end;
 
-procedure THandlerFuncs.onStartDock(Sender: TObject; var DragObject: TDragDockObject);
+procedure THandlerFuncs.onStartDock(Sender: TObject;
+  var DragObject: TDragDockObject);
 var
   H: TPHPScriptEventHandler;
 begin
@@ -1748,12 +1807,13 @@ begin
 end;
 
 {$IFDEF VS_EDITOR}
+ {$IFDEF ADD_SYN_EV}
 procedure THandlerFuncs.onMouseCursor(Sender: TObject;
   const aLineCharPos: TBufferCoord; var aCursor: TCursor);
 var
   H: TPHPScriptEventHandler;
 begin
-  H := EventRun(Sender, 'OnMouseCursor', [aLineCharPos.char, aLineCharPos.Line,
+  H := EventRun(Sender, 'OnMouseCursor', [aLineCharPos.Char, aLineCharPos.line,
     aCursor], False);
   if H <> nil then
   begin
@@ -1761,12 +1821,11 @@ begin
     H.ClearArgs;
   end;
 end;
-
+ {$ENDIF}
 procedure THandlerFuncs.onSynClose(Sender: TObject);
 begin
   EventRun(Sender, 'onClose');
 end;
-
 
 procedure THandlerFuncs.onVSInsChange(Sender: TObject; Item: TNxPropertyItem;
   Value: WideString);
@@ -1798,14 +1857,16 @@ begin
   EventRun(Sender, 'onButtonClick');
 end;
 
-procedure THandlerFuncs.onCatButtonClicked(Sender: TObject; const Button: TButtonItem);
+procedure THandlerFuncs.onCatButtonClicked(Sender: TObject;
+  const Button: TButtonItem);
 begin
   EventRun(Sender, 'onButtonClicked', [Button]);
 end;
 
 {$ENDIF}
 
-procedure THandlerFuncs.onEdited(Sender: TObject; Item: TListItem; var S: string);
+procedure THandlerFuncs.onEdited(Sender: TObject; Item: TListItem;
+  var S: string);
 var
   H: TPHPScriptEventHandler;
 begin
@@ -1828,7 +1889,6 @@ procedure THandlerFuncs.onEndDock(Sender, Target: TObject; X, Y: integer);
 begin
   EventRun(Sender, 'OnEndDock', [Target, X, Y]);
 end;
-
 
 procedure THandlerFuncs.onEndSizeMove(Sender: TObject; State: TSCState);
 begin
@@ -1859,7 +1919,8 @@ procedure THandlerFuncs.onDockOver(Sender: TObject; Source: TDragDockObject;
 var
   H: TPHPScriptEventHandler;
 begin
-  H := EventRun(Sender, 'OnDockOver', [Source, X, Y, integer(State), Accept], False);
+  H := EventRun(Sender, 'OnDockOver', [Source, X, Y, integer(State),
+    Accept], False);
   if H <> nil then
   begin
     Accept := H.ParamBool(5);
@@ -1877,7 +1938,8 @@ procedure THandlerFuncs.onDragOver(Sender, Source: TObject; X, Y: integer;
 var
   H: TPHPScriptEventHandler;
 begin
-  H := EventRun(Sender, 'OnDragOver', [Source, X, Y, integer(State), Accept], False);
+  H := EventRun(Sender, 'OnDragOver', [Source, X, Y, integer(State),
+    Accept], False);
   if H <> nil then
   begin
     Accept := H.ParamBool(5);
@@ -1888,8 +1950,8 @@ end;
 procedure THandlerFuncs.onDropFiles(Sender: TObject; Files: TStrings;
   X: integer; Y: integer);
 begin
-  EventRun(Self, 'OnDropFiles',
-    [StringReplace(TrimRight(Files.Text), #13#10, #10, [rfReplaceAll]), X, Y]);
+  EventRun(Self, 'OnDropFiles', [StringReplace(TrimRight(Files.Text), #13#10,
+    #10, [rfReplaceAll]), X, Y]);
 end;
 
 procedure THandlerFuncs.onDuringSizeMove(Sender: TObject; dx, dy: integer;
@@ -1898,12 +1960,12 @@ begin
   EventRun(Sender, 'OnEndDock', [dx, dy, integer(State)]);
 end;
 
-
 {$IFDEF ADD_CHROMIUM}
+
 procedure THandlerFuncs.OnChromiumBeforePopup(Sender: TObject;
   const parentBrowser: ICefBrowser; var popupFeatures: TCefPopupFeatures;
-  var windowInfo: TCefWindowInfo; var url: ustring;
-  var client: ICefBase; out Result: boolean);
+  var windowInfo: TCefWindowInfo; var url: ustring; var Client: ICefBase;
+  out Result: boolean);
 var
   H: TPHPScriptEventHandler;
 begin
@@ -1924,7 +1986,7 @@ var
 begin
   Result := True;
 
-  H := EventRun(Sender, 'OnBeforeMenu', [menuInfo.x, menuInfo.y,
+  H := EventRun(Sender, 'OnBeforeMenu', [menuInfo.X, menuInfo.Y,
     // CefStringClearAndGet вот в ней херня.!!!
     CefString(@menuInfo.linkUrl), CefString(@menuInfo.imageUrl),
     CefString(@menuInfo.pageUrl), CefString(@menuInfo.frameUrl),
@@ -1938,13 +2000,13 @@ end;
 
 procedure THandlerFuncs.onChromiumBeforeBrowse(Sender: TCustomChromium;
   const browser: ICefBrowser; const frame: ICefFrame;
-  const request: ICefRequest; navType: TCefHandlerNavtype;
-  isRedirect: boolean; out Result: boolean);
+  const request: ICefRequest; navType: TCefHandlerNavtype; isRedirect: boolean;
+  out Result: boolean);
 var
   H: TPHPScriptEventHandler;
 begin
   Result := True;
-  H := EventRun(Sender, 'OnBeforeBrowse', [request.Url, request.Method,
+  H := EventRun(Sender, 'OnBeforeBrowse', [request.url, request.Method,
     integer(navType), isRedirect, Result], False);
   if H <> nil then
   begin
@@ -1952,8 +2014,6 @@ begin
     H.ClearArgs;
   end;
 end;
-
-
 
 procedure THandlerFuncs.OnAuthCredentials(Sender: TObject;
   const browser: ICefBrowser; isProxy: boolean; Port: integer;
@@ -1963,8 +2023,8 @@ var
   H: TPHPScriptEventHandler;
 begin
   Result := True;
-  H := EventRun(Sender, 'OnAuthCredentials', [isProxy, Port, host,
-    realm, scheme, username, password, Result], False);
+  H := EventRun(Sender, 'OnAuthCredentials', [isProxy, Port, host, realm,
+    scheme, username, password, Result], False);
   if H <> nil then
   begin
     Result := not H.ParamBool(8);
@@ -1974,15 +2034,14 @@ end;
 
 procedure THandlerFuncs.OnGetDownloadHandler(Sender: TObject;
   const browser: ICefBrowser; const mimeType, fileName: ustring;
-  contentLength: int64; var handler: ICefDownloadHandler;
-  out Result: boolean);
+  contentLength: int64; var handler: ICefDownloadHandler; out Result: boolean);
 var
   H: TPHPScriptEventHandler;
 begin
   Result := True;
 
   H := EventRun(Sender, 'OnGetDownloadHandler',
-    [browser.MainFrame.Url, mimeType, fileName, contentLength, Result], False);
+    [browser.MainFrame.url, mimeType, fileName, contentLength, Result], False);
   if H <> nil then
   begin
     Result := not H.ParamBool(5);
@@ -1990,16 +2049,16 @@ begin
   end;
 end;
 
-
 procedure THandlerFuncs.OnConsoleMessage(Sender: TObject;
-  const browser: ICefBrowser; message, Source: ustring;
-  line: integer; out Result: boolean);
+  const browser: ICefBrowser; message, Source: ustring; line: integer;
+  out Result: boolean);
 var
   H: TPHPScriptEventHandler;
 begin
   Result := True;
 
-  H := EventRun(Sender, 'OnConsoleMessage', [message, Source, line, Result], False);
+  H := EventRun(Sender, 'OnConsoleMessage', [message, Source, line,
+    Result], False);
   if H <> nil then
   begin
     Result := not H.ParamBool(4);
@@ -2030,8 +2089,7 @@ end;
 
 procedure THandlerFuncs.OnLoadError(Sender: TObject; const browser: ICefBrowser;
   const frame: ICefFrame; errorCode: TCefHandlerErrorcode;
-  const failedUrl: ustring; var errorText: ustring;
-  out Result: boolean);
+  const failedUrl: ustring; var errorText: ustring; out Result: boolean);
 var
   H: TPHPScriptEventHandler;
 begin
@@ -2048,14 +2106,15 @@ begin
 end;
 
 procedure THandlerFuncs.OnStatusMessage(Sender: TObject;
-  const browser: ICefBrowser; const Value: ustring; StatusType: TCefHandlerStatusType;
-  out Result: boolean);
+  const browser: ICefBrowser; const Value: ustring;
+  StatusType: TCefHandlerStatusType; out Result: boolean);
 var
   H: TPHPScriptEventHandler;
 begin
   Result := True;
 
-  H := EventRun(Sender, 'OnStatusMessage', [Value, integer(StatusType), Result], False);
+  H := EventRun(Sender, 'OnStatusMessage', [Value, integer(StatusType),
+    Result], False);
   if H <> nil then
   begin
     Result := not H.ParamBool(3);
@@ -2069,8 +2128,8 @@ begin
   EventRun(Sender, 'OnAddressChange', [url]);
 end;
 
-procedure THandlerFuncs.OnTitleChange(Sender: TObject; const browser: ICefBrowser;
-  const title: ustring; out Result: boolean);
+procedure THandlerFuncs.OnTitleChange(Sender: TObject;
+  const browser: ICefBrowser; const title: ustring; out Result: boolean);
 var
   H: TPHPScriptEventHandler;
 begin
@@ -2175,15 +2234,15 @@ begin
   FImportConstants := True;
   FImportClasses := True;
   FImportGlobals := False;
-
+  Self.FThread.FsSuspended      := True;
   addDATA := TStringHashTable.Create(30);
 end;
 
 destructor TScriptThread.Destroy;
 begin
-  //  FThread.Suspend;
+  // FThread.Suspend;
   FThread.FreeOnTerminate := True;
-  addData.Free;
+  addDATA.Free;
   // FThread.Terminate;
   inherited;
 end;
@@ -2194,15 +2253,19 @@ begin
   if Assigned(FOnExecute) then
     FOnExecute(Self);
 
-
   EnterCriticalSection(CntThreads_CRITICAL);
   Dec(CntThreads);
   LeaveCriticalSection(CntThreads_CRITICAL);
 end;
 
 procedure TScriptThread.Resume;
+var
+  SuspendCount: Integer;
 begin
-  FThread.Resume;
+  SuspendCount := ResumeThread(Self.FThread.Handle);
+  Self.FThread.CheckThreadError(SuspendCount >= 0);
+  if SuspendCount = 1 then
+    Self.FThread.FsSuspended := False;
 end;
 
 class procedure TScriptThread.SetBeforeCode(const Code: ansistring);
@@ -2236,8 +2299,17 @@ begin
 end;
 
 procedure TScriptThread.Suspend;
+var
+  OldSuspend: Boolean;
 begin
-  Self.FThread.Suspend;
+  OldSuspend := Self.FThread.FsSuspended;
+  try
+    Self.FThread.FsSuspended := True;
+    Self.FThread.CheckThreadError(Integer(SuspendThread(Self.FThread.Handle)) >= 0);
+  except
+    Self.FThread.FsSuspended := OldSuspend;
+    raise;
+  End;
 end;
 
 procedure TScriptThread.Sync(Func, MyData: ansistring);
@@ -2245,7 +2317,7 @@ begin
   FThread.Data := Func;
   FThread.MyData := MyData;
   try
-    //Sleep(1);
+    // Sleep(1);
     FThread.Synchronize(FThread.CallSyncFunc);
   except
 
@@ -2265,24 +2337,17 @@ begin
   ZVAL_STRINGL(Func, PAnsiChar(Data), Length(Data), True);
 
   SetLength(Args, 2);
-  args[0] := MAKE_STD_ZVAL;
-  ZVAL_LONG(args[0], integer(Self.Main));
+  Args[0] := MAKE_STD_ZVAL;
+  ZVAL_LONG(Args[0], integer(Self.Main));
 
   Args[1] := MAKE_STD_ZVAL;
-  ZVAL_STRINGL(args[1], PAnsiChar(MyData), Length(MyData), True);
+  ZVAL_STRINGL(Args[1], PAnsiChar(MyData), Length(MyData), True);
 
-  call_user_function(
-    GetExecutorGlobals.function_table,
-    nil,
-    Func,
-    Return,
-    2,
-    args,
-    getPsvPHP().TSRMLS_D
-    );
+  call_user_function(GetExecutorGlobals.function_table, nil, Func, Return, 2,
+    Args, getPsvPHP().TSRMLS_D);
 
-  zval_dtor_func(args[1]);
-  zval_dtor_func(args[0]);
+  zval_dtor_func(Args[1]);
+  zval_dtor_func(Args[0]);
   zval_dtor_func(Return);
   zval_dtor_func(Func);
 end;
@@ -2298,13 +2363,38 @@ begin
   inherited;
   Main.Execute;
 end;
+{$IFDEF SYSTEM.CLASSES.NOT_EDITED}
+procedure TScriptThreadHelper.Suspend;
+var
+  OldSuspend: Boolean;
+begin
+  OldSuspend := Suspended;
+  try
+    Suspended := True;
+    CheckThreadError(Integer(SuspendThread(Handle)) >= 0);
+    except
+    Suspended := OldSuspend;
+    raise;
+  end;
+end;
 
+procedure TScriptThreadHelper.Resume;
+var
+  SuspendCount: Integer;
+begin
+  SuspendCount := ResumeThread(Handle);
+  CheckThreadError(SuspendCount >= 0);
+  if SuspendCount = 1 then
+    Suspended := False;
+
+end;
+{$ENDIF}
 { TScriptSafeCommand_ThreadDestroy }
 
 procedure TScriptSafeCommand_ThreadDestroy.Execute;
 begin
   FreeEventController(TObject(Data));
-  //TScriptThread( Data ).Free;
+  // TScriptThread( Data ).Free;
 end;
 
 end.

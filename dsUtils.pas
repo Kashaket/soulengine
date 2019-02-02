@@ -8,7 +8,7 @@ interface
 
 uses
   Classes, SysUtils, Dialogs, Controls, Forms, ShellAPI, ClipBrd, Windows, ShlObj,
-  Graphics, GifImage, Jpeg, PNGImage, exemod,
+  Graphics, Vcl.Imaging.pngimage, Vcl.Imaging.GIFImg, Jpeg, exemod,
 
   {$ifdef fpc}
   LCLType,
@@ -56,7 +56,7 @@ end;
 function GetFilesFromClipboard(): String;
 var
   f: THandle;
-  Buffer: array [0..1024] of Char;
+  Buffer: array [0..1024] of char;
   i, numFiles: Integer;
 begin
    Clipboard.Open;
@@ -139,7 +139,7 @@ procedure clipboard_assign;
   var p: pzval_array;
   format: String;
   M: TMemoryStream;
-  PNG: TPNGObject;
+  PNG: TPNGImage;
   JPG: TJPEGImage;
   GIF: TGIFImage;
   Pic: TPicture;
@@ -158,7 +158,7 @@ begin
     String2Stream( Z_STRVAL(p[0]^), M );
   if ( format = 'png' )  then
   begin
-       PNG := TPNGObject.Create;
+       PNG := TPNGImage.Create;
        with PNG do
        begin
            LoadFromStream( M );
