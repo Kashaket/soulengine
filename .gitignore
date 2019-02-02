@@ -1,7 +1,5 @@
-*.dcu
 *.identcache
 *.phb
-*.dproj
 __history/
 *.ppu
 *.~dpr
