@@ -1,6 +1,6 @@
-library php_osinfo;
+﻿library php_osinfo;
 
-{$I PHP.INC}
+//{$I PHP.INC}
 //{$smartlink on}
 
 uses

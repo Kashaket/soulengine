@@ -157,7 +157,7 @@ begin
     if TSRMLS_DC = nil then
       TSRMLS_DC := ts_resource(0);
 
-  zend_register_long_constant(PChar(Name),length(name)+1, value, CONST_PERSISTENT or CONST_CS, 0, TSRMLS_DC);
+  zend_register_long_constant(PAnsiChar(Name),length(name)+1, value, CONST_PERSISTENT or CONST_CS, 0, TSRMLS_DC);
 
 end;
 
