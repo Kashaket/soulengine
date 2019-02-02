@@ -29,7 +29,7 @@ uses
   windows,
  {$ENDIF}
 
- ZendTypes, PHPTypes, zendAPI,
+ ZendTypes, PHPTypes, zendAPI, vcl.dialogs,
 
 
  {$IFDEF VERSION6}Variants{$ENDIF}{WinSock};
@@ -85,10 +85,14 @@ var
   php_ob_init_conflict: function (handler_new : PAnsiChar; handler_set : PAnsiChar; TSRMLS_DC : pointer) : integer; cdecl;
 
 
+//php_output.h
+
+
+
 function GetSymbolsTable : PHashTable;
 function GetTrackHash(Name : AnsiString) : PHashTable;
 function GetSAPIGlobals : Psapi_globals_struct;
-procedure phperror(Error : PAnsiChar);
+//procedure phperror(Error : PAnsiChar);
 
 var
 
@@ -130,6 +134,9 @@ php_info_html_esc: function (str : PAnsiChar; TSRMLS_DC : pointer) : PAnsiChar; 
 
 php_print_info_htmlhead: procedure (TSRMLS_D : pointer); cdecl;
 
+
+
+
 php_log_err: procedure (err_msg : PAnsiChar; TSRMLS_DC : pointer); cdecl;
 
 php_html_puts: procedure (str : PAnsiChar; str_len : integer; TSRMLS_DC : pointer); cdecl;
@@ -155,7 +162,7 @@ php_ini_double: function(name : PAnsiChar; name_length : uint; orig : Integer) :
 php_ini_string: function(name : PAnsiChar; name_length : uint; orig : Integer) : PAnsiChar; cdecl;
 
 function  zval2variant(value : zval) : variant;
-procedure variant2zval(value : variant; z : pzval);
+procedure variant2zval(value : variant; var z : pzval);
 
 
 var
@@ -211,6 +218,42 @@ procedure CheckPHPErrors;
 
 function FloatToValue(Value: Extended): AnsiString;
 function ValueToFloat(Value : AnsiString) : extended;
+
+
+var
+php_print_info: procedure (flag : Integer; TSRMLS_DC : pointer); cdecl;
+
+
+php_info_print_table_colspan_header: procedure (num_cols : Integer;
+  header : PAnsiChar); cdecl;
+
+php_info_print_box_start: procedure (bg : Integer); cdecl;
+
+php_info_print_box_end: procedure; cdecl;
+
+php_info_print_hr: procedure; cdecl;
+
+php_info_print_table_start: procedure; cdecl;
+php_info_print_table_row1: procedure(n1 : integer; c1: PAnsiChar); cdecl;
+php_info_print_table_row2: procedure (n2 : integer; c1, c2 : PAnsiChar); cdecl;
+php_info_print_table_row3: procedure (n3 : integer; c1, c2, c3 : PAnsiChar); cdecl;
+php_info_print_table_row4: procedure (n4 : integer; c1, c2, c3, c4 : PAnsiChar); cdecl;
+php_info_print_table_row : procedure (n2 : integer; c1, c2 : pAnsiChar); cdecl;
+
+php_info_print_table_end: procedure (); cdecl;
+
+php_body_write: function (const str : PAnsiChar; str_length: uint; TSRMLS_DC : pointer) : integer; cdecl;
+php_header_write: function (const str : PAnsiChar; str_length: uint; TSRMLS_DC : pointer) : integer; cdecl;
+
+
+php_header: function() : integer; cdecl;
+php_setcookie: function (name : PAnsiChar; name_len : integer; value : PAnsiChar; value_len: integer;
+    expires : longint; path : PAnsiChar; path_len : integer; domain : PAnsiChar; domain_len : integer;
+    secure : integer; TSRMLS_DC : pointer) : integer; cdecl;
+
+
+
+
 
 type
   TPHPFileInfo = record
@@ -336,17 +379,64 @@ begin
   end;
 end;
 
+function GetStringOf(const V: TVarData): string;
+  begin
+    case V.VType of
+      varEmpty, varNull:
+        Result := '';
+      varSmallInt:
+        Result := IntToStr(V.VSmallInt);
+      varInteger:
+        Result := IntToStr(V.VInteger);
+      varSingle:
+        Result := FloatToStr(V.VSingle);
+      varDouble:
+        Result := FloatToStr(V.VDouble);
+      varCurrency:
+        Result := CurrToStr(V.VCurrency);
+      varDate:
+        Result := DateTimeToStr(V.VDate);
+      varOleStr:
+        Result := V.VOleStr;
+      varBoolean:
+        Result := BoolToStr(V.VBoolean, true);
+      varByte:
+        Result := IntToStr(V.VByte);
+      varWord:
+        Result := IntToStr(V.VWord);
+      varShortInt:
+        Result := IntToStr(V.VShortInt);
+      varLongWord:
+        Result := IntToStr(V.VLongWord);
+      varInt64:
+        Result := IntToStr(V.VInt64);
+      varString:
+        Result := string(V.VString);
+      {$IFDEF SUPPORTS_UNICODE_STRING}
+      varUString:
+        Result := string(V.VUString);
+      {$ENDIF SUPPORTS_UNICODE_STRING}
+      {varArray,
+      varDispatch,
+      varError,
+      varUnknown,
+      varAny,
+      varByRef:}
+    end;
+end;
 
-procedure variant2zval(value : variant; z : pzval);
+
+procedure variant2zval(value : variant;var z : pzval);
 var
  W : WideString;
+ S: String;
 begin
   if VarIsEmpty(value) then
    begin
      ZVAL_NULL(z);
      Exit;
    end;
-
+    //   MessageBoxA(0, PAnsiChar(AnsiString( TVarData(Value).VType.ToString)), '', 0 ) ;
    case TVarData(Value).VType of
      varString    : //Peter Enz
          begin
@@ -358,6 +448,13 @@ begin
                  begin
                    ZVAL_STRING(z, '', true);
                  end;
+         end;
+
+     varUString    : //Peter Enz
+         begin
+            S := string(TVarData(Value).VUString);
+
+             ZVAL_STRING(z, PAnsiChar(AnsiString(S)), true);
          end;
 
      varOleStr    : //Peter Enz
@@ -380,6 +477,7 @@ begin
      varError    : ZVAL_LONG(z, TVarData(Value).VError);
      varByte     : ZVAL_LONG(z, TVarData(Value).VByte);
      varDate     : ZVAL_DOUBLE(z, TVarData(Value).VDate);
+     varArray    : ZVAL_ARRAY(z,  Value);
      else
        ZVAL_NULL(Z);
    end;
@@ -429,10 +527,11 @@ begin
 end;
 
 
-procedure phperror(Error : PAnsiChar);
+{procedure phperror(Error : PAnsiChar);
 begin
   zend_error(E_PARSE, Error);
-end;
+end;    }
+
 
 
 function LoadPHP(const DllFileName: AnsiString = PHPWin) : boolean;
@@ -481,9 +580,91 @@ begin
 
   php_register_variable_ex         := GetProcAddress(PHPLib, 'php_register_variable_ex');
 
+  php_output_startup               := GetProcAddress(PHPLib, 'php_output_startup');
+
+  php_output_activate              := GetProcAddress(PHPLib, 'php_output_activate');
+
+  php_output_set_status            := GetProcAddress(PHPLib, 'php_output_set_status');
+
+  php_output_register_constants    := GetProcAddress(PHPLib, 'php_output_register_constants');
+
+  php_start_ob_buffer              := GetProcAddress(PHPLib, 'php_start_ob_buffer');
+
+  php_start_ob_buffer_named        := GetProcAddress(PHPLib, 'php_start_ob_buffer_named');
+
+  php_end_ob_buffer                := GetProcAddress(PHPLib, 'php_end_ob_buffer');
+
+  php_end_ob_buffers               := GetProcAddress(PHPLib, 'php_end_ob_buffers');
+
+  php_ob_get_buffer                := GetProcAddress(PHPLib, 'php_ob_get_buffer');
+
+  php_ob_get_length                := GetProcAddress(PHPLib, 'php_ob_get_length');
+
+  php_start_implicit_flush         := GetProcAddress(PHPLib, 'php_start_implicit_flush');
+
+  php_end_implicit_flush           := GetProcAddress(PHPLib, 'php_end_implicit_flush');
+
+  php_get_output_start_filename    := GetProcAddress(PHPLib, 'php_get_output_start_filename');
+
+  php_get_output_start_lineno      := GetProcAddress(PHPLib, 'php_get_output_start_lineno');
+
+  php_ob_handler_used              := GetProcAddress(PHPLib, 'php_ob_handler_used');
+
+  php_ob_init_conflict             := GetProcAddress(PHPLib, 'php_ob_init_conflict');
+
+  php_strtoupper                   := GetProcAddress(PHPLib, 'php_strtoupper');
+
+  php_strtolower                   := GetProcAddress(PHPLib, 'php_strtolower');
+
+  php_strtr                        := GetProcAddress(PHPLib, 'php_strtr');
+
   php_stripcslashes                := GetProcAddress(PHPLib, 'php_stripcslashes');
 
+  php_basename                     := GetProcAddress(PHPLib, 'php_basename');
+
+  php_dirname                      := GetProcAddress(PHPLib, 'php_dirname');
+
+  php_stristr                      := GetProcAddress(PHPLib, 'php_stristr');
+
+  php_str_to_str                   := GetProcAddress(PHPLib, 'php_str_to_str');
+
   php_strip_tags                   := GetProcAddress(PHPLib, 'php_strip_tags');
+
+  php_implode                      := GetProcAddress(PHPLib, 'php_implode');
+
+  php_explode                      := GetProcAddress(PHPLib, 'php_explode');
+
+  php_info_html_esc                := GetProcAddress(PHPLib, 'php_info_html_esc');
+
+  php_print_info_htmlhead          := GetProcAddress(PHPLib, 'php_print_info_htmlhead');
+
+  php_print_info                   := GetProcAddress(PHPLib, 'php_print_info');
+
+  php_info_print_table_colspan_header := GetProcAddress(PHPLib, 'php_info_print_table_colspan_header');
+
+  php_info_print_box_start            := GetProcAddress(PHPLib, 'php_info_print_box_start');
+
+  php_info_print_box_end              := GetProcAddress(PHPLib, 'php_info_print_box_end');
+
+  php_info_print_hr                   := GetProcAddress(PHPLib, 'php_info_print_hr');
+
+  php_info_print_table_start          := GetProcAddress(PHPLib, 'php_info_print_table_start');
+
+  php_info_print_table_row1           := GetProcAddress(PHPLib, 'php_info_print_table_row');
+
+  php_info_print_table_row2           := GetProcAddress(PHPLib, 'php_info_print_table_row');
+
+  php_info_print_table_row3           := GetProcAddress(PHPLib, 'php_info_print_table_row');
+
+  php_info_print_table_row4           := GetProcAddress(PHPLib, 'php_info_print_table_row');
+
+  php_info_print_table_row            := GetProcAddress(PHPLib, 'php_info_print_table_row');
+
+  php_info_print_table_end            := GetProcAddress(PHPLib, 'php_info_print_table_end');
+
+  php_body_write                      := GetProcAddress(PHPLib, 'php_body_write');
+
+  php_header_write                    := GetProcAddress(PHPLib, 'php_header_write');
 
   php_log_err                         := GetProcAddress(PHPLib, 'php_log_err');
 
@@ -498,6 +679,16 @@ begin
   php_set_sock_blocking               := GetProcAddress(PHPLib, 'php_set_sock_blocking');
 
   php_copy_file                       := GetProcAddress(PHPLib, 'php_copy_file');
+
+  {$IFDEF PHP4}
+  php_flock                           := GetProcAddress(PHPLib, 'php_flock');
+  php_lookup_hostname                 := GetProcAddress(PHPLib, 'php_lookup_hostname');
+  {$ENDIF}
+
+
+  php_header                          := GetProcAddress(PHPLib, 'php_header');
+
+  php_setcookie                       := GetProcAddress(PHPLib, 'php_setcookie');
 
   php_escape_html_entities            := GetProcAddress(PHPLib, 'php_escape_html_entities');
 
@@ -520,7 +711,7 @@ begin
   php_raw_url_encode                  := GetProcAddress(PHPLib, 'php_raw_url_encode');
 
   {$IFDEF PHP510}
-  php_register_extensions             := GetProcAddress(PHPLib, 'php_register_extensions');
+  php_register_extensions              := GetProcAddress(PHPLib, 'php_register_extensions');
   {$ELSE}
   php_startup_extensions              := GetProcAddress(PHPLib, 'php_startup_extensions');
   {$ENDIF}
@@ -532,6 +723,8 @@ begin
   php_error_docref1                   := GetProcAddress(PHPLib, 'php_error_docref1');
 
   php_error_docref2                   := GetProcAddress(PHPLib, 'php_error_docref2');
+
+
 
   {$IFNDEF QUIET_LOAD}
   CheckPHPErrors;
@@ -651,12 +844,12 @@ var
   c: AnsiChar;
   {$ENDIF}
 begin
-  c := DecimalSeparator;
+  c := FormatSettings.DecimalSeparator;
   try
-   DecimalSeparator := '.';
+   FormatSettings.DecimalSeparator := '.';
    Result := SysUtils.FormatFloat('0.####', Value);
   finally
-    DecimalSeparator := c;
+    FormatSettings.DecimalSeparator := c;
   end;
 end;
 
@@ -668,12 +861,12 @@ var
   c : AnsiChar;
   {$ENDIF}
 begin
-  c := DecimalSeparator;
+  c := FormatSettings.DecimalSeparator;
   try
-   DecimalSeparator := '.';
+   FormatSettings.DecimalSeparator := '.';
    Result := SysUtils.StrToFloat(Value);
   finally
-   DecimalSeparator := c;
+   FormatSettings.DecimalSeparator := c;
   end;
 end;
 

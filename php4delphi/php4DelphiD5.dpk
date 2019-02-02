@@ -1,8 +1,9 @@
 package php4DelphiD5;
 
-{$R *.RES}
+{$R *.res}
 {$R 'php4delphi.dcr'}
-{$ALIGN ON}
+{$IFDEF IMPLICITBUILDING This IFDEF should not be used by users}
+{$ALIGN 8}
 {$ASSERTIONS ON}
 {$BOOLEVAL OFF}
 {$DEBUGINFO ON}
@@ -12,23 +13,25 @@ package php4DelphiD5;
 {$LOCALSYMBOLS ON}
 {$LONGSTRINGS ON}
 {$OPENSTRINGS ON}
-{$OPTIMIZATION ON}
+{$OPTIMIZATION OFF}
 {$OVERFLOWCHECKS OFF}
 {$RANGECHECKS OFF}
 {$REFERENCEINFO ON}
 {$SAFEDIVIDE OFF}
-{$STACKFRAMES OFF}
+{$STACKFRAMES ON}
 {$TYPEDADDRESS OFF}
 {$VARSTRINGCHECKS ON}
 {$WRITEABLECONST ON}
 {$MINENUMSIZE 1}
 {$IMAGEBASE $400000}
+{$DEFINE DEBUG}
+{$ENDIF IMPLICITBUILDING}
 {$DESCRIPTION 'php4Delphi (Design)'}
 {$DESIGNONLY}
 {$IMPLICITBUILD OFF}
 
 requires
-  vcl50,
+  vcl,
   php4DelphiR5,
   dsnide50;
 
@@ -39,4 +42,4 @@ contains
   phpWeb in 'phpWeb.pas',
   php4DelphiWeb in 'php4DelphiWeb.pas';
 
-end.
+END.

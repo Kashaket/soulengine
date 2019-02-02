@@ -41,20 +41,21 @@ interface
 
 
 uses
-  Windows, Messages, SysUtils, Classes, Graphics,  WinSock,
+  Windows, Messages, SysUtils, Classes, VCL.Graphics,  WinSock,
   PHPCommon,
   ZendTypes,
   PHPTypes,
   zendAPI,
   PHPAPI,
   DelphiFunctions,
-  PHPCustomLibrary;
+  PHPCustomLibrary, vcl.dialogs, strUtils, varUtils,
+  System.UITypes;
 
 type
 
   TPHPLogMessage = procedure (Sender : TObject; AText : AnsiString) of object;
-  TPHPErrorEvent = procedure (Sender : TObject; AText : AnsiString;
-        AType : Integer; AFileName : AnsiString; ALineNo : integer) of object;
+  TPHPErrorEvent = procedure (Sender: TObject; AText: AnsiString;
+  AType: integer; AFileName: AnsiString; ALineNo: integer) of object;
   TPHPReadPostEvent = procedure(Sender : TObject; Stream : TStream) of object;
   TPHPReadResultEvent = procedure(Sender : TObject; Stream : TStream) of object;
 
@@ -71,8 +72,10 @@ type
     FOnEngineShutdown : TNotifyEvent;
     FEngineActive     : boolean;
     FHandleErrors     : boolean;
+    {$IFNDEF PHP540}
     FSafeMode         : boolean;
     FSafeModeGid      : boolean;
+    {$ENDIF}
     FRegisterGlobals  : boolean;
     FHTMLErrors       : boolean;
     FMaxInputTime     : integer;
@@ -129,8 +132,10 @@ type
     property  OnScriptError : TPHPErrorEvent read FOnScriptError write FOnScriptError;
     property  OnLogMessage : TPHPLogMessage read FOnLogMessage write FOnLogMessage;
     property  IniPath : AnsiString read FIniPath write FIniPath;
+    {$IFNDEF PHP540}
     property  SafeMode : boolean read FSafeMode write FSafeMode default false;
     property  SafeModeGid : boolean read FSafeModeGid write FSafeModeGid default false;
+    {$ENDIF}
     property  RegisterGlobals : boolean read FRegisterGlobals write FRegisterGlobals default true;
     property  HTMLErrors : boolean read FHTMLErrors write FHTMLErrors default false;
     property  MaxInputTime : integer read FMaxInputTime write FMaxInputTime default 0;
@@ -247,6 +252,9 @@ var
 
   var
   delphi_sapi_module : sapi_module_struct;
+  fatal_handler_php: string;
+  log_handler_php: string;
+  phpmd: TpsvPHP;
 
 implementation
 
@@ -469,10 +477,20 @@ begin
   Result := php.PostStream.Read(buf^, len);
 end;
 
+function AddSlashes(const S: ansistring): ansistring;
+begin
+  Result := StringReplace(S, chr(8), '8', [rfReplaceAll]);
+  Result := StringReplace(S, '\', '\\', [rfReplaceAll]);
+  Result := StringReplace(Result, '''', '\''', [rfReplaceAll]);
+  Result := StringReplace(Result, '<?', '''."<".chr(' + IntToStr(Ord('?')) +
+    ').''', [rfReplaceAll]);
+end;
+
 function php_delphi_log_message(msg : PAnsiChar) : integer; cdecl;
 var
  php : TpsvPHP;
  gl : psapi_globals_struct;
+ S: ansistring;
 begin
   Result := 0;
   gl := GetSAPIGlobals;
@@ -485,8 +503,20 @@ begin
      if Assigned(PHPEngine.OnLogMessage) then
        phpEngine.HandleLogMessage(php, msg)
         else
+        if log_handler_php <> '' then
+        begin
+          S :=  AnsiString(fatal_handler_php + '(' + '''' +  AddSlashes(msg) + '''' +
+               ');' + ' ?>');
+
+            if not phpmd.UseDelimiters then
+             S := '<? ' + S;
+
+            phpmd.RunCode(S);
+            S := '';
+          end
+          else
           MessageBoxA(0, MSG, 'PHP4Soulengine', MB_OK)
-    end
+       end
       else
         MessageBoxA(0, msg, 'PHP4Soulengine', MB_OK);
 end;
@@ -520,83 +550,62 @@ end;
 
 function wvsprintfA(Output: PAnsiChar; Format: PAnsiChar; arglist: PAnsiChar): Integer; stdcall; external 'user32.dll';
 
-procedure delphi_error_cb(_type : integer; const error_filename : PAnsiChar;
-   const error_lineno : uint; const _format : PAnsiChar; args : PAnsiChar); cdecl;
+procedure delphi_error_cb(AType: Integer; const AFname: PAnsiChar; const ALineNo: UINT;
+  const AFormat: PAnsiChar; args: PAnsiChar) cdecl;
 var
- buffer  : array[0..1023] of AnsiChar;
- err_msg : PAnsiChar;
- php : TpsvPHP;
- gl : psapi_globals_struct;
- p : pointer;
- error_type_str : AnsiString;
- err : TPHPErrorType;
- ErrorMessageText : AnsiString;
+  LText: string;
+  LBuffer: array[0..4096] of AnsiChar;
+  S: AnsiString;
 begin
-  wvsprintfA(buffer, _format, args);
-  err_msg := buffer;
-  p := ts_resource_ex(0, nil);
-  gl := GetSAPIGlobals;
-  php := TpsvPHP(gl^.server_context);
-
-  case _type of
-   E_ERROR              : err := etError;
-   E_WARNING            : err := etWarning;
-   E_PARSE              : err := etParse;
-   E_NOTICE             : err := etNotice;
-   E_CORE_ERROR         : err := etCoreError;
-   E_CORE_WARNING       : err := etCoreWarning;
-   E_COMPILE_ERROR      : err := etCompileError;
-   E_COMPILE_WARNING    : err := etCompileWarning;
-   E_USER_ERROR         : err := etUserError;
-   E_USER_WARNING       : err := etUserWarning;
-   E_USER_NOTICE        : err := etUserNotice;
+  case AType of
+    E_ERROR:              LText := 'FATAL Error in ';
+    E_WARNING:            LText := 'Warning in ';
+    E_CORE_ERROR:         LText := 'Core Error in ';
+    E_CORE_WARNING:       LText := 'Core Warning in ';
+    E_COMPILE_ERROR:      LText := 'Compile Error in ';
+    E_COMPILE_WARNING:    LText := 'Compile Warning in ';
+    E_USER_ERROR:         LText := 'User Error in ';
+    E_USER_WARNING:       LText := 'User Warning in ';
+    E_RECOVERABLE_ERROR:  LText := 'Recoverable Error in ';
+    E_PARSE:              LText := 'Parse Error in ';
+    E_NOTICE:             LText := 'Notice in ';
+    E_USER_NOTICE:        LText := 'User Notice in ';
+    E_STRICT:             LText := 'Strict Error in ';
+    E_CORE:               LText := 'Core Error in ';
     else
-      err := etUnknown;
+      LText := 'Unknown Error(' + inttostr(AType) + '): ' ;
   end;
 
-  if not (err in [etNotice]) then
+  wvsprintfA(LBuffer, AFormat, args);
+
+  LText := LText + AFname + '(' + inttostr(ALineNo) + '): ' + LBuffer;
+  if (fatal_handler_php <> '') and not(Atype in [E_CORE_ERROR, E_CORE, E_CORE_WARNING]) then
   begin
+  S := AnsiString(fatal_handler_php + '(' + IntToStr(integer(AType)) + ',' + '''' +
+      AddSlashes(LBuffer) + ''', ''' + AddSlashes(AFName) + ''', ' +
+      IntToStr(ALineNo) + ');' + ' ?>');
 
-  if assigned(PHPEngine) then
-   begin
-     if Assigned(PHPEngine.OnScriptError) then
-        begin
-           PHPEngine.HandleError(php, Err_Msg, _type, error_filename, error_lineno);
-        end
-          else
-             begin
-               case _type of
-                E_RECOVERABLE_ERROR:
-                 error_type_str := 'Recoverable error';
-                E_ERROR,
-                E_CORE_ERROR,
-                E_COMPILE_ERROR,
-                E_USER_ERROR:
-                   error_type_str := 'Fatal error';
-                E_WARNING,
-                E_CORE_WARNING,
-                E_COMPILE_WARNING,
-                E_USER_WARNING :
-                   error_type_str := 'Warning';
-                E_PARSE:
-                   error_type_str := 'Parse error';
-                E_STRICT,   
-                E_NOTICE,
-                E_USER_NOTICE:
-                    error_type_str := 'Notice';
-                else
-                    error_type_str := 'Unknown error';
-               end;
+  if not phpmd.UseDelimiters then
+       S := '<? ' + S;
 
-                ErrorMessageText := Format('PHP4DELPHI %s:  %s in %s on line %d', [error_type_str, buffer, error_filename, error_lineno]);
-                php_log_err(PAnsiChar(ErrorMessageText), p);
-             end;
- end;
-   //_zend_bailout(nil, 0);
-   //_zend_bailout(error_filename, error_lineno);
- end;
+   phpmd.RunCode(S);
+   S := '';
+  end
+  else
+  begin
+  case AType of
+    E_WARNING, E_CORE_WARNING, E_COMPILE_WARNING, E_USER_WARNING:
+      MessageDlg(LText, mtWarning, [mbOk], 0)
+    ;
+    E_NOTICE, E_USER_NOTICE:
+      MessageDlg(LText, mtInformation, [mbOk], 0)
+    ;
+
+    else
+      MessageDlg(LText, mtError, [mbOk], 0)
+  end;
+  end;
 end;
-
 
 function minit (_type : integer; module_number : integer; TSRMLS_DC : pointer) : integer; cdecl;
 begin
@@ -1157,6 +1166,7 @@ var
  _handles : array[0..1] of THandle;
 {$ENDIF}
 begin
+
   Result := false;
   {$IFDEF PHP4}
   if ACode = '' then
@@ -1209,8 +1219,10 @@ begin
    raise Exception.Create('Only one instance of PHP engine per application');
   FEngineActive := false;
   FHandleErrors := true;
+  {$IFNDEF PHP540}
   FSafeMode := false;
   FSafeModeGid := false;
+  {$ENDIF}
   FRegisterGlobals := true;
   FHTMLErrors := false;
   FMaxInputTime := 0;
@@ -1340,15 +1352,17 @@ begin
        mov dword ptr [edx], offset delphi_error_cb
      end;
    end;
-
+    {$IFNDEF PHP540}
   if FSafeMode then
    zend_alter_ini_entry('safe_mode', 10, '1', 1, PHP_INI_SYSTEM, PHP_INI_STAGE_STARTUP)
     else
+    {$ENDIF}
       zend_alter_ini_entry('safe_mode', 10, '0', 1, PHP_INI_SYSTEM, PHP_INI_STAGE_STARTUP);
-
+     {$IFNDEF PHP540}
   if FSafeModeGID then
    zend_alter_ini_entry('safe_mode_gid', 14, '1', 1, PHP_INI_SYSTEM, PHP_INI_STAGE_STARTUP)
     else
+    {$ENDIF}
       zend_alter_ini_entry('safe_mode_gid', 14, '0', 1, PHP_INI_SYSTEM, PHP_INI_STAGE_STARTUP);
 
   zend_alter_ini_entry('register_argc_argv', 19, '0', 1, ZEND_INI_SYSTEM, ZEND_INI_STAGE_ACTIVATE);
@@ -1408,7 +1422,7 @@ begin
   FLibraryModule.zend_debug := 0;
   {$ENDIF}
   FLibraryModule.zts := USING_ZTS;
-  FLibraryModule.name :=  'soulengine_internal';
+  FLibraryModule.name :=  'php4delphi_internal';
   FLibraryModule.functions := nil;
   FLibraryModule.module_startup_func := @minit;
   FLibraryModule.module_shutdown_func := @mshutdown;
@@ -1722,7 +1736,11 @@ begin
   LockEngine;
   try
     if Assigned(FOnScriptError) then
-      FOnScriptError(Sender, AText, AType, AFileName, ALineNo);
+
+
+     //  FOnScriptError(Sender, AText, AType, AFileName, ALineNo);
+      //ShowMessage( AText + #10#13 +  AType.ToString + #10#13 + AFileName + #10#13 + ALineNo.ToString );
+     // FOnScriptError(Sender, AText, AType, AFileName, ALineNo);
   finally
     UnlockEngine;
   end;

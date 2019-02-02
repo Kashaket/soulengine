@@ -2,6 +2,7 @@ package php4DelphiR2006;
 
 {$R *.res}
 {$R 'php4delphi.dcr'}
+{$IFDEF IMPLICITBUILDING This IFDEF should not be used by users}
 {$ALIGN 8}
 {$ASSERTIONS ON}
 {$BOOLEVAL OFF}
@@ -12,26 +13,28 @@ package php4DelphiR2006;
 {$LOCALSYMBOLS ON}
 {$LONGSTRINGS ON}
 {$OPENSTRINGS ON}
-{$OPTIMIZATION ON}
+{$OPTIMIZATION OFF}
 {$OVERFLOWCHECKS OFF}
 {$RANGECHECKS OFF}
 {$REFERENCEINFO ON}
 {$SAFEDIVIDE OFF}
-{$STACKFRAMES OFF}
+{$STACKFRAMES ON}
 {$TYPEDADDRESS OFF}
 {$VARSTRINGCHECKS ON}
 {$WRITEABLECONST OFF}
 {$MINENUMSIZE 1}
 {$IMAGEBASE $400000}
+{$DEFINE DEBUG}
+{$ENDIF IMPLICITBUILDING}
 {$DESCRIPTION 'php4Delphi (run-rime)'}
 {$RUNONLY}
 {$IMPLICITBUILD OFF}
 
-requires
+rrequires
   rtl,
   vcl;
 
-contains
+ocontains
   ZENDAPI in 'ZENDAPI.pas',
   DelphiFunctions in 'DelphiFunctions.pas',
   php4delphi in 'php4delphi.pas',
@@ -45,4 +48,4 @@ contains
   phpClass in 'phpClass.pas',
   PHPCommon in 'PHPCommon.pas';
 
-end.
+d.

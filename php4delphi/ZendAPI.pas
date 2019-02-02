@@ -20,8 +20,13 @@ unit zendAPI;
 interface
 
 uses
-  Windows, SysUtils, ZendTypes;
-
+  Windows, SysUtils, ZendTypes, VCL.Dialogs, Variants, PHPTypes;
+type
+TArrayVariant = array of variant;
+ TWSDate = array of string;
+  PWSDate = ^TWSDate;
+   TASDate = array of AnsiString;
+  PASDate = ^TWSDate;
 const
 {$IFDEF PHP_DEBUG}
  {$IFDEF PHP5}
@@ -55,7 +60,6 @@ type
       2: (dbl: Double; );
       3: (lng: Longint; );
   end;
-
 const
   PLATFORM_ALIGNMENT = (SizeOf(align_test));
 
@@ -344,7 +348,7 @@ function zval_copy_ctor(val : pzval) : integer;
 function ts_resource(id : integer) : pointer;
 function tsrmls_fetch : pointer;
 
-procedure zenderror(Error : PAnsiChar);
+//procedure zenderror(Error : PAnsiChar);
 
 var
   zend_stack_init                                 : function(stack: Pzend_stack): Integer; cdecl;
@@ -664,7 +668,27 @@ procedure ZVAL_DOUBLE(z: pzval; d: double);
 procedure ZVAL_EMPTY_STRING(z: pzval);
 procedure ZVAL_TRUE(z: pzval);
 procedure ZVAL_FALSE(z: pzval);
-
+function add_next_index_variant(arg: pzval; value: variant): integer;
+procedure ZVAL_ARRAY(z: pzval; arr:  TWSDate); overload;
+procedure ZVAL_ARRAY(z: pzval; arr:  TASDate); overload;
+procedure ZVAL_ARRAY(z: pzval; arr:  array of string); overload;
+procedure ZVAL_ARRAY(z: pzval; arr:  array of ansistring); overload;
+procedure ZVAL_ARRAY(z: pzval; arr: array of variant); overload;
+procedure ZVAL_ARRAY(z: pzval; arr: Variant); overload;
+procedure ZVAL_ARRAYAC(z: pzval; keynames: Array of PAnsiChar; keyvals: Array of PAnsiChar);
+procedure ZVAL_ARRAYWC(z: pzval; keynames: Array of PWideChar; keyvals: Array of PWideChar);
+procedure ZVAL_ARRAYAS(z: pzval; keynames: Array of AnsiString; keyvals: Array of AnsiString); overload;
+procedure ZVAL_ARRAYAS(z: pzval; keynames: TASDate; keyvals: TASDate);  overload;
+procedure ZVAL_ARRAYWS(z: pzval; keynames: TWSDate; keyvals: TWSDate);  overload;
+procedure ZVAL_ARRAYWS(z: pzval; keynames: array of string; keyvals: array of string); overload;
+procedure HashToArray(HT: PHashTable; var AR: TArrayVariant); overload;
+procedure ArrayToHash(AR: Array of Variant; var HT: pzval); overload;
+procedure ArrayToHash(Keys,AR: Array of Variant; var HT: pzval); overload;
+function ToStrA(V: Variant): AnsiString;
+function ToStr(V: Variant): String;
+function toWChar(s: PAnsiChar): PWideChar;
+function ZendToVariant(const Value: pppzval): Variant; overload;
+function ZendToVariant(const Value: ppzval): Variant; overload;
 
 procedure ZVAL_STRING(z: pzval; s: PAnsiChar; duplicate: boolean);
 procedure ZVAL_STRINGW(z: pzval; s: PWideChar; duplicate: boolean);
@@ -752,6 +776,7 @@ function Z_LVAL(z : Pzval) : longint;
 function Z_BVAL(z : Pzval) : boolean;
 function Z_DVAL(z : Pzval) : double;
 function Z_STRVAL(z : Pzval) : AnsiString;
+function Z_STRWVAL(z : pzval) : String;
 function Z_STRLEN(z : Pzval) : longint;
 function Z_ARRVAL(z : Pzval ) : PHashTable;
 function Z_OBJ_HANDLE(z :Pzval) : zend_object_handle;
@@ -974,7 +999,572 @@ begin
   z^._type := IS_BOOL;
   z^.value.lval := 0;
 end;
+function ToStrA(V: Variant): AnsiString;
+begin
+  Result := V;
+end;
 
+function ToStr(V: Variant): String;
+begin
+  Result := V;
+end;
+
+function ToPChar(V: Variant): PAnsiChar;
+begin
+  Result := PAnsiChar(ToStr(V));
+end;
+
+function toWChar(s: PAnsiChar): PWideChar;
+  var
+  ss: WideString;
+  ss2: string;
+begin
+  ss2 := s;
+  ss := ss2;
+  Result := PWideChar(ss);
+end;
+
+function ZendToVariant(const Value: pppzval): Variant; overload;
+  Var
+  S: String;
+begin
+ case Value^^^._type of
+ 1: Result := Value^^^.value.lval;
+ 2: Result := Value^^^.value.dval;
+ 6: begin S := Value^^^.value.str.val; Result := S; end;
+ 4,5: Result := Null;
+ end;
+end;
+
+function ZendToVariant(const Value: ppzval): Variant; overload;
+  Var
+  S: String;
+begin
+Result := Null;
+ case Value^^._type of
+ 1: Result := Value^^.value.lval;
+ 2: Result := Value^^.value.dval;
+ 6: begin S := Value^^.value.str.val; Result := S; end;
+ 4,5: Result := Null;
+ end;
+end;
+
+procedure HashToArray(HT: PHashTable; var AR: TArrayVariant); overload;
+  Var
+  Len,I: Integer;
+  tmp : pppzval;
+begin
+ len := zend_hash_num_elements(HT);
+ SetLength(AR,len);
+ for i:=0 to len-1 do
+  begin
+    new(tmp);
+
+    zend_hash_index_find(ht,i,tmp);
+
+    AR[i] := ZendToVariant(tmp);
+    freemem(tmp);
+  end;
+end;
+
+
+procedure ArrayToHash(AR: Array of Variant; var HT: pzval); overload;
+  Var
+  I,Len: Integer;
+begin
+  _array_init(ht,nil,1);
+  len := Length(AR);
+  for i:=0 to len-1 do
+   begin
+     case VarType(AR[i]) of
+     varInteger, varSmallint, varLongWord, 17: add_index_long(ht,i,AR[i]);
+     varDouble,varSingle: add_index_double(ht,i,AR[i]);
+     varBoolean: add_index_bool(ht,i,AR[I]);
+     varEmpty: add_index_null(ht,i);
+     varString: add_index_string(ht,i,PAnsiChar(ToStr(AR[I])),1);
+     258: add_index_string(ht,i,PAnsiChar(AnsiString(ToStr(AR[I]))),1);
+     end;
+   end;
+end;
+
+procedure ArrayToHash(Keys,AR: Array of Variant; var HT: pzval); overload;
+  Var
+  I,Len: Integer;
+    v: Variant;
+    key: PAnsiChar;
+    s: PAnsiChar;
+begin
+  _array_init(ht,nil,1);
+  len := Length(AR);
+  for i:=0 to len-1 do
+   begin
+     v := AR[I];
+     key := PAnsiChar(ToStrA(keys[i]));
+     s := PAnsiChar(ToStrA(v));
+     case VarType(AR[i]) of
+     varInteger, varSmallint, varLongWord, 17: add_assoc_long_ex(ht,ToPChar(Keys[i]),strlen(ToPChar(Keys[i]))+1,AR[i]);
+     varDouble,varSingle: add_assoc_double_ex(ht,ToPChar(Keys[i]),strlen(ToPChar(Keys[i]))+1,AR[i]);
+     varBoolean: add_assoc_bool_ex(ht,ToPChar(Keys[i]),strlen(ToPChar(Keys[i]))+1,AR[I]);
+     varEmpty: add_assoc_null_ex(ht,ToPChar(Keys[i]),strlen(ToPChar(Keys[i]))+1);
+     varString,258: add_assoc_string_ex(ht,key,strlen(key)+1,s,1);
+     end;
+   end;
+end;
+
+function add_next_index_variant(arg: pzval; value: variant): integer;
+var iz: pzval;
+    W: WideString;
+    S: String;
+begin
+  iz := MAKE_STD_ZVAL;
+  if VarIsEmpty(value) then
+   begin
+     ZVAL_NULL(iz);
+     Result := add_next_index_zval(arg, iz);
+     Exit;
+   end;
+    //   MessageBoxA(0, PAnsiChar(AnsiString( TVarData(Value).VType.ToString)), '', 0 ) ;
+   case TVarData(Value).VType of
+     varString    : //Peter Enz
+         begin
+           if Assigned ( TVarData(Value).VString ) then
+             begin
+               ZVAL_STRING(iz, TVarData(Value).VString , true);
+             end
+               else
+                 begin
+                   ZVAL_STRING(iz, '', true);
+                 end;
+         end;
+
+     varUString    : //Peter Enz
+         begin
+            S := string(TVarData(Value).VUString);
+
+             ZVAL_STRING(iz, PAnsiChar(AnsiString(S)), true);
+         end;
+
+     varOleStr    : //Peter Enz
+         begin
+           if Assigned ( TVarData(Value).VOleStr ) then
+             begin
+               W := WideString(Pointer(TVarData(Value).VOleStr));
+               ZVAL_STRINGW(iz, PWideChar(W),  true);
+             end
+               else
+                 begin
+                   ZVAL_STRING(iz, '', true);
+                 end;
+         end;
+     varSmallInt : ZVAL_LONG(iz, TVarData(Value).VSmallint);
+     varInteger  : ZVAL_LONG(iz, TVarData(Value).VInteger);
+     varBoolean  : ZVAL_BOOL(iz, TVarData(Value).VBoolean);
+     varSingle   : ZVAL_DOUBLE(iz, TVarData(Value).VSingle);
+     varDouble   : ZVAL_DOUBLE(iz, TVarData(Value).VDouble);
+     varError    : ZVAL_LONG(iz, TVarData(Value).VError);
+     varByte     : ZVAL_LONG(iz, TVarData(Value).VByte);
+     varDate     : ZVAL_DOUBLE(iz, TVarData(Value).VDate);
+     else
+       ZVAL_NULL(iz);
+   end;
+
+    Result := add_next_index_zval(arg, iz);
+end;
+
+
+procedure ZVAL_ARRAY(z: pzval; arr:  TWSDate); overload;
+var
+  i : integer;
+begin
+ z.refcount := Length(arr); //Передаём количество возвращаемых массивов
+ if _array_init(z, nil, 0) = FAILURE then //Создаём массив первого уровня
+  begin
+    ZVAL_FALSE(z);
+    Exit;
+  end;
+
+  if Length(arr) = 0 then
+  begin
+    ZVAL_FALSE(z);
+    Exit;
+  end;
+
+   for i := 0 to Length(arr)-1 do
+    begin
+       add_next_index_string(z, PAnsiChar(AnsiString(arr[i])), 1);
+    end;
+    Exit;
+end;
+
+procedure ZVAL_ARRAY(z: pzval; arr:  TASDate); overload;
+var
+  i : integer;
+begin
+ z.refcount := Length(arr); //Передаём количество возвращаемых массивов
+ if _array_init(z, nil, 0) = FAILURE then //Создаём массив первого уровня
+  begin
+    ZVAL_FALSE(z);
+    Exit;
+  end;
+
+  if Length(arr) = 0 then
+  begin
+    ZVAL_FALSE(z);
+    Exit;
+  end;
+
+   for i := 0 to Length(arr)-1 do
+    begin
+       add_next_index_string(z, PansiChar(arr[i]), 1);
+    end;
+    Exit;
+end;
+
+procedure ZVAL_ARRAY(z: pzval; arr: array of string); overload;
+var
+  i: integer;
+begin
+ z.refcount := Length(arr); //Передаём количество возвращаемых массивов
+ if _array_init(z, nil, 0) = FAILURE then //Создаём массив первого уровня
+  begin
+    ZVAL_FALSE(z);
+    Exit;
+  end;
+
+  if Length(arr) = 0 then
+  begin
+    ZVAL_FALSE(z);
+    Exit;
+  end;
+
+   for i := 0 to Length(arr)-1 do
+    begin
+       add_next_index_string(z, PansiChar(AnsiString(arr[i])), 1);
+    end;
+    Exit;
+end;
+
+procedure ZVAL_ARRAY(z: pzval; arr:  array of AnsiString); overload;
+var
+  i: integer;
+begin
+ z.refcount := Length(arr); //Передаём количество возвращаемых массивов
+ if _array_init(z, nil, 0) = FAILURE then //Создаём массив первого уровня
+  begin
+    ZVAL_FALSE(z);
+    Exit;
+  end;
+
+  if Length(arr) = 0 then
+  begin
+    ZVAL_FALSE(z);
+    Exit;
+  end;
+
+   for i := 0 to Length(arr)-1 do
+    begin
+       add_next_index_string(z, PansiChar(arr[i]), 1);
+    end;
+    Exit;
+end;
+
+procedure ZVAL_ARRAY(z: pzval; arr:  array of variant); overload;
+var
+  i: integer;
+begin
+ z.refcount := Length(arr); //Передаём количество возвращаемых массивов
+ if _array_init(z, nil, 0) = FAILURE then //Создаём массив первого уровня
+  begin
+    ZVAL_FALSE(z);
+    Exit;
+  end;
+
+  if Length(arr) = 0 then
+  begin
+    ZVAL_FALSE(z);
+    Exit;
+  end;
+
+   for i := 0 to Length(arr)-1 do
+    begin
+       add_next_index_variant(z, arr[i]);
+    end;
+    Exit;
+end;
+
+procedure ZVAL_ARRAY(z: pzval; arr: Variant); overload;
+var
+  i: integer;
+  V: TVarData;
+begin
+ z.refcount := arr.PVarArray.DimCount; //Передаём количество возвращаемых массивов
+ if _array_init(z, nil, 0) = FAILURE then //Создаём массив первого уровня
+  begin
+    ZVAL_FALSE(z);
+    Exit;
+  end;
+
+  if arr.PVarArray.DimCount = 0 then
+  begin
+    ZVAL_FALSE(z);
+    Exit;
+  end;
+
+   for i := 0 to arr.DimCount-1 do
+    begin
+    {V := TVarData(  arr[i] );
+    case V.VType of
+      varEmpty, varNull:
+        add_next_index_null(z);
+      varSmallInt:
+        add_next_index_string(z, PansiChar(AnsiString(IntToStr(V.VSmallInt))), 1);
+      varInteger:
+        add_next_index_string(z, PansiChar(AnsiString(IntToStr(V.VInteger))), 1);
+      varSingle:
+        add_next_index_string(z, PansiChar(AnsiString(V.VSingle.ToString())), 1);
+      varDouble:
+        add_next_index_double(z, V.VDouble);
+      varCurrency:
+        add_next_index_string(z, PansiChar(AnsiString(CurrToStr(V.VCurrency))), 1);
+      varDate:
+        add_next_index_string(z, PansiChar(AnsiString(DateTimeToStr(V.VDate))), 1);
+      varOleStr:
+        add_next_index_string(z, PansiChar(AnsiString(V.VOleStr)), 1);
+      varBoolean:
+        add_next_index_bool(z, V.VBoolean.ToInteger());
+      varByte:
+        add_next_index_string(z, PansiChar(AnsiString(IntToStr(V.VByte))), 1);
+      varWord:
+        add_next_index_string(z, PansiChar(AnsiString(IntToStr(V.VWord))), 1);
+      varShortInt:
+        add_next_index_string(z, PansiChar(AnsiString(IntToStr(V.VShortInt))), 1);
+      varLongWord:
+        add_next_index_long(z, V.VLongWord);
+      varInt64:
+        add_next_index_string(z, PansiChar(AnsiString(IntToStr(V.VInt64))), 1);
+      varString:
+        add_next_index_string(z, PansiChar(AnsiString(V.VString)), 1);
+      {$IFDEF SUPPORTS_UNICODE_STRING}{
+      varUString:
+        add_next_index_string(z, PansiChar(AnsiString(V.VUString)), 1);
+      {$ENDIF SUPPORTS_UNICODE_STRING}
+      {varArray,
+      varDispatch,
+      varError,
+      varUnknown,
+      varAny,
+      varByRef:}{
+      varObject:
+      add_next_index_long(z, Integer(
+    end;                               }
+       add_next_index_variant(z, arr[i]);
+    end;
+    Exit;
+end;
+
+procedure ZVAL_ARRAYAC(z: pzval; keynames: Array of PAnsiChar; keyvals: Array of PAnsiChar);
+var
+  i : integer;
+  endarr: pzval;
+begin
+ z.refcount := Length(keynames);
+ if _array_init(z, nil, 0) = FAILURE then
+  begin
+    ZVAL_FALSE(z);
+    Exit;
+  end;
+
+
+
+  if Length(keynames) = Length(keyvals) then
+   begin
+   for i := 0 to Length(keynames)-1 do
+    begin
+    endarr := MAKE_STD_ZVAL;
+     ZVAL_STRING(endarr, keyvals[i], true);
+
+      add_assoc_zval_ex(z, keynames[i], StrLen(keynames[i]) + 1, endarr);
+    end;
+    Exit;
+   end
+   else
+   begin
+      ZVAL_FALSE(z);
+    Exit;
+   end;
+
+end;
+procedure ZVAL_ARRAYWC(z: pzval; keynames: Array of PWideChar; keyvals: Array of PWideChar);
+var
+  i : integer;
+  endarr: pzval;
+begin
+ z.refcount := Length(keynames);
+ if _array_init(z, nil, 0) = FAILURE then
+  begin
+    ZVAL_FALSE(z);
+    Exit;
+  end;
+
+
+
+  if Length(keynames) = Length(keyvals) then
+   begin
+   for i := 0 to Length(keynames)-1 do
+    begin
+    endarr := MAKE_STD_ZVAL;
+
+      ZVAL_STRINGW(endarr, keyvals[i], true);
+
+      add_assoc_zval_ex(z, PAnsiChar(keynames[i]), StrLen(PAnsiChar(keynames[i])) + 1, endarr);
+    end;
+    Exit;
+   end
+   else
+   begin
+      ZVAL_FALSE(z);
+    Exit;
+   end;
+
+end;
+procedure ZVAL_ARRAYWS(z: pzval; keynames:  TWSDate; keyvals:  TWSDate); overload;
+var
+  i : integer;
+  endarr: pzval;
+begin
+ z.refcount := Length(keynames); //Передаём количество возвращаемых массивов
+ if _array_init(z, nil, 0) = FAILURE then //Создаём массив первого уровня
+  begin
+    ZVAL_FALSE(z);
+    Exit;
+  end;
+
+
+
+  if Length(keynames) = Length(keyvals) then
+   begin
+   for i := 0 to Length(keynames)-1 do
+    begin
+    endarr := MAKE_STD_ZVAL;
+     {//Код для создания подвложенных массивов...без новых индексов (числовое индексирование)
+     if _array_init(endarr, nil, 0) = FAILURE then
+       begin
+        ZVAL_FALSE(z);
+        Exit;
+       end;
+      add_next_index_string(endarr, PAnsiChar(AnsiString(keyvals[i])), 1);
+      //Arr[$key] = ''; }
+                    //Создаём строку в массиве первого уровня
+       ZVAL_STRINGW(endarr, PWideChar(keyvals[i]), true);
+                    //Создаём ассоциацию строки с ключём первого уровня
+      add_assoc_zval_ex(z, PAnsiChar(AnsiString(keynames[i])), StrLen(PAnsiChar(AnsiString(keynames[i]))) + 1, endarr);
+                    //Продолжаем цикл
+    end;
+    Exit;
+   end
+   else
+   begin
+      ZVAL_FALSE(z);
+    Exit;
+   end;
+
+end;
+procedure ZVAL_ARRAYWS(z: pzval; keynames:  array of string; keyvals:  array of string); overload;
+var
+  i : integer;
+  endarr: pzval;
+begin
+ z.refcount := Length(keynames);
+ if _array_init(z, nil, 0) = FAILURE then
+  begin
+    ZVAL_FALSE(z);
+    Exit;
+  end;
+
+
+
+  if Length(keynames) = Length(keyvals) then
+   begin
+   for i := 0 to Length(keynames)-1 do
+    begin
+    endarr := MAKE_STD_ZVAL;
+
+       ZVAL_STRINGW(endarr, PWideChar(keyvals[i]), true);
+      add_assoc_zval_ex(z, PAnsiChar(AnsiString(keynames[i])), StrLen(PAnsiChar(AnsiString(keynames[i]))) + 1, endarr);
+    end;
+    Exit;
+   end
+   else
+   begin
+      ZVAL_FALSE(z);
+    Exit;
+   end;
+
+end;
+procedure ZVAL_ARRAYAS(z: pzval; keynames: TASDate; keyvals: TASDate); overload;
+var
+  i : integer;
+  endarr: pzval;
+begin
+ z.refcount := Length(keynames);
+ if _array_init(z, nil, 0) = FAILURE then
+  begin
+    ZVAL_FALSE(z);
+    Exit;
+  end;
+
+
+
+  if Length(keynames) = Length(keyvals) then
+   begin
+   for i := 0 to Length(keynames)-1 do
+    begin
+    endarr := MAKE_STD_ZVAL;
+
+      ZVAL_STRING(endarr, PAnsiChar(keyvals[i]), true);
+      add_assoc_zval_ex(z, PAnsiChar(keynames[i]), StrLen(PAnsiChar(keynames[i])) + 1, endarr);
+    end;
+    Exit;
+   end
+   else
+   begin
+      ZVAL_FALSE(z);
+    Exit;
+   end;
+
+end;
+procedure ZVAL_ARRAYAS(z: pzval; keynames: Array of AnsiString; keyvals: Array of AnsiString); overload;
+var
+  i : integer;
+  endarr: pzval;
+begin
+ z.refcount := Length(keynames);
+ if _array_init(z, nil, 0) = FAILURE then
+  begin
+    ZVAL_FALSE(z);
+    Exit;
+  end;
+
+
+
+  if Length(keynames) = Length(keyvals) then
+   begin
+   for i := 0 to Length(keynames)-1 do
+    begin
+    endarr := MAKE_STD_ZVAL;
+
+      ZVAL_STRING(endarr, PAnsiChar(keyvals[i]), true);
+      add_assoc_zval_ex(z, PAnsiChar(keynames[i]), StrLen(PAnsiChar(keynames[i])) + 1, endarr);
+    end;
+    Exit;
+   end
+   else
+   begin
+      ZVAL_FALSE(z);
+    Exit;
+   end;
+
+end;
 function ZENDLoaded: boolean;
 begin
   Result := PHPLib <> 0;
@@ -1846,10 +2436,10 @@ begin
   inherited Create('Unable to link '+ Msg+' function');
 end;
 
-procedure zenderror(Error : PAnsiChar);
+{procedure zenderror(Error : PAnsiChar);
 begin
   zend_error(E_PARSE, Error);
-end;
+end;}
 
 
 {$IFNDEF QUIET_LOAD}
@@ -2390,6 +2980,28 @@ end;
 
 
 function Z_STRVAL(z : pzval) : AnsiString;
+begin
+  if z = nil then
+  begin
+      Result := '';
+      exit;
+  end;
+
+  if z._type = IS_STRING then
+  begin
+     SetLength(Result, z.value.str.len);
+     Move(z.value.str.val^, Result[1], z.value.str.len);
+  end else
+    case z._type of
+       IS_LONG: Result := IntToStr(z.value.lval);
+       IS_DOUBLE: Result := FloatToStr(z.value.dval);
+       IS_BOOL: if z.value.lval = 0 then Result := '' else Result := '1';
+       else
+        Result := '';
+    end;
+end;
+
+function Z_STRWVAL(z : pzval) : String;
 begin
   if z = nil then
   begin

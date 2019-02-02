@@ -20,6 +20,7 @@ If you are using PHP version 5.1.1 or higher please add $DEFINE PHP511
 If you are using PHP version 5.1.2 or higher please add $DEFINE PHP512
 If you are using PHP version 5.2.0 or higher please add $DEFINE PHP520
 IF you are using PHP version 5.3.0 or highre please add $DEFINE PHP530
+IF you are using PHP version 5.4.0 or highre please add $DEFINE PHP540
 
 Sorry for such complicated configuration, but PHP team does not keep
 backward compatibility between PHP versions.
@@ -44,13 +45,20 @@ backward compatibility between PHP versions.
 {$DEFINE PHP512}
 {$DEFINE PHP520}
 {$DEFINE PHP530}
-{$DEFINE PHP540}
+{.$DEFINE PHP540}
 
 {$IFDEF PHP530}
   {$DEFINE ZEND_WIN32}
   {$DEFINE PHP_COMPILER_ID}
 {$ENDIF}
 
+{$IFDEF PHP560}
+	{$DEFINE PHP530}
+	{$DEFINE PHP540}
+	{$DEFINE PHP550}
+	{$DEFINE ZEND_WIN32}
+	{$DEFINE PHP_COMPILER_ID}
+{$ENDIF}
 //Warning! You must select one of the compilers
 //Look at the version of PHP you have installed
 //I DO recommend to use php-5.3.0-Win32-VC6-x86, specially if you are using
@@ -70,7 +78,7 @@ backward compatibility between PHP versions.
   {$UNDEF PHP435}
   {$UNDEF PHP446}
 {$ENDIF}
-
+{$WARN UNIT_DEPRECATED OFF}
 
 {.$DEFINE QUIET_LOAD} //Do not show error while loading php4ts.dll or php5ts.dll (depends from php version)
 

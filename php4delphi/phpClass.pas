@@ -887,12 +887,12 @@ var
  c : AnsiChar;
  {$ENDIF}
 begin
-  c := DecimalSeparator;
+  c := FormatSettings.DecimalSeparator;
   try
-    DecimalSeparator := '.';
+    FormatSettings.DecimalSeparator := '.';
     Result := Round(ValueToFloat(FValue));
   finally
-   DecimalSeparator := c;
+   FormatSettings.DecimalSeparator := c;
   end;
 end;
 
@@ -925,12 +925,12 @@ var
  c : AnsiChar;
  {$ENDIF}
 begin
-  c := DecimalSeparator;
+  c := FormatSettings.DecimalSeparator;
   try
-   DecimalSeparator := '.';
+   FormatSettings.DecimalSeparator := '.';
    FValue := IntToStr(Value);
   finally
-   DecimalSeparator := c;
+   FormatSettings.DecimalSeparator := c;
   end;
 end;
 

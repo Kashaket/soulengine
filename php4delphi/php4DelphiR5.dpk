@@ -1,8 +1,9 @@
 package php4DelphiR5;
 
-{$R *.RES}
+{$R *.res}
 {$R 'php4delphi.dcr'}
-{$ALIGN ON}
+{$IFDEF IMPLICITBUILDING This IFDEF should not be used by users}
+{$ALIGN 8}
 {$ASSERTIONS ON}
 {$BOOLEVAL OFF}
 {$DEBUGINFO ON}
@@ -12,31 +13,33 @@ package php4DelphiR5;
 {$LOCALSYMBOLS ON}
 {$LONGSTRINGS ON}
 {$OPENSTRINGS ON}
-{$OPTIMIZATION ON}
+{$OPTIMIZATION OFF}
 {$OVERFLOWCHECKS OFF}
 {$RANGECHECKS OFF}
 {$REFERENCEINFO ON}
 {$SAFEDIVIDE OFF}
-{$STACKFRAMES OFF}
+{$STACKFRAMES ON}
 {$TYPEDADDRESS OFF}
 {$VARSTRINGCHECKS ON}
 {$WRITEABLECONST ON}
 {$MINENUMSIZE 1}
 {$IMAGEBASE $400000}
+{$DEFINE DEBUG}
+{$ENDIF IMPLICITBUILDING}
 {$DESCRIPTION 'PHP4Delphi (run-time)'}
 {$RUNONLY}
 {$IMPLICITBUILD OFF}
 
 requires
-  vcl50;
+  vcl;
 
 contains
-  zendAPI in 'ZENDAPI.pas',
+  ZENDAPI in 'ZENDAPI.pas',
   DelphiFunctions in 'DelphiFunctions.pas',
   php4delphi in 'php4delphi.pas',
-  phpAPI in 'PHPAPI.pas',
-  phpLibrary in 'PHPLibrary.pas',
-  PHPCustomLibrary in 'phpCustomLibrary.pas',
+  PHPAPI in 'PHPAPI.pas',
+  PHPLibrary in 'PHPLibrary.pas',
+  phpCustomLibrary in 'phpCustomLibrary.pas',
   phpFunctions in 'phpFunctions.pas',
   PHPTypes in 'PHPTypes.pas',
   ZENDTypes in 'ZENDTypes.pas',
@@ -44,4 +47,4 @@ contains
   phpModules in 'phpModules.pas',
   PHPCommon in 'PHPCommon.pas';
 
-end.
+END.

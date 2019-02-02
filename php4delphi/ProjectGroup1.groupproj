@@ -1,0 +1,48 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <ProjectGuid>{D3946CCE-C89C-4195-8C9B-ACC8FEE61B03}</ProjectGuid>
+    </PropertyGroup>
+    <ItemGroup>
+        <Projects Include="php4DelphiR2010.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="php4DelphiD2010.dproj">
+            <Dependencies/>
+        </Projects>
+    </ItemGroup>
+    <ProjectExtensions>
+        <Borland.Personality>Default.Personality.12</Borland.Personality>
+        <Borland.ProjectType/>
+        <BorlandProject>
+            <Default.Personality/>
+        </BorlandProject>
+    </ProjectExtensions>
+    <Target Name="php4DelphiR2010">
+        <MSBuild Projects="php4DelphiR2010.dproj"/>
+    </Target>
+    <Target Name="php4DelphiR2010:Clean">
+        <MSBuild Projects="php4DelphiR2010.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="php4DelphiR2010:Make">
+        <MSBuild Projects="php4DelphiR2010.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="php4DelphiD2010">
+        <MSBuild Projects="php4DelphiD2010.dproj"/>
+    </Target>
+    <Target Name="php4DelphiD2010:Clean">
+        <MSBuild Projects="php4DelphiD2010.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="php4DelphiD2010:Make">
+        <MSBuild Projects="php4DelphiD2010.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Build">
+        <CallTarget Targets="php4DelphiR2010;php4DelphiD2010"/>
+    </Target>
+    <Target Name="Clean">
+        <CallTarget Targets="php4DelphiR2010:Clean;php4DelphiD2010:Clean"/>
+    </Target>
+    <Target Name="Make">
+        <CallTarget Targets="php4DelphiR2010:Make;php4DelphiD2010:Make"/>
+    </Target>
+    <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
+</Project>

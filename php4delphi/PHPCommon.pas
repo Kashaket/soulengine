@@ -19,7 +19,7 @@ unit PHPCommon;
 interface
 
 uses
-  Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
+  Windows, Messages, SysUtils, Classes, VCL.Graphics, VCL.Controls, VCL.Forms, VCL.Dialogs,
   ZendTypes, ZendAPI, PHPTypes, PHPAPI;
 
 type
@@ -208,7 +208,7 @@ begin
    SetLength(AString, Length(AString)-1);
   SL := TStringList.Create;
 
-  ExtractStrings([';'], [], PAnsiChar(AString), SL);
+  ExtractStrings([';'], [], PWideChar(WideString(AString)), SL);
 
   for i := 0 to SL.Count - 1 do
    begin
@@ -278,12 +278,12 @@ var
  c : AnsiChar;
  {$ENDIF}
 begin
-  c := DecimalSeparator;
+  c := FormatSettings.DecimalSeparator;
   try
-   DecimalSeparator := '.';
+   FormatSettings.DecimalSeparator := '.';
    Result := Round(ValueToFloat(FValue));
   finally
-    DecimalSeparator := c;
+    FormatSettings.DecimalSeparator := c;
   end;
 end;
 
@@ -316,12 +316,12 @@ var
  c : AnsiChar;
  {$ENDIF}
 begin
-  c := DecimalSeparator;
+  c := FormatSettings.DecimalSeparator;
   try
-   DecimalSeparator := '.';
+   FormatSettings.DecimalSeparator := '.';
    FValue := IntToStr(Value);
   finally
-    DecimalSeparator := c;
+    FormatSettings.DecimalSeparator := c;
   end;
 end;
 

@@ -1,0 +1,26 @@
+How to install help files into Delphi 2005 or later
+===================================================
+
+You will need the following files:
+<ProjName> should be replaced by the name of your GenHelp Topic File.
+
+<ProjName>Bds3.Hxx
+<ProjName>Bds3.HxS
+<ProjName>Bds3.HxI
+
+regHelpBds3.js  ; javascript file to install into HtmlHelp 2.0
+regHelpBds3.bat ; Batch file to add help
+remhelpBds3.bat ; Batch file to remove help
+
+Installing
+----------
+The above files should be installed into a temporary directory. They will 
+be copied into the ThirdParty area under BDS 3.0
+
+The run regHelpBds3.bat which will register the help files. Note that if you have already
+registered the files, you MUST unregister them before re-registering them. See below for
+further details.
+
+Removing
+--------
+Run remhelpBds3.bat which will remove all the above files from the ThirdParty directory.
