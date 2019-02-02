@@ -2687,7 +2687,7 @@ var
     // Never use AppendStr or "+", use Len and MaxLen instead and
     // copy the string chars directly. This is for efficiency.
     Len, MaxLen, CharsBefore: integer;
-    s: string;
+    s: ansistring;
     FG, BG: TColor;
     Style: TFontStyles;
   end;
@@ -4549,7 +4549,7 @@ begin
         ScrollInfo.fMask := ScrollInfo.fMask or SIF_DISABLENOSCROLL;
       end;
 
-      if (fScrollBars in [ssBoth, ssHorizontal]) and (not WordWrap) then
+      if ((fScrollBars = TScrollStyle(3)) or (fScrollBars = TScrollStyle(1))) and (not WordWrap) then
       begin
         if eoScrollPastEol in Options then
           nMaxScroll := MaxScrollWidth
@@ -7196,9 +7196,9 @@ begin
       ecImeStr:
         if not ReadOnly then
         begin
-          SetString(s, PChar(Data), StrLen(Data));
+          SetString(s, PChar(Data), StrLen(PAnsiChar(Data)));
           if SelAvail then begin
-            BeginUndoBlock;                                                   
+            BeginUndoBlock;
             try
               fUndoList.AddChange(crDelete, fBlockBegin, fBlockEnd, Helper,
                 smNormal);

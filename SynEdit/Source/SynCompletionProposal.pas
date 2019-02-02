@@ -3259,7 +3259,7 @@ end;
 
 procedure TSynCompletionProposal.DoExecute(AEditor: TCustomSynEdit);
 
-  procedure CopyStringToCharSet(const AStr: string; var ACharSet: TSynIdentChars);
+  procedure CopyStringToCharSet(const AStr: ansistring; var ACharSet: TSynIdentChars);
   var
     i: Integer;
   begin
