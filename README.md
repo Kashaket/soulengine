@@ -11,7 +11,7 @@ GUI Tool kit for PHP and DevelStudio.
 
 #### Сборка
 
-1. Установить пакет php4delphi, synedit и AlphaControls из папки проекта
+1. Установить пакеты php4delphi, synedit и AlphaControls из папки проекта
 2. Откройте файл проекта soulEngine.dpr в Delphi XE6+
 3. Соберите проект, он будет находится в папке `C:\DevelStudio 3.0Beta\`.
 
