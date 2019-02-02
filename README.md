@@ -34,6 +34,6 @@ GUI Tool kit for PHP and DevelStudio.
 3. Указать лицензионный файл LICENSE
 
 Варианты указания авторства:
-1) Указать данный репозиторий в Github или пользователя Nyasik или пользователя Kashaket
-2) Указать данный репозиторий в Github и состав членов команды Kashaket и Dim-Software
+1) Указать данный репозиторий в Github или пользователя <a href="https://github.com/NyaSik">Nyasik</a> или пользователя <a href="https://github.com/Kashaket">Kashaket</a>
+2) Указать данный репозиторий в Github и состав членов команды <a href="https://github.com/KashaketCompany">Kashaket</a>
 3) Указать данный репозиторий в Github и <a href="https://github.com/KashaketCompany/DevelStudio-3.0-beta">репозиторий</a> <a href="https://github.com/KashaketCompany/DevelStudio-3.0-beta">студии</a>
