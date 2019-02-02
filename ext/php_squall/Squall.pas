@@ -119,6 +119,7 @@ const
  SQUALL_EAX_CHANNEL_FLAGS_DEFAULT: Integer =                  $00000007;
 
 type
+TSoundVec = array [0..2] of Single;
 // структура для описания настроек двигателя
  squall_parameters_t = record
   Window: PHandle;                                // окно к которому нужно прикреплять двигатель
@@ -209,10 +210,10 @@ type
      DecayLFRatio: Single;
      Reflections: Integer;
      ReflectionsDelay: Single;
-     ReflectionsPan: array [0..2] of Single;
+     ReflectionsPan: TSoundVec;
      Reverb: Integer;
      ReverbDelay: Single;
-     ReverbPan: array [0..2] of Single;
+     ReverbPan: TSoundVec;
      EchoTime: Single;
      EchoDepth: Single;
      ModulationTime: Single;
@@ -280,10 +281,10 @@ type
 
 // структура ZOOMFX параметров источника звука
  squall_zoomfx_channel_t = record
-  Min: array [0..2] of Single;
-  Max: array [0..2] of Single;
-  Front: array [0..2] of Single;
-  Top: array [0..2] of Single;
+  Min: TSoundVec;
+  Max: TSoundVec;
+  Front: TSoundVec;
+  Top: TSoundVec;
   MacroFX: Integer;
  end;
 
@@ -534,7 +535,7 @@ function SQUALL_GetNumDevice(): Integer; cdecl; external 'squall.dll';
 // на выходе   :  успешность, если возвращаемый результат больше либо равен 0,
 //                вызов состоялся, иначе результат содержит код ошибки
 //-----------------------------------------------------------------------------
-function SQUALL_GetDeviceName(Num: Integer; Buffer: PChar; Size: Integer): Integer; cdecl; external 'squall.dll';
+function SQUALL_GetDeviceName(Num: Integer; Buffer: PAnsiChar; Size: Integer): Integer; cdecl; external 'squall.dll';
 
 //-----------------------------------------------------------------------------
 // Получение свойств устройства воспроизведения по указаному номеру
@@ -579,7 +580,7 @@ function SQUALL_GetChannelsInfo(var info: squall_channels_t): Integer; cdecl; ex
 //                            изменять не нужно, то данный параметр должен
 //                            содержать 0 
 //                Front    -  указатель на структуру с новым вектором 
-//                            фронтального направления слушателя. В случае еслт
+//                            фронтального направления слушателя. В случае если
 //                            вектор фронтального направления слушателя изменять
 //                            не нужно, то данный парамерт должен содержать 0
 //                Top      -  указатель на структуру с новым вектором
