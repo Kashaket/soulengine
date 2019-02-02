@@ -1,10 +1,14 @@
 *.identcache
 *.phb
+*.dproj.local
 __history/
 *.ppu
 *.~dpr
 *.~dsk
+*.~pas
+*.~dfm
 *.dof
+*.stat
 /ext/php_osinfo/php_osinfo.dll
 *.dsk
 *.or

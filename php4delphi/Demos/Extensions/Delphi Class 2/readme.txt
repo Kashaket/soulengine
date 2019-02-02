@@ -1,1 +1,0 @@
-This demo can be compiled using Delphi 7 or higher
