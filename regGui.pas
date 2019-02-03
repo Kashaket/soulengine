@@ -359,6 +359,9 @@ begin
     Dialogs.TPageSetupDialog, Dialogs.TFindDialog, Dialogs.TReplaceDialog
 {$ENDIF}
     ]);
+{$IFNDEF ADD_AC}
+RegisterClassAlias(TColorDialog, 'TDMSColorDialog');
+{$ENDIF}
 end;
 
 procedure registerVSEditor;
@@ -420,6 +423,9 @@ TNxTimePicker,
     TButtonCategory, TButtonCategories, TButtonItem, TCategoryButtons
 
     ]);
+{$ENDIF}
+{$IFDEF ADD_AC}
+RegisterClassAlias(sDialogs.TsColorDialog, 'TDMSColorDialog');
 {$ENDIF}
 end;
 
