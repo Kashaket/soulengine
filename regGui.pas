@@ -25,7 +25,7 @@ uses Forms, Dialogs, SysUtils, Windows, TypInfo, Classes, Controls, Buttons,
     , NxPropertyItems, NxPropertyItemClasses, NxScrollControl,
   NxInspector, DockTabSet,
   CaptionedDockTree2,
-   NxEdit,
+  NxEdit,
   {$IFDEF ADD_SYN}
   SynEditHighlighter,
 

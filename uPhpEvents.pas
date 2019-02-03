@@ -18,7 +18,7 @@ uses
 {$ENDIF}
 {$IFDEF VS_EDITOR}
     , NxPropertyItems, NxPropertyItemClasses, NxScrollControl,
-  NxInspector,
+  NxInspector, DragDropFile,
   {$IFDEF ADD_SYN_EV}
   SynEditTypes, SynEdit, SynCompletionProposal,
   {$ENDIF}
@@ -91,7 +91,7 @@ type
     procedure onDragOver(Sender, Source: TObject; X, Y: integer;
       State: TDragState; var Accept: boolean);
 
-    procedure onDropFiles(Sender: TObject; Files: TStrings; X: integer;
+    procedure onDropFiles(Sender: TObject; Files: TUnicodeStrings; X: integer;
       Y: integer);
 
     { --- size controls }
@@ -1295,6 +1295,7 @@ procedure TPHPScriptEventHandler.Run(Args: array of const);
 var
   Cnt, i: integer;
   S: ansistring;
+  strs: TStrings;
 begin
   Cnt := Length(Args);
   SetLength(Self.Args, Cnt + 1 + Length(AddArgs));
@@ -1317,7 +1318,15 @@ begin
     case Args[i - 1].vtype of
       vtInteger:
         ZVAL_LONG(Self.Args[i], Args[i - 1].VInteger);
-      vtPointer, vtObject:
+      vtObject:
+      begin
+        if TPersistent(Args[i - 1].VPointer) is TUnicodeStrings then
+        begin
+         ZVAL_ARRAY(Self.Args[i], TUnicodeStrings(TPersistent(Args[i - 1].VPointer)).text.split([#10]) );
+        end else
+          ZVAL_LONG(Self.Args[i], integer(Args[i - 1].VPointer));
+      end;
+      vtPointer:
         ZVAL_LONG(Self.Args[i], integer(Args[i - 1].VPointer));
       vtInt64:
         ZVAL_DOUBLE(Self.Args[i], Args[i - 1].VInt64^);
@@ -1505,6 +1514,8 @@ begin
   if ID <> -1 then
   begin
     Result := TPHPScriptEventHandler(Events.Objects[ID]);
+    {if lowercase(name) = 'ondropfiles' then
+    ShowMessage( IntToStr( Args[0].vtype ) );}
     Result.Run(Args);
   end;
 end;
@@ -1947,11 +1958,10 @@ begin
   end;
 end;
 
-procedure THandlerFuncs.onDropFiles(Sender: TObject; Files: TStrings;
+procedure THandlerFuncs.onDropFiles(Sender: TObject; Files: TUnicodeStrings;
   X: integer; Y: integer);
 begin
-  EventRun(Self, 'OnDropFiles', [StringReplace(TrimRight(Files.Text), #13#10,
-    #10, [rfReplaceAll]), X, Y]);
+  EventRun(Self, 'OnDropFiles', [files, X, Y]);
 end;
 
 procedure THandlerFuncs.onDuringSizeMove(Sender: TObject; dx, dy: integer;
