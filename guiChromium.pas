@@ -2,8 +2,9 @@ unit guiChromium;
 
 {$ifdef fpc}
 {$mode delphi}{$H+}
-{$endif}
-
+{$ELSE}
+{$M+}
+{$ENDIF}
 interface
 
 uses
@@ -80,7 +81,6 @@ procedure chromium_allowedcall;
 var
   p: pzval_array;
   i: integer;
-  s: ansistring;
   tmp: ^ppzval;
   arr: PHashTable;
 begin
@@ -104,7 +104,7 @@ begin
     for i := zend_hash_num_elements(arr) - 1 downto 0 do
     begin
       zend_hash_index_find(arr, i, tmp);
-      AllowedCall.SetValue(LowerCase(Z_STRVAL(tmp^^)), '');
+      AllowedCall.SetValue(LowerCase(String(Z_STRVAL(tmp^^))), '');
     end;
     Dispose(tmp);
   end;
@@ -133,7 +133,7 @@ begin
     ZVAL_DOUBLE(arg, Value.GetDateValue)
   else if Value.IsString then
   begin
-    S := Value.GetStringValue;
+    S := AnsiString(Value.GetStringValue);
     if S = '' then
       ZVAL_EMPTY_STRING(arg)
     else
@@ -149,7 +149,7 @@ begin
     IS_LONG: Result := TCefv8ValueRef.CreateInt(arg.Value.lval);
     IS_DOUBLE: Result := TCefv8ValueRef.CreateDouble(arg.Value.dval);
     IS_BOOL: Result := TCefv8ValueRef.CreateBool(boolean(arg.Value.lval));
-    IS_STRING: Result := TCefv8ValueRef.CreateString(Z_STRVAL(arg));
+    IS_STRING: Result := TCefv8ValueRef.CreateString(String(Z_STRVAL(arg)));
     else
       Result := TCefv8ValueRef.CreateNull;
   end;

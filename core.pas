@@ -1,5 +1,5 @@
 unit core;
-
+{$I 'sDef.inc'}
 {$ifdef fpc}
 {$mode objfpc}{$H+}
 {$endif}
