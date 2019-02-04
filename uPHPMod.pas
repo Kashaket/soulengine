@@ -19,8 +19,10 @@ uses
   coolTrayIcon, libSysTray,
   Graphics, Dialogs, Forms, Variants, uGuiScreen, ComCtrls,
   Controls, Windows, FileCtrl, Buttons, SizeControl, ExtCtrls, Menus,
-  StdCtrls, ExeMod, ShellApi, RyMenus, CheckLst, TlHelp32, mdsUtils,
-  Messages, MImage, Vcl.Imaging.GIFImg, Jpeg, Grids,
+  StdCtrls, ExeMod, ShellApi,
+  {$IFDEF ADD_RYM} RyMenus, {$ENDIF}
+  CheckLst, TlHelp32, mdsUtils,
+  Messages, MImage, GIFImage2, Jpeg, Grids,
   CaptionedDockTree2,
    Vcl.Imaging.PNGImage,
   Clipbrd, System.AnsiStrings,
@@ -77,7 +79,6 @@ type
     _TSynEdit: TPHPLibrary;
     _Canvas: TPHPLibrary;
     _BackWorker: TPHPLibrary;
-    _Skins: TPHPLibrary;
     _Docking: TPHPLibrary;
     __WinUtils: TPHPLibrary;
     _Chromium: TPHPLibrary;
@@ -797,9 +798,6 @@ type
       Parameters: TFunctionParams; var ReturnValue: variant;
       ZendVar: TZendVariable; TSRMLS_DC: Pointer);
     procedure _BackWorkerFunctions5Execute(Sender: TObject;
-      Parameters: TFunctionParams; var ReturnValue: variant;
-      ZendVar: TZendVariable; TSRMLS_DC: Pointer);
-    procedure _BackWorkerFunctions6Execute(Sender: TObject;
       Parameters: TFunctionParams; var ReturnValue: variant;
       ZendVar: TZendVariable; TSRMLS_DC: Pointer);
     procedure _TSynEditFunctions5Execute(Sender: TObject;
@@ -4032,11 +4030,14 @@ end;
 procedure TphpMOD._MenusFunctions8Execute(Sender: TObject;
   Parameters: TFunctionParams; var ReturnValue: variant; ZendVar: TZendVariable;
   TSRMLS_DC: Pointer);
+{$IFDEF ADD_RYM}
 var
   c: string;
   V: variant;
   M: TMenu;
+{$ENDIF}
 begin
+{$IFDEF ADD_RYM}
   M := TMenu(ToObj(Parameters, 0));
   c := Parameters[1].Value;
   V := Parameters[2].Value;
@@ -4078,7 +4079,7 @@ begin
       RyMenu.MinWidth := V;
 
   end;
-
+{$ENDIF}
 end;
 
 procedure TphpMOD._TPictureLibFunctions11Execute(Sender: TObject;
@@ -5640,16 +5641,6 @@ begin
   ReturnValue := isTermited;
 end;
 
-procedure TphpMOD._BackWorkerFunctions6Execute(Sender: TObject;
-  Parameters: TFunctionParams; var ReturnValue: variant; ZendVar: TZendVariable;
-  TSRMLS_DC: Pointer);
-var
-  X: integer;
-begin
-  X := Parameters[0].Value;
-  ReturnValue := Random(X);
-end;
-
 procedure TphpMOD._TSynEditFunctions5Execute(Sender: TObject;
   Parameters: TFunctionParams; var ReturnValue: variant; ZendVar: TZendVariable;
   TSRMLS_DC: Pointer);
@@ -6640,7 +6631,7 @@ var
   M: TMemoryStream;
   PNG: TPNGImage;
   JPG: TJPEGImage;
-  GIF: TGIFImage;
+  GIF: GIFImage2.TGIFImage;
 begin
   P := TPicture(ToObj(Parameters, 0));
   M := TMemoryStream.Create;
@@ -6669,7 +6660,7 @@ begin
   end
   else if (format = 'gif') then
   begin
-    GIF := TGIFImage.Create;
+    GIF := GIFImage2.TGIFImage.Create;
     with GIF do
     begin
       LoadFromStream(M);

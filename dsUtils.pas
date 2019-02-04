@@ -8,7 +8,7 @@ interface
 
 uses
   Classes, SysUtils, Dialogs, Controls, Forms, ShellAPI, ClipBrd, Windows, ShlObj,
-  Graphics, Vcl.Imaging.pngimage, Vcl.Imaging.GIFImg, Jpeg, exemod,
+  Graphics, Vcl.Imaging.pngimage, GifImage2, Jpeg, exemod,
 
   {$ifdef fpc}
   LCLType,
@@ -141,7 +141,7 @@ procedure clipboard_assign;
   M: TMemoryStream;
   PNG: TPNGImage;
   JPG: TJPEGImage;
-  GIF: TGIFImage;
+  GIF: GifImage2.TGIFImage;
   Pic: TPicture;
 begin
   if ht < 1 then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
@@ -179,7 +179,7 @@ begin
   end
   else if ( format = 'gif' ) then
   begin
-       GIF := TGIFImage.Create;
+       GIF := GifImage2.TGIFImage.Create;
        with GIF do
        begin
            LoadFromStream( M );

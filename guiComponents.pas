@@ -1,5 +1,5 @@
 unit guiComponents;
-
+{$I 'sDef.inc'}
 {$ifdef fpc}
 {$mode delphi}{$H+}
 {$endif}
@@ -14,7 +14,7 @@ uses
   PHPAPI,
   php4delphi,
   uPhpEvents,
-  vcl.imaging.pngimage, PngSpeedButton, PngBitBtn,
+  vcl.imaging.pngimage, {$IFDEF ADD_SKINS}sBitBtn, sButton, sSpeedButton,{$ENDIF}
   Graphics, dsStdCtrl, vcl.dialogs, vcl.buttons;
 
 procedure InitializeGuiComponents(PHPEngine: TPHPEngine);
@@ -1023,10 +1023,17 @@ begin
   if O <> nil then
   begin
     M := TStringStream.Create(Z_STRVAL(p[1]^));
-        if O is TPngSpeedButton then
-          TPngSpeedButton(O).PngImage.LoadFromStream(M)
-        else if O is TPngBitBtn then
-          TPngBitBtn(O).PngImage.LoadFromStream(M);
+        {$IFDEF ADD_SKINS}
+        if O is TsSpeedButton then
+          TsSpeedButton(O).Glyph.LoadFromStream(M)
+        else if O is TsBitBtn then
+          TsBitBtn(O).Glyph.LoadFromStream(M)
+        else
+        {$ENDIF}
+        if O is TSpeedButton then
+          TSpeedButton(O).Glyph.LoadFromStream(M)
+        else if O is TBitBtn then
+          TBitBtn(O).Glyph.LoadFromStream(M);
     M.Free;
   end;
   dispose_pzval_array(p);
@@ -1050,10 +1057,17 @@ begin
 
   if O <> nil then
   begin
-        if O is TPngSpeedButton then
-          TPngSpeedButton(O).PngImage.LoadFromFile(S)
-        else if O is TPngBitBtn then
-          TPngBitBtn(O).PngImage.LoadFromFile(S);
+        {$IFDEF ADD_SKINS}
+        if O is TsSpeedButton then
+          TsSpeedButton(O).Glyph.LoadFromFile(S)
+        else if O is TsBitBtn then
+          TsBitBtn(O).Glyph.LoadFromFile(S)
+        else
+        {$ENDIF}
+        if O is TSpeedButton then
+          TSpeedButton(O).Glyph.LoadFromFile(S)
+        else if O is TBitBtn then
+          TBitBtn(O).Glyph.LoadFromFile(S);
   end;
   dispose_pzval_array(p);
 end;
@@ -1075,13 +1089,20 @@ begin
   S := TStringStream.Create(#0);
   if O <> nil then
   begin
-        if O is TPngSpeedButton then
-          TPngSpeedButton(O).PngImage.SaveToStream(S)
-        else if O is TPngBitBtn then
-          TPngBitBtn(O).PngImage.SaveToStream(S);
+        {$IFDEF ADD_SKINS}
+        if O is TsSpeedButton then
+          TsSpeedButton(O).Glyph.SaveToStream(S)
+        else if O is TsBitBtn then
+          TsBitBtn(O).Glyph.SaveToStream(S)
+        else
+        {$ENDIF}
+        if O is TSpeedButton then
+          TSpeedButton(O).Glyph.SaveToStream(S)
+        else if O is TBitBtn then
+          TBitBtn(O).Glyph.SaveToStream(S);
   end;
 
-  ZVAL_STRINGL(return_value, PAnsiChar(S.DataString), S.Size, True);
+  ZVAL_STRINGL(return_value, PAnsiChar(AnsiString(S.DataString)), S.Size, True);
   S.Free;
   dispose_pzval_array(p);
 end;
@@ -1103,10 +1124,17 @@ begin
 
   if O <> nil then
   begin
-        if O is TPngSpeedButton then
-          ZVAL_BOOL(Return_value, not TPngSpeedButton(O).PngImage.Empty)
-        else if O is TPngBitBtn then
-          ZVAL_BOOL(Return_value, not TPngBitBtn(O).PngImage.Empty);
+        {$IFDEF ADD_SKINS}
+        if O is TsSpeedButton then
+          ZVAL_BOOL(Return_value, not TsSpeedButton(O).Glyph.Empty)
+        else if O is TsBitBtn then
+          ZVAL_BOOL(Return_value, not TsBitBtn(O).Glyph.Empty)
+        else
+        {$ENDIF}
+        if O is TSpeedButton then
+          ZVAL_BOOL(Return_value, not TSpeedButton(O).Glyph.Empty)
+        else if O is TBitBtn then
+          ZVAL_BOOL(Return_value, not TBitBtn(O).Glyph.Empty);
   end;
 
   dispose_pzval_array(p);
@@ -1137,14 +1165,23 @@ begin
     begin
       if TPicture(D).Graphic is TPNGIMage then
       begin
-
-              if O is TPngSpeedButton then
+              {$IFDEF ADD_SKINS}
+        if O is TsSpeedButton then
               begin
-                 TPngSpeedButton(O).PngImage.Assign( TPicture(D).Graphic );
-                 TPngSpeedButton(O).Refresh;
+                 TsSpeedButton(O).Glyph.Assign( TPicture(D).Graphic );
+                 TsSpeedButton(O).Refresh;
               end
-              else if O is TPngBitBtn then
-                 TPngBitBtn(O).PngImage.Assign( TPicture(D).Graphic );
+              else if O is TsBitBtn then
+                 TsBitBtn(O).Glyph.Assign( TPicture(D).Graphic )
+        else
+        {$ENDIF}
+              if O is TSpeedButton then
+              begin
+                 TSpeedButton(O).Glyph.Assign( TPicture(D).Graphic );
+                 TSpeedButton(O).Refresh;
+              end
+              else if O is TBitBtn then
+                 TBitBtn(O).Glyph.Assign( TPicture(D).Graphic );
 
         ZVAL_TRUE(return_value);
         goto _exit;

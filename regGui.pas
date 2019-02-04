@@ -7,9 +7,9 @@ interface
 uses Forms, Dialogs, SysUtils, Windows, TypInfo, Classes, Controls, Buttons,
   Messages,
   propertiesEngine,
-  StdCtrls, CommCtrl, ComCtrls, Menus, ExtCtrls, ExtDlgs, Math, Mask, Grids,
+  StdCtrls, ComCtrls, Menus, ExtCtrls, ExtDlgs, Math, Mask, Grids,
   Tabs, Graphics, MImage, ValEdit, mainLCL, uGuiScreen, cooltrayicon,
-
+  GIFImage2,
   vcl.imaging.pngimage, dsStdCtrl {, rkSmartTabs}
   {$IFDEF ADD_AC}, sDialogs  {$ENDIF}
 
@@ -213,7 +213,6 @@ function StringToComponentProc(Instance: integer; Value: string): TComponent;
 var
   StrStream: TStringStream;
   BinStream: TMemoryStream;
-  Component: TComponent;
 begin
   StrStream := TStringStream.Create(Value);
   try
@@ -262,7 +261,7 @@ begin
 {$IFDEF NOT_LITE}
     TScrollBar,
 {$ENDIF}
-    TPNGImage]);
+    TPNGImage, TGifImage]);
 
   RegisterClassA(StdCtrls.TEdit);
   UnRegisterClass(StdCtrls.TEdit);
