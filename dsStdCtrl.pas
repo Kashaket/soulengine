@@ -5,7 +5,7 @@ unit dsStdCtrl;
 interface
 
 uses Forms, Dialogs, SysUtils, Windows, Types, UITypes, TypInfo, Classes, Controls, Buttons,
-  Messages, StdCtrls, Graphics, ExtCtrls, ShellAPI, ComCtrls, Vcl.Themes;
+  Messages, StdCtrls, Graphics, ExtCtrls, ShellAPI, ComCtrls, Vcl.Themes, DragDrop, DropTarget, DragDropFile;
 {$M+}
 {$TypeInfo On}
 type
@@ -64,50 +64,36 @@ type
   end;
 
 type
-  TDropFilesInfo = class(TPersistent)
-  private
-    FControl: TWinControl; // Drop action target control
-    FStamp: TDateTime; // Timestamp of drop action
-    FPoint: TPoint; // Drop point
-    FFiles: TStrings; // List with filenames
-  public
-    constructor Create;
-    destructor Destroy; override;
-    procedure Assign(Source: TPersistent); override;
-    property Control: TWinControl read FControl;
-    property Files: TStrings read FFiles;
-    property Point: TPoint read FPoint;
-    property Stamp: TDateTime read FStamp;
-  end;
-
-  TDropFilesEvent = procedure(Sender: TObject; Files: TStrings; X: integer;
+  TDropFilesEvent = procedure(Sender: TObject; Files: TUnicodeStrings; X: integer;
     Y: integer) of object;
 
-  TDropFilesTarget = class(TComponent)
+  TDropFilesTarget = class(TDropFileTarget)
   private
-    FTargetControl: TWinControl; // Target control to accept WM_DROPFILES
-    FEnabled: boolean; // Enable/disable accepting
-    FOnDropFiles: TDropFilesEvent; // Notification handler
-    FAcceptingWindow: HWND; // Window handle that got "DragAcceptFiles"
-    FOldWndProc: TWndMethod; // Old WindowProc method
-    procedure DropFiles(hDrop: hDrop);
-    procedure NewWndProc(var Msg: TMessage);
-    procedure AttachControl;
-    procedure DetachControl;
-    procedure SetEnabled(AEnabled: boolean);
-    procedure SetTargetControl(AControl: TWinControl);
-  protected
-    procedure Notification(AComponent: TComponent;
-      Operation: TOperation); override;
-  public
-    constructor Create(AOwner: TComponent); override;
-    destructor Destroy; override;
+  FOnDropFiles: TDropFilesEvent; // Notification handler
   published
-    property Enabled: boolean read FEnabled write SetEnabled default True;
-    property TargetControl: TWinControl read FTargetControl
-      write SetTargetControl;
-    property OnDropFiles: TDropFilesEvent read FOnDropFiles write FOnDropFiles;
+  procedure hOnDrop(Sender: TObject; ShiftState: TShiftState;
+    APoint: TPoint; var Effect: Longint);
+    procedure TestOnDrop(Sender: TObject; Files: TUnicodeStrings; X: integer;
+    Y: integer);
+    procedure setOnDropFiles(AEvent: TDropFilesEvent);
+    constructor Create(AOwner: TComponent); override;
+    property OnDropFiles: TDropFilesEvent read FOnDropFiles write SetOnDropFiles;
   end;
+
+
+type
+TWMScrollEvent = procedure(Sender: TObject; ScrollCode: integer; var ScrollPos: integer) of object;
+
+  TScrollBox=Class(Forms.TScrollBox)
+    procedure WMHScroll(var Message: TWMHScroll); message WM_HSCROLL;
+    procedure WMVScroll(var Message: TWMVScroll); message WM_VSCROLL;
+  private
+    FOnScrollVert: TWMScrollEvent;
+    FOnScrollHorz: TWMScrollEvent;
+  published
+   Property OnScrollVert:TWMScrollEvent read FOnScrollVert Write FonScrollVert;
+   Property OnScrollHorz:TWMScrollEvent read FOnScrollHorz Write FonScrollHorz;
+  End;
 
 type
   TEdit = class(StdCtrls.TEdit)
@@ -191,9 +177,8 @@ type
     procedure DoEnter; override;
     procedure DoExit; override;
 
-  public
-    constructor Create(AOwner: TComponent); override;
   published
+    constructor Create(AOwner: TComponent); override;
     property OnFocus: TNotifyEvent read FOnFocus write FOnFocus;
     property OnBlur: TNotifyEvent read FOnBlur write FOnBlur;
   end;
@@ -224,18 +209,17 @@ type
     procedure DrawItem(Index: integer; Rect: TRect;
       State: TOwnerDrawState); override;
 
-  public
-
+  published
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
 
     procedure SetColor(Index: integer; Color: TColor);
     function GetColor(Index: integer): TColor;
+
     procedure ClearColor(Index: integer);
 
     function GetFont(Index: integer): TFont;
     procedure ClearFont(Index: integer);
-  published
     property Alignment: TAlignment read FAlignment write SetAlignment;
     property BorderSelected: boolean read FBorderSelected
       write SetBorderSelected;
@@ -281,9 +265,9 @@ type
 type
    TTransparentPanel = class(TPanel)
 private
-  procedure SetParent(AParent: TWinControl); override;
   procedure WMEraseBkGnd(Var Message: TWMEraseBkGnd); message WM_EraseBkGnd;
 protected
+  procedure SetParent(AParent: TWinControl); override;
   procedure CreateParams(Var Params: TCreateParams); override;
   procedure Paint; override;
 published
@@ -292,7 +276,7 @@ published
 end;
 
 implementation
-
+{ TEdit }
 constructor TEdit.Create(AOwner: TComponent);
 begin
   inherited;
@@ -414,6 +398,31 @@ begin
     end;
   end;
 end; (* KeyPress *)
+
+{ TScrollBoxEx }
+procedure TScrollBox.WMHScroll(var Message: TWMHScroll);
+var x_pos: integer;
+begin
+   inherited;
+
+   if Assigned(FOnScrollHorz) then
+   begin
+     x_pos := Self.HorzScrollBar.Position;
+     FOnScrollHorz(Self, integer(Message.ScrollCode), x_pos);
+     Self.HorzScrollBar.Position := x_pos;
+   end;
+end;
+
+procedure TScrollBox.WMVScroll(var Message: TWMVScroll);
+var y_pos: integer;
+begin
+   inherited;
+   if Assigned(FOnScrollVert) then begin
+    y_pos := Self.VertScrollBar.Position;
+    FOnScrollVert(Self, integer(Message.ScrollCode), y_pos);
+    Self.VertScrollBar.Position := SmallInt( y_pos );
+   end;
+end;
 
 { TMemo }
 
@@ -834,7 +843,7 @@ end;
 { TForm }
 
 { TDropFilesInfo }
-
+{
 constructor TDropFilesInfo.Create;
 begin
   inherited;
@@ -864,12 +873,30 @@ end;
 
 constructor TDropFilesTarget.Create(AOwner: TComponent);
 begin
-  inherited;
-  FEnabled := True;
-  if AOwner is TWinControl then
-    SetTargetControl(TWinControl(AOwner));
+  inherited Create(AOwner);
+  Self.OnDrop  := Self.hOnDrop;
+  Self.DragTypes := [dtMove, dtCopy];
+  Self.Target := TWinControl( AOwner );
 end;
+procedure TDropFilesTarget.setOnDropFiles(AEvent: TDropFilesEvent);
+begin
+  FOnDropFiles := AEvent;
+end;
+procedure TDropFilesTarget.TestOnDrop(Sender: TObject; Files: TUnicodeStrings; X: integer;
+    Y: integer);
+begin
+  ShowMessage('It works!');
+end;
+procedure TDropFilesTarget.hOnDrop(Sender: TObject; ShiftState: TShiftState;
+    APoint: TPoint; var Effect: Longint);
+Begin
 
+  if Assigned(FOnDropFiles) then
+  begin
+   FOnDropFiles(Sender, Files, APoint.X, APoint.Y);
+  end;
+End;
+{
 destructor TDropFilesTarget.Destroy;
 begin
   TargetControl := nil; // This detaches any attached control
@@ -888,7 +915,7 @@ end;
 
 { Do the dropping. Note that DragFinish is called in the window
   procedure and not here.
-}
+}    {
 procedure TDropFilesTarget.DropFiles(hDrop: hDrop);
 var
   Info: TDropFilesInfo;
@@ -921,7 +948,7 @@ begin
 end;
 
 { The new Window procedure for the attached drop target control.
-}
+}     {
 procedure TDropFilesTarget.NewWndProc(var Msg: TMessage);
 begin
   if Msg.Msg = WM_DROPFILES then
@@ -958,7 +985,7 @@ end;
 
 { Attach to FTargetControl: subclass, force a window handle and call
   DragAcceptFiles with Accept=true.
-}
+}      {
 procedure TDropFilesTarget.AttachControl;
 begin
   if [csDesigning, csDestroying] * ComponentState <> [] then
@@ -982,7 +1009,7 @@ end;
 
 { Detach from FTargetControl: call DragAcceptFiles with Accept=false and
   remove subclassing.
-}
+}       {
 procedure TDropFilesTarget.DetachControl;
 begin
   if FAcceptingWindow <> 0 then

@@ -54,6 +54,10 @@ type
 
     procedure onScroll(Sender: TObject; ScrollCode: TScrollCode;
       var ScrollPos: integer);
+    procedure onScrollVert(Sender: TObject; ScrollCode: integer;
+      var ScrollPos: integer);
+    procedure onScrollHorz(Sender: TObject; ScrollCode: integer;
+      var ScrollPos: integer);
     procedure onPopup(Sender: TObject);
 
     { --- edit --- }
@@ -829,8 +833,8 @@ begin
   EventAddNewType('OnExecute', @THandlerFuncs.onExecute, TScriptThread, 1);
   EventAddNewType('OnCloseQuery', @THandlerFuncs.onCloseQuery, TForm);
   EventAddNewType('OnClose', @THandlerFuncs.onClose, TForm);
-  EventAddNewType('OnResize', @THandlerFuncs.onResize, TForm);
-  EventAddNewType('OnCanResize', @THandlerFuncs.onCanResize, TForm);
+  EventAddNewType('OnResize', @THandlerFuncs.onResize);
+  EventAddNewType('OnCanResize', @THandlerFuncs.onCanResize);
   EventAddNewType('OnShow', @THandlerFuncs.onShow, TForm);
   EventAddNewType('OnHide', @THandlerFuncs.onHide, TForm);
   EventAddNewType('OnPaint', @THandlerFuncs.onPaint);
@@ -838,6 +842,8 @@ begin
   EventAddNewType('OnDeactivate', @THandlerFuncs.onDeactivate, TForm);
 
   EventAddNewType('OnScroll', @THandlerFuncs.onScroll);
+  EventAddNewType('OnScrollVert', @THandlerFuncs.onScrollVert);
+  EventAddNewType('OnScrollHorz', @THandlerFuncs.onScrollHorz);
   EventAddNewType('OnPopup', @THandlerFuncs.onPopup);
   EventAddNewType('OnMoved', @THandlerFuncs.onMoved);
   EventAddNewType('onChange', @THandlerFuncs.onChange);
@@ -1625,6 +1631,32 @@ var
   H: TPHPScriptEventHandler;
 begin
   H := EventRun(Sender, 'OnScroll', [integer(ScrollCode), ScrollPos], False);
+  {if H <> nil then
+  begin
+    ScrollPos := H.ParamInt(2);
+    H.ClearArgs;
+  end;}
+end;
+
+procedure THandlerFuncs.onScrollVert(Sender: TObject; ScrollCode: integer;
+  var ScrollPos: integer);
+var
+  H: TPHPScriptEventHandler;
+begin
+  H := EventRun(Sender, 'OnScrollVert', [integer(ScrollCode), ScrollPos], False);
+  if H <> nil then
+  begin
+    ScrollPos := H.ParamInt(2);
+    H.ClearArgs;
+  end;
+end;
+
+procedure THandlerFuncs.onScrollHorz(Sender: TObject; ScrollCode: integer;
+  var ScrollPos: integer);
+var
+  H: TPHPScriptEventHandler;
+begin
+  H := EventRun(Sender, 'OnScrollHorz', [integer(ScrollCode), ScrollPos], False);
   if H <> nil then
   begin
     ScrollPos := H.ParamInt(2);

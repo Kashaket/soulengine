@@ -595,7 +595,6 @@ begin
 end;
 procedure gui_get_all_unitsclasses;
 var
-  p: pzval_array;
   arrv: TWSDate;
 begin
   if ht <> 0 then

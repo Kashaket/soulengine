@@ -353,15 +353,19 @@ begin
     TColorDialog, TCommonDialog,
     TDataModule,
     TFontDialog,
-    Forms.TControlScrollBar, Forms.TScrollingWinControl, Forms.TScrollBox,
+    Forms.TControlScrollBar, Forms.TScrollingWinControl,
     Forms.TCustomActiveForm, Forms.TScreen, TScreenEx, TOpenDialog, TSaveDialog
     , Dialogs.TPrinterSetupDialog, Dialogs.TPrintDialog,
     Dialogs.TPageSetupDialog, Dialogs.TFindDialog, Dialogs.TReplaceDialog
 {$ENDIF}
     ]);
+{$IFDEF NOT_LITE}
+  RegisterClassA(Forms.TScrollBox);
+  UnRegisterClass(Forms.TScrollBox);
+  RegisterClassAlias(dsStdCtrl.TScrollBox, 'TScrollBox');
 {$IFNDEF ADD_AC}
 RegisterClassAlias(TColorDialog, 'TDMSColorDialog');
-{$ENDIF}
+{$ENDIF}  {$ENDIF}
 end;
 
 procedure registerVSEditor;
