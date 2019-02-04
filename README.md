@@ -45,3 +45,4 @@ GUI Tool kit for PHP and DevelStudio.
 2) ADD_AC, ADD_SKINS - добавлять AlphaControls
 3) ADD_CHROMIUM - добавлять CEF
 4) PHP540 - добавлять поддержку PHP 5.4.0
+5) ADD_RYM - добавлять стильные меню (Rays Menues)
