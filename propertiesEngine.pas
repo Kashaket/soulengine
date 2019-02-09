@@ -6,7 +6,7 @@ uses
   {$IFDEF typelib} System.ShareMem, {$ENDIF}
   SysUtils, WinAPI.Windows,
   Dialogs, Forms, Graphics, Classes, Controls, StdCtrls, TypInfo, Variants,
-  mainLCL, RTTI, ZendApi, UnitClass, php4delphi
+  mainLCL, RTTI, ZendApi,{$IFDEF typelib} UnitClass, {$ENDIF}php4delphi
   //, EventHook
   ;
 function setProperty(id: integer; prop: string; Value: variant): boolean;
@@ -49,7 +49,9 @@ implementation
 type
   FindType = function(ClassName: string): TRttiType;
   LibModuleListAddres = function(): PLibModule;
+ {$IFDEF typelib}
 var uc: TUnitClass;
+{$ENDIF}
 {
 function gui_set_event(id: integer; value: string): Boolean;
 var hobj: TObject;
@@ -79,6 +81,7 @@ var
   instance: TClass;
 
 begin
+{$IFDEF typelib}
     Result := 0;
     c := uc.FindType( classname );
     if not Assigned(c) then Exit;
@@ -94,6 +97,7 @@ begin
     if owner > 0 then
       c.GetProperty('Parent').SetValue(o, TObject(owner));
     Result := NativeUint( o );
+{$ENDIF}
 end;
 function LoadTypeLib(LibraryName: string) : Boolean;
 var
