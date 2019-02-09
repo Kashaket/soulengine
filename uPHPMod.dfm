@@ -338,41 +338,6 @@ object phpMOD: TphpMOD
         OnExecute = PHPLibraryFunctions24Execute
       end
       item
-        FunctionName = '__setvarex_old'
-        Tag = 0
-        Parameters = <
-          item
-            Name = 'P1'
-            ParamType = tpUnknown
-          end>
-      end
-      item
-        FunctionName = 'copyer_add'
-        Tag = 0
-        Parameters = <
-          item
-            Name = 'P1'
-            ParamType = tpUnknown
-          end
-          item
-            Name = 'P2'
-            ParamType = tpUnknown
-          end>
-      end
-      item
-        FunctionName = 'copyer_insert'
-        Tag = 0
-        Parameters = <
-          item
-            Name = 'P1'
-            ParamType = tpUnknown
-          end
-          item
-            Name = 'P2'
-            ParamType = tpUnknown
-          end>
-      end
-      item
         FunctionName = 'include_encode'
         Tag = 0
         Parameters = <
@@ -421,23 +386,6 @@ object phpMOD: TphpMOD
         OnExecute = PHPLibraryFunctions31Execute
       end
       item
-        FunctionName = 'control_maxmin'
-        Tag = 0
-        Parameters = <
-          item
-            Name = 'P1'
-            ParamType = tpUnknown
-          end
-          item
-            Name = 'P2'
-            ParamType = tpUnknown
-          end
-          item
-            Name = 'P3'
-            ParamType = tpUnknown
-          end>
-      end
-      item
         FunctionName = 'include_enc'
         Tag = 0
         Parameters = <
@@ -459,6 +407,7 @@ object phpMOD: TphpMOD
             Name = 'P2'
             ParamType = tpUnknown
           end>
+        OnExecute = PHPLibraryFunctions30Execute
       end
       item
         FunctionName = 'link_null'
@@ -625,11 +574,6 @@ object phpMOD: TphpMOD
         OnExecute = PHPLibraryFunctions48Execute
       end
       item
-        FunctionName = 'xxxx'
-        Tag = 0
-        Parameters = <>
-      end
-      item
         FunctionName = 'include_get'
         Tag = 0
         Parameters = <
@@ -742,30 +686,6 @@ object phpMOD: TphpMOD
         OnExecute = PHPLibraryFunctions59Execute
       end
       item
-        FunctionName = 'novisual_loadfile'
-        Tag = 0
-        Parameters = <
-          item
-            Name = 'P1'
-            ParamType = tpUnknown
-          end
-          item
-            Name = 'P2'
-            ParamType = tpUnknown
-          end>
-        OnExecute = PHPLibraryFunctions60Execute
-      end
-      item
-        FunctionName = 'novisual_clear'
-        Tag = 0
-        Parameters = <
-          item
-            Name = 'P1'
-            ParamType = tpUnknown
-          end>
-        OnExecute = PHPLibraryFunctions61Execute
-      end
-      item
         FunctionName = 'tevent_text'
         Tag = 0
         Parameters = <
@@ -778,19 +698,6 @@ object phpMOD: TphpMOD
             ParamType = tpUnknown
           end>
         OnExecute = PHPLibraryFunctions62Execute
-      end
-      item
-        FunctionName = 'thread_include_enc2'
-        Tag = 0
-        Parameters = <
-          item
-            Name = 'P1'
-            ParamType = tpUnknown
-          end
-          item
-            Name = 'P2'
-            ParamType = tpUnknown
-          end>
       end
       item
         FunctionName = 'b64_encode'
@@ -856,45 +763,6 @@ object phpMOD: TphpMOD
   object gui: TPHPLibrary
     LibraryName = 'gui'
     Functions = <
-      item
-        FunctionName = 'set_event_old'
-        Tag = 0
-        Parameters = <
-          item
-            Name = 'obj'
-            ParamType = tpUnknown
-          end
-          item
-            Name = 'event'
-            ParamType = tpUnknown
-          end
-          item
-            Name = 'func'
-            ParamType = tpUnknown
-          end>
-      end
-      item
-        FunctionName = 's_gl'
-        Tag = 0
-        Parameters = <
-          item
-            Name = 'P1'
-            ParamType = tpUnknown
-          end
-          item
-            Name = 'P2'
-            ParamType = tpUnknown
-          end>
-      end
-      item
-        FunctionName = 'gl'
-        Tag = 0
-        Parameters = <
-          item
-            Name = 'P1'
-            ParamType = tpUnknown
-          end>
-      end
       item
         FunctionName = 'reg_component'
         Tag = 0
@@ -998,19 +866,6 @@ object phpMOD: TphpMOD
         OnExecute = guiFunctions12Execute
       end
       item
-        FunctionName = 'get_event'
-        Tag = 0
-        Parameters = <
-          item
-            Name = 'P1'
-            ParamType = tpUnknown
-          end
-          item
-            Name = 'P2'
-            ParamType = tpUnknown
-          end>
-      end
-      item
         FunctionName = 'gui_componenttostring'
         Tag = 0
         Parameters = <
@@ -1085,15 +940,6 @@ object phpMOD: TphpMOD
             ParamType = tpUnknown
           end>
         OnExecute = libFormsFunctions0Execute
-      end
-      item
-        FunctionName = '__tcursor'
-        Tag = 0
-        Parameters = <
-          item
-            Name = 'P1'
-            ParamType = tpUnknown
-          end>
       end
       item
         FunctionName = 'font_prop'
@@ -3045,19 +2891,6 @@ object phpMOD: TphpMOD
         OnExecute = OSApiFunctions24Execute
       end
       item
-        FunctionName = 'trayicon_assign'
-        Tag = 0
-        Parameters = <
-          item
-            Name = 'P1'
-            ParamType = tpUnknown
-          end
-          item
-            Name = 'P2'
-            ParamType = tpUnknown
-          end>
-      end
-      item
         FunctionName = 'sendmessage'
         Tag = 0
         Parameters = <
@@ -3078,6 +2911,20 @@ object phpMOD: TphpMOD
             ParamType = tpUnknown
           end>
         OnExecute = OSApiFunctions26Execute
+      end
+      item
+        FunctionName = 'trayicon_assign'
+        Tag = 0
+        Parameters = <
+          item
+            Name = 'P1'
+            ParamType = tpUnknown
+          end
+          item
+            Name = 'P2'
+            ParamType = tpUnknown
+          end>
+        OnExecute = OSApiFunctions36Execute
       end
       item
         FunctionName = 'setcurrentdir'
@@ -4545,19 +4392,6 @@ object phpMOD: TphpMOD
         OnExecute = _BackWorkerFunctions5Execute
       end
       item
-        FunctionName = 'thread_loaded'
-        Tag = 0
-        Parameters = <
-          item
-            Name = 'P1'
-            ParamType = tpUnknown
-          end
-          item
-            Name = 'P2'
-            ParamType = tpUnknown
-          end>
-      end
-      item
         FunctionName = 'thread_init'
         Tag = 0
         Parameters = <
@@ -5026,6 +4860,26 @@ object phpMOD: TphpMOD
             ParamType = tpInteger
           end>
         OnExecute = _DockingFunctions14Execute
+      end
+      item
+        FunctionName = 'dragobject_control'
+        Tag = 0
+        Parameters = <
+          item
+            Name = 'P1'
+            ParamType = tpInteger
+          end>
+        OnExecute = _DockingFunctions15Execute
+      end
+      item
+        FunctionName = 'control_dockhost'
+        Tag = 0
+        Parameters = <
+          item
+            Name = 'p1'
+            ParamType = tpInteger
+          end>
+        OnExecute = _DockingFunctions16Execute
       end>
     Left = 408
     Top = 320
@@ -5070,6 +4924,7 @@ object phpMOD: TphpMOD
             Name = 'P2'
             ParamType = tpUnknown
           end>
+        OnExecute = __WinUtilsFunctions1Execute
       end
       item
         FunctionName = 'enc_getvalue'
@@ -5079,6 +4934,7 @@ object phpMOD: TphpMOD
             Name = 'P1'
             ParamType = tpUnknown
           end>
+        OnExecute = __WinUtilsFunctions2Execute
       end
       item
         FunctionName = 'trayicon_hideballoontip'
@@ -5140,6 +4996,7 @@ object phpMOD: TphpMOD
             Name = 'P3'
             ParamType = tpUnknown
           end>
+        OnExecute = _ChromiumFunctions2Execute
       end>
     Left = 552
     Top = 368

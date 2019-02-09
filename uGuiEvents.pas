@@ -6,7 +6,7 @@ interface
 
    uses classes, SysUtils, Dialogs, Variants, ExtCtrls,
     Graphics, Forms, Controls, ComCtrls, StdCtrls, Windows, FileCtrl,
-    ShellApi, Math, TypInfo, ObjAuto, zendAPI, SizeControl,
+    ShellApi, TypInfo, ObjAuto, zendAPI, SizeControl,
     Messages
 
       {$IFDEF ADD_CHROMIUM}

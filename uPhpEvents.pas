@@ -54,6 +54,8 @@ type
 
     procedure onScroll(Sender: TObject; ScrollCode: TScrollCode;
       var ScrollPos: integer);
+    procedure onVisibilityChanged(Sender: TObject; var Value: boolean);
+    procedure onDockedVisibilityChanged(Sender: TObject; Control: TObject; Value: Boolean);
     procedure onScrollVert(Sender: TObject; ScrollCode: integer;
       var ScrollPos: integer);
     procedure onScrollHorz(Sender: TObject; ScrollCode: integer;
@@ -511,9 +513,12 @@ begin
   H := GetEventController(Sender, nil);
   if H <> nil then
   begin
+  {$WARN Garbage ON}
+  {'This might cause some bugs, or fix them
+    ›ÚÓ ÏÓÊÂÚ ‚˚Á˚‚‡Ú¸ ÌÂÍÓÚÓ˚Â ·‡„Ë, ÌÛ ËÎË ËÒÔ‡‚ÎˇÚ¸ Ëı...'}
     M := H.RunEvent(Event, []);
-    { if M <> nil then
-      M.ClearArgs; }
+     if M <> nil then
+      M.ClearArgs;
   end;
 end;
 
@@ -835,15 +840,17 @@ begin
   EventAddNewType('OnClose', @THandlerFuncs.onClose, TForm);
   EventAddNewType('OnResize', @THandlerFuncs.onResize);
   EventAddNewType('OnCanResize', @THandlerFuncs.onCanResize);
-  EventAddNewType('OnShow', @THandlerFuncs.onShow, TForm);
-  EventAddNewType('OnHide', @THandlerFuncs.onHide, TForm);
+  EventAddNewType('OnShow', @THandlerFuncs.onShow);
+  EventAddNewType('OnHide', @THandlerFuncs.onHide);
   EventAddNewType('OnPaint', @THandlerFuncs.onPaint);
-  EventAddNewType('OnActivate', @THandlerFuncs.onActivate, TForm);
-  EventAddNewType('OnDeactivate', @THandlerFuncs.onDeactivate, TForm);
+  EventAddNewType('OnActivate', @THandlerFuncs.onActivate);
+  EventAddNewType('OnDeactivate', @THandlerFuncs.onDeactivate);
 
   EventAddNewType('OnScroll', @THandlerFuncs.onScroll);
   EventAddNewType('OnScrollVert', @THandlerFuncs.onScrollVert);
   EventAddNewType('OnScrollHorz', @THandlerFuncs.onScrollHorz);
+  EventAddNewType('OnVisibilityChanged', @THandlerFuncs.onVisibilityChanged);
+  EventAddNewType('onDockedVisibilityChanged', @THandlerFuncs.onDockedVisibilityChanged);
   EventAddNewType('OnPopup', @THandlerFuncs.onPopup);
   EventAddNewType('OnMoved', @THandlerFuncs.onMoved);
   EventAddNewType('onChange', @THandlerFuncs.onChange);
@@ -1070,6 +1077,7 @@ begin
     begin
       try
         psv := TpsvPHP.Create(nil);
+        {Õ» ¬  Œ≈Ã —À”◊¿≈ Õ≈ ”¡»–¿“‹ ECHO 1, ƒ¿ √Œ¬ÕŒ Œƒ, ÕŒ ›“Œ  ¿ Œ…-“Œ ’»“–€…  Œ—“€À‹!}
         psv.RunCode('echo 1; ' + '$GLOBALS["THREAD_SELF"] = ' +
           IntToStr(integer(This)) + ';');
 
@@ -1333,7 +1341,9 @@ begin
           ZVAL_LONG(Self.Args[i], integer(Args[i - 1].VPointer));
       end;
       vtPointer:
+      begin
         ZVAL_LONG(Self.Args[i], integer(Args[i - 1].VPointer));
+      end;
       vtInt64:
         ZVAL_DOUBLE(Self.Args[i], Args[i - 1].VInt64^);
       vtExtended:
@@ -1637,7 +1647,21 @@ begin
     H.ClearArgs;
   end;}
 end;
-
+procedure THandlerFuncs.onVisibilityChanged(Sender: TObject; var Value: boolean);
+var
+  H: TPHPScriptEventHandler;
+begin
+  H := EventRun(Sender, 'onVisibilityChanged', [Value], False);
+  if H <> nil then
+  begin
+    Value := H.ParamBool(1);
+    H.ClearArgs;
+  end;
+end;
+procedure THandlerFuncs.onDockedVisibilityChanged(Sender: TObject; Control: TObject; Value: Boolean);
+begin
+    EventRun(Sender, 'onDockedVisibilityChanged', [Control, Value]);
+end;
 procedure THandlerFuncs.onScrollVert(Sender: TObject; ScrollCode: integer;
   var ScrollPos: integer);
 var

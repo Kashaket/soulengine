@@ -6,8 +6,8 @@ Module:          SizeControl
 Description:     Enables both moving and resizing of controls at runtime.
 Version:         8.0 DS
 Date:            19-SEP-2012
-Author:          Dmitriy Zayceff, Angus Johnson, angusj-AT-myrealbox-DOT-com
-Copyright:       © 1997-2006 Angus Johnson, 2009-2013 Dmitriy Zayceff
+Author:          Angus Johnson, angusj-AT-myrealbox-DOT-com
+Copyright:       © 1997-2006 Angus Johnson
  --------------------------------------------------------------------------- *)
 
 interface
@@ -15,8 +15,8 @@ interface
 //{$R SIZECONTROL}
 
 uses
-  Windows, Messages, SysUtils, Classes, Controls, ExtCtrls,
-  Graphics, Forms, TypInfo, Menus, StdCtrls, ComCtrls, Dialogs;
+  Windows, Messages, SysUtils, Classes, Controls,
+  Graphics, Forms, TypInfo, Menus, StdCtrls, ComCtrls;
 
 function getAbsoluteX(cntrl: TControl; LastControl: TControl): integer;
 function getAbsoluteY(cntrl: TControl; LastControl: TControl): integer;
@@ -97,7 +97,7 @@ type
     fFocusRect: TRect;
     fLastRect: TRect;
     fStartRec: TRect;
-    procedure Hide;
+    //procedure Hide;
     procedure Show;
     procedure Update;
     procedure StartFocus();
@@ -145,7 +145,6 @@ type
     fOnSetCursor: TSetCursorEvent;
     fOnKeyDown: TKeyEvent;
     FShowGrid: boolean;
-    FgetSelected: TList;
 
     function GetTargets(index: integer): TControl;
     function GetTargetCount: integer;
@@ -164,18 +163,13 @@ type
     procedure DoPopupMenuStuff;
     procedure SetEnabledBtnColor(aColor: TColor);
     procedure SetDisabledBtnColor(aColor: TColor);
-
-    function RegisteredCtrlFromPt(screenPt: TPoint;
-      ParentX: TWinControl = nil): TControl;
-
     procedure DoMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState);
     procedure DoMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState);
     procedure DoMouseMove(Sender: TObject; Shift: TShiftState);
     procedure SetShowGrid(const Value: boolean);
-    procedure SetgetSelected(const Value: TList);
+    //procedure SetgetSelected(const Value: TList);
   protected
     fGrid: TBitmap; // сетка
-    fImage: TImage;
     lastW: integer;
     lastH: integer; // последн€€ ширина и высота формы
     lastColor: TColor; // последний цвет формы
@@ -191,6 +185,11 @@ type
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
+    //Targets: used to access individual targets (read-only)
+    property Targets[index: integer]: TControl read GetTargets;
+  published
+  function RegisteredCtrlFromPt(screenPt: TPoint;
+      ParentX: TWinControl = nil): TControl;
     //Update: it is the responsibility of the component user to call Update
     //if the target(s) are moved or resized independently of this control
     //(eg if the form is resized and targets are aligned with it.)
@@ -222,12 +221,10 @@ type
 
     //Enabled: This key property should be self-explanatory.
     property Enabled: boolean read fEnabled write SetEnabled;
-
-    //Targets: used to access individual targets (read-only)
-    property Targets[index: integer]: TControl read GetTargets;
+    //<summary>
+    //Used for getting targets count
+    //</summary>
     property TargetCount: integer read GetTargetCount;
-
-  published
     //MoveOnly: ie prevents resizing
     property MoveOnly: boolean read fMoveOnly write SetMoveOnly;
     //BtnColor: Color of grab-handle buttons
@@ -570,7 +567,7 @@ begin
   inherited Destroy;
 end;
 //------------------------------------------------------------------------------
-
+{
 procedure TTargetObj.Hide;
 var
   i: TBtnPos;
@@ -581,6 +578,7 @@ begin
   //if fTarget is TWinControl then fTarget.Refresh
   // else fTarget.Parent.Repaint;
 end;
+}
 //------------------------------------------------------------------------------
 
 procedure TTargetObj.Show;
@@ -735,7 +733,6 @@ end;
 procedure TTargetObj.DrawRect(dc: hDC; obj: TControl);
 var
   pr: TWinControl;
-  //panel: TForm;
   panel: TMovePanel;
   s: string;
   k: integer;
@@ -758,7 +755,6 @@ begin
     panel := TMovePanel.Create(pr);
     panel.Visible := False;
     panel.ParentColor := False;
-    panel.Parent := pr;
 
     {panel.BorderStyle := bsNone;
     panel.ParentColor := false;
@@ -766,11 +762,6 @@ begin
     panel.BevelKind := bkFlat;
     panel.BevelInner := bvNone;
     }panel.Color := clBtnFace;
-
-    {panel.AlphaBlend := true;
-    panel.FormStyle := fsStayOnTop;
-    panel.AlphaBlendValue := 190;
-    panel.BorderStyle := bsNone; }
 
     fPanelsNames.Add(IntToStr(integer(obj)));
     fPanels.Add(panel);
@@ -1901,24 +1892,6 @@ begin
         fGrid.Canvas.Pixels[I * GridSize, J * GridSize] := clGray;
     end;
 
-  {if fImage = nil then
-  begin
-    fImage := TImage.Create(Application);
-    fImage.Parent := TWinControl(Sender);
-    fImage.Align := alClient;
-    fImage.OnDblClick := TForm(Sender).OnDblClick;
-    fImage.OnMouseDown := TForm(Sender).OnMouseDown;
-    //fImage.OnMouseMove := TForm(Sender).OnMouseMove;
-    fImage.OnMouseUp   := TForm(Sender).OnMouseUp;
-    fImage.OnClick := TForm(Sender).OnClick;
-  end;
-
-  fImage.Width := w;
-  fImage.Height := h;
-  fImage.Picture.Bitmap.Width := w;
-  fImage.Picture.Bitmap.Height := h;
-  fImage.Picture.Bitmap.Canvas.Draw(0,0,fGrid);
-   }
   TForm(Sender).Canvas.Draw(0, 0, fGrid);
 
   //fGrid.Canvas.CopyRect(Rect(0,0,w,h), TForm(Sender).Canvas, Rect(0,0,w,h));
@@ -1929,12 +1902,12 @@ procedure TSizeCtrl.SetShowGrid(const Value: boolean);
 begin
   FShowGrid := Value;
 end;
-
+{
 procedure TSizeCtrl.SetgetSelected(const Value: TList);
 begin
   FgetSelected := Value;
 end;
-
+}
 function TSizeCtrl.getSelected: TList;
 var
   i: integer;
@@ -2011,7 +1984,7 @@ end;
 constructor TMovePanel.Create(AOwner: TComponent);
 begin
   inherited;
-
+  Parent := TWinControl(AOwner);
 end;
 
 destructor TMovePanel.Destroy;

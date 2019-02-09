@@ -1,9 +1,11 @@
 unit Squall;
 
 interface
+uses Win_D_api;
+type
+  TSoundVec = array[0..2] of Single;
 
-uses windows;
-
+  function SoundVec(X, Y, Z: Single): TSoundVec;
 const
 // список ошибок
  SQUALL_ERROR_NO_SOUND: Integer =               -1;    // в системе нет звукового устройства
@@ -119,7 +121,7 @@ const
  SQUALL_EAX_CHANNEL_FLAGS_DEFAULT: Integer =                  $00000007;
 
 type
-TSoundVec = array [0..2] of Single;
+
 // структура для описания настроек двигателя
  squall_parameters_t = record
   Window: PHandle;                                // окно к которому нужно прикреплять двигатель
@@ -1799,5 +1801,10 @@ function SQUALL_SampleGroup_Play3D(SoundGroupID,Loop,Group,Start: Integer; Posit
 function SQUALL_SampleGroup_Play3DEx(SoundGroupID,Loop,Group,Start: Integer; Position,Velocity: PSingle; Priority,Volume,Frequency: Integer;MinDist,MaxDist: Single): Integer; cdecl; external 'squall.dll';
 
 implementation
-
+ function SoundVec(X, Y, Z: Single): TSoundVec;
+begin
+  Result[0]:= X;
+  Result[1]:= Y;
+  Result[2]:= Z;
+end;
 end.

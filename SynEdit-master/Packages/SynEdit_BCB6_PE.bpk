@@ -4,17 +4,17 @@
   <MACROS>
     <VERSION value="BCB.06.00"/>
     <PROJECT value="SynEdit_BCB6_PE.bpl"/>
-    <OBJFILES value="SynEdit_BCB6_PE.obj ..\Source\SynEditReg.obj 
-      ..\Source\SynEditPropertyReg.obj"/>
+    <OBJFILES value="..\Source\SynEditReg.obj ..\Source\SynEditPropertyReg.obj 
+      SynEdit_BCB6_PE.obj"/>
     <RESFILES value="SynEdit_BCB6_PE.res ..\Source\SynEditReg.dcr"/>
     <IDLFILES value=""/>
     <IDLGENFILES value=""/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES)"/>
     <LIBFILES value=""/>
-    <LIBRARIES value="dclocx.lib bcbsmp.lib"/>
-    <SPARELIBS value="vcl.lib rtl.lib bcbsmp.lib dclocx.lib"/>
-    <PACKAGES value="designide.bpi vcl.bpi vclx.bpi rtl.bpi"/>
+    <LIBRARIES value="vcl.lib"/>
+    <SPARELIBS value="vcl.lib"/>
+    <PACKAGES value="vcl.bpi vclx.bpi designide.bpi"/>
     <PATHCPP value=".;"/>
     <PATHPAS value=".;..\Source"/>
     <PATHRC value=".;"/>
@@ -28,39 +28,22 @@
     <INCLUDEPATH value="..\Source;$(BCB)\include;$(BCB)\include\vcl"/>
     <LIBPATH value="..\Source;$(BCB)\lib\obj;$(BCB)\lib"/>
     <WARNINGS value="-w-par"/>
-    <OTHERFILES value=""/>
   </MACROS>
   <OPTIONS>
     <IDLCFLAGS value="-I..\Source -I$(BCB)\include -I$(BCB)\include\vcl -src_suffix cpp -D_DEBUG 
       -DSYN_DELPHI_PE -boa"/>
-    <CFLAG1 value="-Od -H=$(BCB)\lib\vcl60.csm -Hc -Vx -Ve -X- -r- -a8 -b- -k -y -v -vi- -c 
+    <CFLAG1 value="-Od -H=$(BCB)\lib\vcl.csm -Hc -Vx -Ve -X- -r- -a8 -b- -k -y -v -vi- -c 
       -tWM"/>
-    <PFLAGS value="-$YD -$W -$O- -$A8 -v -JPHNE -M -LUDesignIde"/>
+    <PFLAGS value="-$YD -$W -$O- -$A8 -v -JPHNE -M"/>
     <RFLAGS value=""/>
     <AFLAGS value="/mx /w2 /zd"/>
-    <LFLAGS value="-D&quot;SynEdit component suite&quot; -aa -Tpp -Gpd -x -Gn -Gl -Gi -v"/>
-    <OTHERFILES value=""/>
+    <LFLAGS value="-D&quot;SynEdit component suite&quot; -aa -Tpp -x -Gn -Gl -Gi -v"/>
   </OPTIONS>
   <LINKER>
     <ALLOBJ value="c0pkg32.obj $(PACKAGES) Memmgr.Lib sysinit.obj $(OBJFILES)"/>
     <ALLRES value="$(RESFILES)"/>
     <ALLLIB value="$(LIBFILES) $(LIBRARIES) import32.lib cp32mti.lib"/>
-    <OTHERFILES value=""/>
   </LINKER>
-  <FILELIST>
-      <FILE FILENAME="SynEdit_BCB6_PE.cpp" FORMNAME="" UNITNAME="SynEdit_BCB6_PE" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="SynEdit_BCB6_PE.res" FORMNAME="" UNITNAME="SynEdit_BCB6_PE" CONTAINERID="ResTool" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="..\Source\SynEditReg.pas" FORMNAME="" UNITNAME="SynEditReg" CONTAINERID="PascalCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="..\Source\SynEditReg.dcr" FORMNAME="" UNITNAME="SynEditReg" CONTAINERID="DcrTool" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="..\Source\SynEditPropertyReg.pas" FORMNAME="" UNITNAME="SynEditPropertyReg" CONTAINERID="PascalCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="designide.bpi" FORMNAME="" UNITNAME="designide" CONTAINERID="BPITool" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="vcl.bpi" FORMNAME="" UNITNAME="vcl" CONTAINERID="BPITool" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="vclx.bpi" FORMNAME="" UNITNAME="vclx" CONTAINERID="BPITool" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="rtl.bpi" FORMNAME="" UNITNAME="rtl" CONTAINERID="BPITool" DESIGNCLASS="" LOCALCOMMAND=""/>
-  </FILELIST>
-  <BUILDTOOLS>
-  </BUILDTOOLS>
-
   <IDEOPTIONS>
 [Version Info]
 IncludeVerInfo=0
@@ -124,6 +107,17 @@ RemoteDebug=0
 [Compiler]
 ShowInfoMsgs=0
 LinkDebugVcl=0
+LinkCGLIB=0
+
+[CORBA]
+AddServerUnit=1
+AddClientUnit=1
+PrecompiledHeaders=1
+
+[Language]
+ActiveLang=
+ProjectLang=
+RootDir=
 
 [Linker]
 LibPrefix=

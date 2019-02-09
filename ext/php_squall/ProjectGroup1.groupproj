@@ -1,0 +1,48 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <ProjectGuid>{ED7FB8AD-D688-414B-AD30-60123E60C399}</ProjectGuid>
+    </PropertyGroup>
+    <ItemGroup>
+        <Projects Include="php_squall.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="..\..\soulEngine.dproj">
+            <Dependencies/>
+        </Projects>
+    </ItemGroup>
+    <ProjectExtensions>
+        <Borland.Personality>Default.Personality.12</Borland.Personality>
+        <Borland.ProjectType/>
+        <BorlandProject>
+            <Default.Personality/>
+        </BorlandProject>
+    </ProjectExtensions>
+    <Target Name="php_squall">
+        <MSBuild Projects="php_squall.dproj"/>
+    </Target>
+    <Target Name="php_squall:Clean">
+        <MSBuild Projects="php_squall.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="php_squall:Make">
+        <MSBuild Projects="php_squall.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="soulEngine">
+        <MSBuild Projects="..\..\soulEngine.dproj"/>
+    </Target>
+    <Target Name="soulEngine:Clean">
+        <MSBuild Projects="..\..\soulEngine.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="soulEngine:Make">
+        <MSBuild Projects="..\..\soulEngine.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Build">
+        <CallTarget Targets="php_squall;soulEngine"/>
+    </Target>
+    <Target Name="Clean">
+        <CallTarget Targets="php_squall:Clean;soulEngine:Clean"/>
+    </Target>
+    <Target Name="Make">
+        <CallTarget Targets="php_squall:Make;soulEngine:Make"/>
+    </Target>
+    <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
+</Project>

@@ -9,6 +9,7 @@ USERES("..\Source\SynEditReg.dcr");
 USEUNIT("..\Source\SynEditPropertyReg.pas");
 USEPACKAGE("vclx50.bpi");
 USEPACKAGE("vcldb50.bpi");
+USEPACKAGE("dsnide50.bpi");
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 //---------------------------------------------------------------------------

@@ -5,7 +5,7 @@
       <Option Name="Personality">Delphi.Personality</Option>
       <Option Name="ProjectType"></Option>
       <Option Name="Version">1.0</Option>
-      <Option Name="GUID">{89178523-7453-428B-A911-E7D59B6118C0}</Option>
+      <Option Name="GUID">{7B131184-5C5C-48CB-820F-E136997F8ED9}</Option>
     </Option>
   </PersonalityInfo>
   <Delphi.Personality>
@@ -154,7 +154,7 @@
       <VersionInfo Name="Special">False</VersionInfo>
       <VersionInfo Name="Private">False</VersionInfo>
       <VersionInfo Name="DLL">False</VersionInfo>
-      <VersionInfo Name="Locale">1033</VersionInfo>
+      <VersionInfo Name="Locale">1031</VersionInfo>
       <VersionInfo Name="CodePage">1252</VersionInfo>
     </VersionInfo>
     <VersionInfoKeys>

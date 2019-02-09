@@ -53,9 +53,9 @@ type
     procedure loadFromFile(fileName: string);
   published
     property __iconName: string read FfileName write SetfileName;
-    property realWidth: integer read FrealWidth write SetrealWidth default 26;
+    property realWidth: integer read FrealWidth write SetrealWidth default 24;
     property realHeight: integer read FrealHeight write SetrealHeight
-      default 26;
+      default 24;
     property Caption: string read FCaption write SetCaption;
     property OnDblClick: TNotifyEvent read FLabelDblClick write FLabelDblClick;
     property Font;
@@ -139,6 +139,24 @@ type
 
     property MarginLeft: integer read FMarginLeft write SetMarginLeft;
     property MarginRight: integer read FMarginRight write SetMarginRight;
+  end;
+type
+  TCVisibleEvent = procedure (Sender: TObject; var Value: Boolean) of object;
+  TDockVisibleEvent = procedure (Sender: TObject; Control: TObject; Value: Boolean) of object;
+  TDSPanel = class(TPanel)
+  private
+    FOnViSet: TCVisibleEvent;
+    FOnShow: TNotifyEvent;
+    FOnHide: TNotifyEvent;
+    FDKViSet: TDockVisibleEvent;
+    procedure CMVisibleChanged(var Message: TMessage); message CM_VISIBLECHANGED;
+  public
+    property DockManager;
+  published
+    property OnVisibilityChanged: TCVisibleEvent read FOnViSet write FOnViSet;
+    property OnDockedVisibilityChanged: TDockVisibleEvent read FDKViSet write FDKViSet;
+    property OnShow: TNotifyEvent read fOnShow write fOnShow;
+    property OnHide: TNotifyEvent read fOnHide write fOnHide;
   end;
 
 type
@@ -792,6 +810,33 @@ begin
 
   inherited;
 end;
+{ TDSPanel }
+procedure TDSPanel.CMVisibleChanged(var Message: TMessage);
+var Value: Boolean;
+begin
+Value := Boolean(Message.WParam);
+
+    if Value then
+    begin
+        if Assigned(fOnShow) then
+          fOnShow((Self as TObject));
+    end
+    else
+    begin
+      if Assigned(fOnHide) then
+          fOnHide((Self as TObject));
+    end;
+    if Assigned(FDKViSet) then begin
+      FDKViSet((Self as TObject), (Self.HostDockSite as TObject), Value);
+    end;
+    if Assigned(FOnViSet) then begin
+      FOnViSet((Self as TObject), Value);
+      if Boolean(Message.WParam) <> Value then
+      Exit;
+    end;
+    inherited;
+end;
+
 { TTransparentPanel }
 
 constructor TTransparentPanel.Create(AOwner: TComponent);
@@ -1106,9 +1151,9 @@ begin
 
   FGlyph.Transparent := True;
   FGlyph.TransparentMode := tmAuto;
-  realWidth := 25;
-  realHeight := 25;
-  Color := clBtnFace;
+  realWidth := 24;
+  realHeight := 24;
+  Color := clWindow;
 
   Parent := TWinControl(AOwner);
 end;

@@ -4,23 +4,26 @@ unit regGui;
 
 interface
 
-uses Forms, Dialogs, SysUtils, Windows, TypInfo, Classes, Controls, Buttons,
+uses Forms, Dialogs, SysUtils, Windows, Classes, Controls, Buttons,
   Messages,
   propertiesEngine,
-  StdCtrls, ComCtrls, Menus, ExtCtrls, ExtDlgs, Math, Mask, Grids,
-  Tabs, Graphics, MImage, ValEdit, mainLCL, uGuiScreen, cooltrayicon,
+  StdCtrls, ComCtrls, Menus, ExtCtrls, Mask, Grids,
+  Tabs, Graphics, MImage, mainLCL, uGuiScreen, cooltrayicon,
   GIFImage2,
-  vcl.imaging.pngimage, dsStdCtrl {, rkSmartTabs}
+ { uFreeImageImage, uAnimatedJPEG, uTiffImage, uRawImage, }
+  dsStdCtrl {, rkSmartTabs}
   {$IFDEF ADD_AC}, sDialogs  {$ENDIF}
 
 {$IFDEF ADD_CHROMIUM}
     , ceflib, cefvcl, cefgui
 {$ENDIF}
 {$IFDEF ADD_SKINS}
-  ,sSkinProvider, sSkinManager,
-
+  , acPNG,
+  sSkinProvider, sSkinManager,
     sSpeedButton, sBitBtn, acProgressBar, sTrackBar, sBevel, sLabel
-{$ENDIF}
+    {$ELSE}
+    ,vcl.imaging.pngimage
+    {$ENDIF}
 {$IFDEF VS_EDITOR}
     , NxPropertyItems, NxPropertyItemClasses, NxScrollControl,
   NxInspector, DockTabSet,
@@ -93,10 +96,7 @@ uses Forms, Dialogs, SysUtils, Windows, TypInfo, Classes, Controls, Buttons,
 {$ENDIF}
 {$IFDEF NOT_LITE}
     , CheckLst
-    , VCL.Samples.Gauges
     , VCL.Samples.Spin
-    , VCL.Samples.Calendar
-    , VCL.ColorGrd
 {$ENDIF}
 {$IFDEF C_SIZECONTROL}
     , SizeControl
@@ -115,25 +115,16 @@ procedure registerGui();
 
 implementation
 
-uses uNonVisual;
-
 function objectClass(id: integer): ansistring;
 begin
+  Result := #0;
   if id <> 0 then
   begin
     if (toObject(id) <> nil) then
       begin
           Result := toObject(id).ClassName;
-      end
-      else
-      begin
-           Result := #0;
       end;
   end
-  else
-  begin
-    Result := #0;
-  end;
 end;
 
 function objectIs(id: integer; const aClass: ansistring): Boolean;
@@ -149,6 +140,7 @@ Var
   Owner: TComponent;
   P: TComponentClass;
 begin
+Result := 0;
   try
     if aOwner = 0 then
       Owner := nil
@@ -157,11 +149,8 @@ begin
     P := TComponentClass(GetClass(aClass));
     if (P <> nil) then
       Result := toID(TComponentClass(P).Create(Owner))
-    else
-      Result := 0;
 
   except
-    Result := 0;
   end;
 end;
 
@@ -254,14 +243,13 @@ procedure registerStandart;
 begin
   registerButtons;
 
-  // RegisterClassA(TEdit);
   registerArr([TMainMenu, Menus.TMenuItem, Menus.TMenu, Menus.TPopupMenu,
-    TRadioButton, TRadioGroup, TLabel, TGroupBox, TPadding, TMargins,
+    TRadioButton, TRadioGroup, TLabel, TGroupBox, TPadding, TMargins
 
 {$IFDEF NOT_LITE}
-    TScrollBar,
+    ,TScrollBar
 {$ENDIF}
-    TPNGImage, TGifImage]);
+]);
 
   RegisterClassA(StdCtrls.TEdit);
   UnRegisterClass(StdCtrls.TEdit);
@@ -284,6 +272,8 @@ begin
   RegisterClassAlias(dsStdCtrl.TComboBox, 'TComboBox');
 
   RegisterClassA(ExtCtrls.TPanel);
+  RegisterClassA(TDSPanel);
+  RegisterClassA({[TDragDockObjectCep,} TCustomDockFormCep{]});
   RegisterClassA(dsStdCtrl.TTransparentPanel);
 end;
 
@@ -296,8 +286,7 @@ begin
 {$ENDIF}
 {$IFDEF NOT_LITE}
     , TColorBox, TColorListBox, TLabeledEdit,
-    TCheckListBox, TDateTimePicker, TStaticText, TSplitter, TValueListEditor,
-    TValueListStrings, TSplitter, TDrawGrid, TControlBar, TMaskEdit,  TComboboxEx,
+    TCheckListBox, TDateTimePicker, TStaticText, TSplitter, TSplitter, TDrawGrid, TControlBar, TMaskEdit,  TComboboxEx,
     TStringGrid, TStringGridStrings, TMonthCalendar, TCoolTrayIcon,
     TDropFilesTarget, TTabSet, TButtonedEdit, TFlowPanel, TGridPanel,
     TBalloonHint, TCategoryPanelGroup
@@ -338,15 +327,14 @@ procedure registerSamples;
 begin
 {$IFDEF NOT_LITE}
    registerArr([
-   TColorGrid, TSpinButton, TSpinEdit,
-   TCalendar, TGauge
+   TSpinButton, TSpinEdit
    ]);
 {$ENDIF}
 end;
 
 procedure registerForms;
 begin
-  registerArr([TForm, TCustomForm,
+  registerArr([TControl, TWinControl, TForm, TCustomForm,
 {$IFDEF NOT_LITE}
     TFrame, TCustomFrame,
     TColorDialog, TCommonDialog,
@@ -431,10 +419,10 @@ TNxTimePicker,
 RegisterClassAlias(sDialogs.TsColorDialog, 'TDMSColorDialog');
 {$ENDIF}
 end;
-
+{$IFDEF ADD_SKINS}
 procedure registerSkins;
 begin
-{$IFDEF ADD_SKINS}
+
 {$IFDEF IFEDF}
   registerArr([
      TsSkinManager, TsSkinProvider,
@@ -442,9 +430,9 @@ begin
       TsBevel, TsLabel, TsLabelFX
     ]);
 {$ENDIF}
-{$ENDIF}
-end;
 
+end;
+{$ENDIF}
 var
   Registered: Boolean = false;
 
@@ -454,7 +442,9 @@ begin
 
   if Registered then
     exit;
-
+   {$IFDEF ADD_SKINS}
+   acPng.UseACPng := True;
+   {$ENDIF}
   registerForms;
   registerStandart;
   registerAdditional;

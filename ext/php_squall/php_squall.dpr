@@ -3,16 +3,11 @@ library php_squall;
 {$I PHP.INC}
 
 uses
-  Windows,
-  SysUtils,
   zendTypes,
   ZENDAPI,
-  phpTypes,
   PHPAPI,
-  StrUtils,
-  Squall,
-  Variants,
-  VCL.Dialogs;
+  Win_D_api,
+  Squall;
 
 {$R *.res}
 

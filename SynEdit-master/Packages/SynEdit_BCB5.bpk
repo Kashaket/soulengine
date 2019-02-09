@@ -13,8 +13,8 @@
     <RESDEPEN value="$(RESFILES)"/>
     <LIBFILES value=""/>
     <LIBRARIES value=""/>
-    <SPARELIBS value=""/>
-    <PACKAGES value="vcl50.bpi vclx50.bpi vcldb50.bpi"/>
+    <SPARELIBS value="Vcl50.lib"/>
+    <PACKAGES value="vcl50.bpi vclx50.bpi vcldb50.bpi dsnide50.bpi"/>
     <PATHCPP value=".;"/>
     <PATHPAS value=".;..\Source"/>
     <PATHRC value=".;"/>
@@ -30,8 +30,8 @@
     <WARNINGS value="-w-par"/>
   </MACROS>
   <OPTIONS>
-    <IDLCFLAGS value="-I..\Source -I$(BCB)\include -I$(BCB)\include\vcl -src_suffix 
-      cpp -D_DEBUG -boa"/>
+    <IDLCFLAGS value="-I..\Source -I$(BCB)\include -I$(BCB)\include\vcl -src_suffix cpp -D_DEBUG 
+      -boa"/>
     <CFLAG1 value="-Od -H=$(BCB)\lib\vcl50.csm -Hc -Vx -Ve -X- -r- -a8 -b- -k -y -v -vi- -c 
       -tWM"/>
     <PFLAGS value="-$YD -$W -$O- -v -JPHNE -M -LUdclstd50"/>

@@ -1,7 +1,5 @@
 package SynEdit_R6_PE;
 
-{ $Id: SynEdit_R6_PE.dpk,v 1.1 2004/08/25 10:38:58 kirys Exp $ }
-
 {$R *.res}
 {$ALIGN 8}
 {$ASSERTIONS ON}
@@ -26,7 +24,7 @@ package SynEdit_R6_PE;
 {$IMAGEBASE $400000}
 {$DESCRIPTION 'SynEdit component suite runtime'}
 {$RUNONLY}
-{$IMPLICITBUILD OFF}
+{$IMPLICITBUILD ON}
 
 requires
   vcl,
@@ -127,6 +125,7 @@ contains
   SynURIOpener in '..\Source\SynURIOpener.pas',
   SynHighlighterDOT in '..\Source\SynHighlighterDOT.pas',
   SynHighlighterVrml97 in '..\Source\SynHighlighterVrml97.pas',
-  SynHighlighterEiffel in '..\Source\SynHighlighterEiffel.pas';
+  SynHighlighterEiffel in '..\Source\SynHighlighterEiffel.pas',
+  SynUnicode in '..\Source\SynUnicode.pas';
 
 end.

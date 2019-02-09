@@ -20,7 +20,7 @@ unit zendAPI;
 interface
 
 uses
-  Windows, SysUtils, ZendTypes, VCL.Dialogs, Variants, PHPTypes;
+  Win_D_api, SysUtils, ZendTypes, Variants, PHPTypes;
 type
 TArrayVariant = array of variant;
  TWSDate = array of string;
@@ -674,6 +674,7 @@ procedure ZVAL_ARRAY(z: pzval; arr:  TASDate); overload;
 procedure ZVAL_ARRAY(z: pzval; arr:  array of string); overload;
 procedure ZVAL_ARRAY(z: pzval; arr:  array of ansistring); overload;
 procedure ZVAL_ARRAY(z: pzval; arr: array of variant); overload;
+procedure ZVAL_ARRAY(z: pzval; arr: System.TArray<System.integer>); overload;
 procedure ZVAL_ARRAY(z: pzval; arr: Variant); overload;
 procedure ZVAL_ARRAYAC(z: pzval; keynames: Array of PAnsiChar; keyvals: Array of PAnsiChar);
 procedure ZVAL_ARRAYWC(z: pzval; keynames: Array of PWideChar; keyvals: Array of PWideChar);
@@ -1288,6 +1289,29 @@ begin
    for i := 0 to Length(arr)-1 do
     begin
        add_next_index_variant(z, arr[i]);
+    end;
+    Exit;
+end;
+procedure ZVAL_ARRAY(z: pzval; arr: System.TArray<System.integer>); overload;
+var
+  i: integer;
+begin
+ z.refcount := Length(arr); //Передаём количество возвращаемых массивов
+ if _array_init(z, nil, 0) = FAILURE then //Создаём массив первого уровня
+  begin
+    ZVAL_FALSE(z);
+    Exit;
+  end;
+
+  if Length(arr) = 0 then
+  begin
+    ZVAL_FALSE(z);
+    Exit;
+  end;
+
+   for i := 0 to Length(arr)-1 do
+    begin
+       add_next_index_long(z, arr[i]);
     end;
     Exit;
 end;

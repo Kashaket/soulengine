@@ -26,10 +26,10 @@ uses
  {$IFDEF FPC}
   dynlibs,
  {$ELSE}
-  windows,
+  Win_D_api,
  {$ENDIF}
 
- ZendTypes, PHPTypes, zendAPI, vcl.dialogs,
+ ZendTypes, PHPTypes, zendAPI,
 
 
  {$IFDEF VERSION6}Variants{$ENDIF}{WinSock};
@@ -469,15 +469,15 @@ begin
                    ZVAL_STRING(z, '', true);
                  end;
          end;
-     varSmallInt : ZVAL_LONG(z, TVarData(Value).VSmallint);
+     varSmallInt : ZVAL_LONG(z, Integer(TVarData(Value).VSmallint));
      varInteger  : ZVAL_LONG(z, TVarData(Value).VInteger);
      varBoolean  : ZVAL_BOOL(z, TVarData(Value).VBoolean);
      varSingle   : ZVAL_DOUBLE(z, TVarData(Value).VSingle);
      varDouble   : ZVAL_DOUBLE(z, TVarData(Value).VDouble);
-     varError    : ZVAL_LONG(z, TVarData(Value).VError);
-     varByte     : ZVAL_LONG(z, TVarData(Value).VByte);
+     varError    : ZVAL_LONG(z, Integer(TVarData(Value).VError));
+     varByte     : ZVAL_LONG(z, Integer(TVarData(Value).VByte));
      varDate     : ZVAL_DOUBLE(z, TVarData(Value).VDate);
-     varArray    : ZVAL_ARRAY(z,  Value);
+     //varArray    : ZVAL_ARRAY(z,  Value);
      else
        ZVAL_NULL(Z);
    end;

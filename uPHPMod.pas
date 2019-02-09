@@ -16,7 +16,7 @@ uses
   PHPAPI,
   DelphiFunctions,
   PHPFunctions,
-  coolTrayIcon, libSysTray,
+  coolTrayIcon, libSysTray, Generics.Collections,
   Graphics, Dialogs, Forms, Variants, uGuiScreen, ComCtrls,
   Controls, Windows, FileCtrl, Buttons, SizeControl, ExtCtrls, Menus,
   StdCtrls, ExeMod, ShellApi,
@@ -494,6 +494,9 @@ type
     procedure PHPLibraryFunctions30Execute(Sender: TObject;
       Parameters: TFunctionParams; var ReturnValue: variant;
       ZendVar: TZendVariable; TSRMLS_DC: Pointer);
+    procedure PHPLibraryFunctionCCopyExecute(Sender: TObject;
+  Parameters: TFunctionParams; var ReturnValue: variant; ZendVar: TZendVariable;
+  TSRMLS_DC: Pointer);
     procedure _TListsFunctions2Execute(Sender: TObject;
       Parameters: TFunctionParams; var ReturnValue: variant;
       ZendVar: TZendVariable; TSRMLS_DC: Pointer);
@@ -1001,12 +1004,6 @@ type
     procedure _TSizeCtrlFunctions13Execute(Sender: TObject;
       Parameters: TFunctionParams; var ReturnValue: variant;
       ZendVar: TZendVariable; TSRMLS_DC: Pointer);
-    procedure PHPLibraryFunctions60Execute(Sender: TObject;
-      Parameters: TFunctionParams; var ReturnValue: variant;
-      ZendVar: TZendVariable; TSRMLS_DC: Pointer);
-    procedure PHPLibraryFunctions61Execute(Sender: TObject;
-      Parameters: TFunctionParams; var ReturnValue: variant;
-      ZendVar: TZendVariable; TSRMLS_DC: Pointer);
     procedure _TStringsLibFunctions3Execute(Sender: TObject;
       Parameters: TFunctionParams; var ReturnValue: variant;
       ZendVar: TZendVariable; TSRMLS_DC: Pointer);
@@ -1101,6 +1098,9 @@ type
       Parameters: TFunctionParams; var ReturnValue: variant;
       ZendVar: TZendVariable; TSRMLS_DC: Pointer);
     procedure OSApiFunctions33Execute(Sender: TObject;
+      Parameters: TFunctionParams; var ReturnValue: variant;
+      ZendVar: TZendVariable; TSRMLS_DC: Pointer);
+    procedure OSApiFunctions36Execute(Sender: TObject;
       Parameters: TFunctionParams; var ReturnValue: variant;
       ZendVar: TZendVariable; TSRMLS_DC: Pointer);
     procedure guiFunctions16Execute(Sender: TObject;
@@ -1203,6 +1203,21 @@ type
     procedure _DockingFunctions14Execute(Sender: TObject;
       Parameters: TFunctionParams; var ReturnValue: Variant;
       ZendVar: TZendVariable; TSRMLS_DC: Pointer);
+    procedure _DockingFunctions15Execute(Sender: TObject;
+      Parameters: TFunctionParams; var ReturnValue: Variant;
+      ZendVar: TZendVariable; TSRMLS_DC: Pointer);
+    procedure _DockingFunctions16Execute(Sender: TObject;
+      Parameters: TFunctionParams; var ReturnValue: Variant;
+      ZendVar: TZendVariable; TSRMLS_DC: Pointer);
+    procedure __WinUtilsFunctions1Execute(Sender: TObject;
+      Parameters: TFunctionParams; var ReturnValue: Variant;
+      ZendVar: TZendVariable; TSRMLS_DC: Pointer);
+    procedure __WinUtilsFunctions2Execute(Sender: TObject;
+      Parameters: TFunctionParams; var ReturnValue: Variant;
+      ZendVar: TZendVariable; TSRMLS_DC: Pointer);
+    procedure _ChromiumFunctions2Execute(Sender: TObject;
+      Parameters: TFunctionParams; var ReturnValue: Variant;
+      ZendVar: TZendVariable; TSRMLS_DC: Pointer);
   private
     { Private declarations }
   public
@@ -1245,6 +1260,7 @@ type
   TArrayString = array of string;
   TArrayVariant = array of variant;
   TPHPArray = array of HashItem;
+  TVarDict = TDictionary<System.AnsiString, System.Variant>;
   THidedLastError = record
     AText: AnsiString;
     AType: integer;
@@ -1256,6 +1272,7 @@ var
   phpMOD: TphpMOD;
   tmpAR: TArrayVariant;
   tmpAR2: TArrayString;
+  dict: TVarDict;
   tmpST: TStream;
 
   progDir: string;
@@ -1278,7 +1295,7 @@ procedure PHPEnginelScriptError(Sender: TObject; AText: AnsiString;
 implementation
 
 uses uMain, uMainForm, ImgList, Math, IniFiles, Types,
-  uNonVisual, uPhpEvents;
+  uPhpEvents;
 
 {$R *.dfm}
 
@@ -3919,6 +3936,12 @@ begin
   ToCntrl(Parameters[0].Value).SendToBack;
 end;
 
+procedure TphpMOD.PHPLibraryFunctionCCopyExecute(Sender: TObject;
+  Parameters: TFunctionParams; var ReturnValue: variant; ZendVar: TZendVariable;
+  TSRMLS_DC: Pointer);
+begin
+  ToComp(Parameters[0].Value).Create(ToComp(Parameters[1].Value));
+end;
 procedure TphpMOD._TListsFunctions2Execute(Sender: TObject;
   Parameters: TFunctionParams; var ReturnValue: variant; ZendVar: TZendVariable;
   TSRMLS_DC: Pointer);
@@ -4223,6 +4246,7 @@ var
   ProcessInfo: TProcessInformation;
   exitc: cardinal;
 begin
+
   FillChar(StartupInfo, SizeOf(StartupInfo), 0);
   with StartupInfo do
   begin
@@ -4390,7 +4414,14 @@ begin
     [rfReplaceAll]);
   ExecAndWait3(Parameters[0].Value, Parameters[1].Value);
 end;
-
+procedure TphpMOD.OSApiFunctions36Execute(Sender: TObject;
+      Parameters: TFunctionParams; var ReturnValue: variant;
+      ZendVar: TZendVariable; TSRMLS_DC: Pointer);
+begin
+  if (not Assigned(ToObj(Parameters[1].Value)) or not Assigned(ToObj(Parameters[0].Value))) then
+  Exit;
+  TCoolTrayIcon( ToComp(Parameters[0].Value) ).Assign( TPersistent( ToObj(Parameters[1].Value) ));
+end;
 procedure TphpMOD.OSApiFunctions34Execute(Sender: TObject;
   Parameters: TFunctionParams; var ReturnValue: Variant; ZendVar: TZendVariable;
   TSRMLS_DC: Pointer);
@@ -5330,6 +5361,13 @@ begin
 {$ENDIF}
 end;
 
+procedure TphpMOD._ChromiumFunctions2Execute(Sender: TObject;
+  Parameters: TFunctionParams; var ReturnValue: Variant; ZendVar: TZendVariable;
+  TSRMLS_DC: Pointer);
+begin
+_ChromiumFunctions0Execute(Sender, Parameters, ReturnValue, ZendVar, TSRMLS_DC);
+end;
+
 procedure TphpMOD._DockingFunctions0Execute(Sender: TObject;
   Parameters: TFunctionParams; var ReturnValue: variant; ZendVar: TZendVariable;
   TSRMLS_DC: Pointer);
@@ -5371,12 +5409,10 @@ end;
 procedure TphpMOD._DockingFunctions13Execute(Sender: TObject;
   Parameters: TFunctionParams; var ReturnValue: variant; ZendVar: TZendVariable;
   TSRMLS_DC: Pointer);
-var
-  efwef: TDragDockObjectCep;
+var ewfew: TDragDockObjectCep;
 begin
-  efwef := TDragDockObjectCep.Create(TControl(ToObj(Parameters, 0)));
-
-  ReturnValue := integer(efwef);
+  ewfew := TDragDockObjectCep.Create(TControl(ToObj(Parameters, 0)));
+  ReturnValue := integer( ewfew );
 end;
 
 procedure TphpMOD._DockingFunctions14Execute(Sender: TObject;
@@ -5385,6 +5421,20 @@ procedure TphpMOD._DockingFunctions14Execute(Sender: TObject;
 begin
   ToCntrl(Parameters[0].Value).FloatingDockSiteClass := CaptionedDockTree2.DefaultDockFormClass;
   end;
+
+procedure TphpMOD._DockingFunctions15Execute(Sender: TObject;
+  Parameters: TFunctionParams; var ReturnValue: Variant; ZendVar: TZendVariable;
+  TSRMLS_DC: Pointer);
+begin
+    ReturnValue := integer( TDragDockObjectCep(ToObj(Parameters, 0)).Control );
+end;
+
+procedure TphpMOD._DockingFunctions16Execute(Sender: TObject;
+  Parameters: TFunctionParams; var ReturnValue: Variant; ZendVar: TZendVariable;
+  TSRMLS_DC: Pointer);
+begin
+ReturnValue := integer( ToCntrl(Parameters[0].Value).HostDockSite );
+end;
 
 procedure TphpMOD._DockingFunctions1Execute(Sender: TObject;
   Parameters: TFunctionParams; var ReturnValue: variant; ZendVar: TZendVariable;
@@ -5687,6 +5737,22 @@ begin
   ReturnValue := libSysTray.showBalloonTip
     (TCoolTrayIcon(ToObj(Parameters[0].Value)), Parameters[1].Value,
     Parameters[2].Value, Parameters[3].Value, Parameters[4].Value);
+end;
+
+procedure TphpMOD.__WinUtilsFunctions1Execute(Sender: TObject;
+  Parameters: TFunctionParams; var ReturnValue: Variant; ZendVar: TZendVariable;
+  TSRMLS_DC: Pointer);
+begin
+dict.AddOrSetValue(AnsiString(Parameters[0].Value), Parameters[1].Value);
+end;
+
+procedure TphpMOD.__WinUtilsFunctions2Execute(Sender: TObject;
+  Parameters: TFunctionParams; var ReturnValue: Variant; ZendVar: TZendVariable;
+  TSRMLS_DC: Pointer);
+var s: variant;
+begin
+dict.TryGetValue(AnsiString(Parameters[0].Value), s);
+ReturnValue := s;
 end;
 
 procedure TphpMOD.__WinUtilsFunctions3Execute(Sender: TObject;
@@ -7161,20 +7227,6 @@ begin
   TSizeCtrl(ToObj(Parameters, 0)).UpdateBtns;
 end;
 
-procedure TphpMOD.PHPLibraryFunctions60Execute(Sender: TObject;
-  Parameters: TFunctionParams; var ReturnValue: variant; ZendVar: TZendVariable;
-  TSRMLS_DC: Pointer);
-begin
-  TNonVisual(ToObj(Parameters, 0)).LoadFromFile(Parameters[1].Value);
-end;
-
-procedure TphpMOD.PHPLibraryFunctions61Execute(Sender: TObject;
-  Parameters: TFunctionParams; var ReturnValue: variant; ZendVar: TZendVariable;
-  TSRMLS_DC: Pointer);
-begin
-  TNonVisual(ToObj(Parameters, 0)).Clear;
-end;
-
 procedure TphpMOD.PHPLibraryFunctions62Execute(Sender: TObject;
   Parameters: TFunctionParams; var ReturnValue: variant; ZendVar: TZendVariable;
   TSRMLS_DC: Pointer);
@@ -7248,6 +7300,6 @@ begin
   TStringList(O)[Parameters[1].Value] := Parameters[2].Value;
 end;
 initialization
-//DefaultDockTreeClass := CaptionedDockTree2.TCaptionedDockTree;
+dict := TVarDict.Create();
 
 end.

@@ -4,7 +4,7 @@ interface
 
 uses Classes, SysUtils, Dialogs, Variants, ExtCtrls,
   Graphics, Forms, Controls, ComCtrls, StdCtrls, Windows, FileCtrl,
-  ShellApi, Math, TypInfo;
+  ShellApi, TypInfo;
 
 type
   TScreenEx = class(TScreen)

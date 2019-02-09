@@ -41,6 +41,9 @@
         <Base>true</Base>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base)'!=''">
+        <Custom_Styles>&quot;Turquoise Gray|VCLSTYLE|$(BDSCOMMONDIR)\Styles\TurquoiseGray.vsf&quot;</Custom_Styles>
+        <DCC_TypedAtParameter>true</DCC_TypedAtParameter>
+        <DCC_UnitSearchPath>images;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
         <SanitizedProjectName>soulEngine</SanitizedProjectName>
         <DCC_ImageBase>00400000</DCC_ImageBase>
         <VerInfo_Locale>1049</VerInfo_Locale>
@@ -53,6 +56,9 @@
         <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0;Comments=;CFBundleName=</VerInfo_Keys>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Win32)'!=''">
+        <DCC_ImportedDataReferences>false</DCC_ImportedDataReferences>
+        <DCC_Alignment>0</DCC_Alignment>
+        <DCC_TypedAtParameter>true</DCC_TypedAtParameter>
         <UWP_DelphiLogo44>$(BDS)\bin\Artwork\Windows\UWP\delphi_UwpDefault_44.png</UWP_DelphiLogo44>
         <UWP_DelphiLogo150>$(BDS)\bin\Artwork\Windows\UWP\delphi_UwpDefault_150.png</UWP_DelphiLogo150>
         <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
@@ -71,20 +77,27 @@
         <DCC_SymbolReferenceInfo>0</DCC_SymbolReferenceInfo>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1_Win32)'!=''">
+        <BRCC_CodePage>1251</BRCC_CodePage>
+        <DCC_TypedAtParameter>false</DCC_TypedAtParameter>
+        <BRCC_Language>Russian</BRCC_Language>
+        <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
+        <DCC_LocalDebugSymbols>true</DCC_LocalDebugSymbols>
+        <BRCC_EnableMultiByte>true</BRCC_EnableMultiByte>
+        <DCC_CodePage>1251</DCC_CodePage>
+        <DCC_Inlining>off</DCC_Inlining>
+        <DCC_GenerateStackFrames>true</DCC_GenerateStackFrames>
         <DCC_ShowGeneralMessages>true</DCC_ShowGeneralMessages>
         <DCC_DebugDCUs>true</DCC_DebugDCUs>
         <DCC_IntegerOverflowCheck>true</DCC_IntegerOverflowCheck>
         <DCC_ImportedDataReferences>false</DCC_ImportedDataReferences>
-        <DCC_Alignment>0</DCC_Alignment>
         <UsePackages>false</UsePackages>
         <Debugger_RunParams>&quot;C:\DevelStudio 3.0 beta\system\include.pse&quot;</Debugger_RunParams>
-        <DCC_WriteableConstants>true</DCC_WriteableConstants>
         <BRCC_OutputDir>trash</BRCC_OutputDir>
         <DCC_DcpOutput>trash</DCC_DcpOutput>
         <DCC_DcuOutput>trash</DCC_DcuOutput>
         <DCC_UsePackage>vclactnband;tb2k_d14;TBX_D2010;vcl;PngComponents;acntDX10Berlin_R;VirtualTreesR;vclimg;NextEngineSet;vclwinx;rtl;aceDX10Berlin_R;vclsmp;vclx;vclie;vcltouch;vcldb;$(DCC_UsePackage)</DCC_UsePackage>
         <BT_BuildType>Debug</BT_BuildType>
-        <DCC_UnitSearchPath>obj;php4delphi;SynEdit-master\Source;Sources\Next Inspector;Sources;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
+        <DCC_UnitSearchPath>obj;php4delphi;SynEdit-master\Source;Sources\Next Inspector;Sources;The-Drag-and-Drop-Component-Suite-for-Delphi-master\Library;The-Drag-and-Drop-Component-Suite-for-Delphi-master\Source;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
         <VerInfo_Locale>1033</VerInfo_Locale>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <DCC_ExeOutput>C:\DevelStudio 3.0 beta</DCC_ExeOutput>
@@ -168,27 +181,12 @@
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
-                <DeployClass Name="DependencyModule">
-                    <Platform Name="Win32">
-                        <Operation>0</Operation>
-                        <Extensions>.dll;.bpl</Extensions>
-                    </Platform>
+                <DeployClass Name="ProjectiOSDeviceResourceRules">
                     <Platform Name="iOSDevice64">
                         <Operation>1</Operation>
-                        <Extensions>.dylib</Extensions>
-                    </Platform>
-                    <Platform Name="OSX32">
-                        <RemoteDir>Contents\MacOS</RemoteDir>
-                        <Operation>1</Operation>
-                        <Extensions>.dylib</Extensions>
                     </Platform>
                     <Platform Name="iOSDevice32">
                         <Operation>1</Operation>
-                        <Extensions>.dylib</Extensions>
-                    </Platform>
-                    <Platform Name="iOSSimulator">
-                        <Operation>1</Operation>
-                        <Extensions>.dylib</Extensions>
                     </Platform>
                 </DeployClass>
                 <DeployClass Name="ProjectOSXResource">
@@ -568,12 +566,27 @@
                         <Operation>1</Operation>
                     </Platform>
                 </DeployClass>
-                <DeployClass Name="ProjectiOSDeviceResourceRules">
+                <DeployClass Name="DependencyModule">
+                    <Platform Name="Win32">
+                        <Operation>0</Operation>
+                        <Extensions>.dll;.bpl</Extensions>
+                    </Platform>
                     <Platform Name="iOSDevice64">
                         <Operation>1</Operation>
+                        <Extensions>.dylib</Extensions>
+                    </Platform>
+                    <Platform Name="OSX32">
+                        <RemoteDir>Contents\MacOS</RemoteDir>
+                        <Operation>1</Operation>
+                        <Extensions>.dylib</Extensions>
                     </Platform>
                     <Platform Name="iOSDevice32">
                         <Operation>1</Operation>
+                        <Extensions>.dylib</Extensions>
+                    </Platform>
+                    <Platform Name="iOSSimulator">
+                        <Operation>1</Operation>
+                        <Extensions>.dylib</Extensions>
                     </Platform>
                 </DeployClass>
                 <ProjectRoot Platform="Win64" Name="$(PROJECTNAME)"/>

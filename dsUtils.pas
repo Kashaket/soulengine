@@ -31,7 +31,8 @@ uses
             return_value_used : integer; TSRMLS_DC : pointer); cdecl;
   procedure clipboard_get(ht : integer; return_value: pzval; return_value_ptr: pzval; this_ptr : pzval;
             return_value_used : integer; TSRMLS_DC : pointer); cdecl;
-
+  procedure clipboard_assignpic(ht : integer; return_value: pzval; return_value_ptr: pzval; this_ptr : pzval;
+            return_value_used : integer; TSRMLS_DC : pointer); cdecl;
 implementation
 
 procedure CopyFilesToClipboard( FileList: string );
@@ -208,6 +209,23 @@ begin
    ZVAL_LONG(return_value, Integer(Clipboard));
 end;
 
+procedure clipboard_assignpic;
+var p: pzval_array; o: TObject;
+label e1;
+begin
+  if ht <> 1 then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
+  zend_get_parameters_ex(ht, p);
+  ZVAL_FALSE(return_value);
+    o := TObject(Z_LVAL(p[0]^));
+    if Clipboard.FormatCount = 0  then goto e1;
+    if not Assigned(o) then goto e1;
+    if not (o is TPicture) then goto e1;
+
+   (TObject(Z_LVAL(p[0]^)) as TPicture).Assign(Clipboard);
+   ZVAL_TRUE(return_value);
+  e1:
+    dispose_pzval_array(p);
+end;
 
 procedure InitializeDsUtils(PHPEngine: TPHPEngine);
 begin
@@ -215,6 +233,7 @@ begin
   PHPEngine.AddFunction('clipboard_getFiles', @clipboard_getFiles);
   PHPEngine.AddFunction('clipboard_assign', @clipboard_assign);
   PHPEngine.AddFunction('clipboard_get', @clipboard_get);
+  PHPEngine.AddFunction('clipboard_assignpic', @clipboard_assignpic);
 end;
 
 
