@@ -22,7 +22,7 @@ uses
   {$IFDEF ADD_SYN_EV}
   SynEditTypes, SynEdit, SynCompletionProposal,
   {$ENDIF}
-  CategoryButtons
+  dsCategoryButtons
 {$ENDIF};
 
 type
@@ -96,10 +96,8 @@ type
     procedure onDragDrop(Sender, Source: TObject; X, Y: integer);
     procedure onDragOver(Sender, Source: TObject; X, Y: integer;
       State: TDragState; var Accept: boolean);
-
     procedure onDropFiles(Sender: TObject; Files: TUnicodeStrings; X: integer;
       Y: integer);
-
     { --- size controls }
     procedure onDuringSizeMove(Sender: TObject; dx, dy: integer;
       State: TSCState);
@@ -869,7 +867,6 @@ begin
   EventAddNewType('OnDockOver', @THandlerFuncs.onDockOver);
   EventAddNewType('OnDragDrop', @THandlerFuncs.onDragDrop);
   EventAddNewType('OnDragOver', @THandlerFuncs.onDragOver);
-  EventAddNewType('OnDropFiles', @THandlerFuncs.onDropFiles);
 
   EventAddNewType('onDuringSizeMove', @THandlerFuncs.onDuringSizeMove,
     TSizeCtrl);
@@ -882,6 +879,7 @@ begin
 {$IFDEF ADD_SYN_EV}
   EventAddNewType('OnClose', @THandlerFuncs.onSynClose, TSynCompletionProposal);
   EventAddNewType('OnMouseCursor', @THandlerFuncs.onMouseCursor);
+    EventAddNewType('OnDropFiles', @THandlerFuncs.onDropFiles);
 {$ENDIF}
   EventAddNewType('OnChange', @THandlerFuncs.onVSInsChange, TNxCustomInspector);
   EventAddNewType('OnEdit', @THandlerFuncs.onVSInsEdit, TNxCustomInspector);
@@ -1313,8 +1311,9 @@ var
 begin
   Cnt := Length(Args);
   SetLength(Self.Args, Cnt + 1 + Length(AddArgs));
-
-  if Self.Args[0] = nil then
+//тут может быть нужна проверочка была, аможет быть и нет
+//ну вы если увидете, то передайте зайцеву привет
+  if Self.Args[0]  = nil then
   begin
     Self.Args[0] := ALLOC_ZVAL;
     INIT_PZVAL(Self.Args[0]);
@@ -1334,10 +1333,12 @@ begin
         ZVAL_LONG(Self.Args[i], Args[i - 1].VInteger);
       vtObject:
       begin
+      {$IFDEF VS_EDITOR}
         if TPersistent(Args[i - 1].VPointer) is TUnicodeStrings then
         begin
          ZVAL_ARRAY(Self.Args[i], TUnicodeStrings(TPersistent(Args[i - 1].VPointer)).text.split([#10]) );
         end else
+      {$ENDIF}
           ZVAL_LONG(Self.Args[i], integer(Args[i - 1].VPointer));
       end;
       vtPointer:
@@ -1530,8 +1531,6 @@ begin
   if ID <> -1 then
   begin
     Result := TPHPScriptEventHandler(Events.Objects[ID]);
-    {if lowercase(name) = 'ondropfiles' then
-    ShowMessage( IntToStr( Args[0].vtype ) );}
     Result.Run(Args);
   end;
 end;
@@ -1641,11 +1640,11 @@ var
   H: TPHPScriptEventHandler;
 begin
   H := EventRun(Sender, 'OnScroll', [integer(ScrollCode), ScrollPos], False);
-  {if H <> nil then
+  if H <> nil then
   begin
     ScrollPos := H.ParamInt(2);
     H.ClearArgs;
-  end;}
+  end;
 end;
 procedure THandlerFuncs.onVisibilityChanged(Sender: TObject; var Value: boolean);
 var

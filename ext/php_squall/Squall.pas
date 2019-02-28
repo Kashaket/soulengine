@@ -1,7 +1,7 @@
 unit Squall;
 
 interface
-uses Win_D_api;
+uses Windows;
 type
   TSoundVec = array[0..2] of Single;
 

@@ -1,5 +1,5 @@
 unit uMain;
-
+{$I 'PHP.inc'}
 {$I 'sDef.inc'}
 
 interface
@@ -8,7 +8,7 @@ uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, php4delphi, PHPCommon,
   phpFunctions, ZENDTypes, zendAPI, uPhpEvents,
-  Menus, Buttons, ExeMod,
+  Menus, Buttons,
   AppEvnts, phpAPI, Clipbrd, System.UITypes,
   core, SynEditHighlighter, SynHighlighterPHP, SynEdit, SynMemo, Vcl.ExtCtrls
   {$IFDEF ADD_SKINS}
@@ -58,7 +58,6 @@ type
   public
     { Public declarations }
     class procedure loadEngine(DLLFolder: string = '');
-    class procedure extractPHPEngine(EM: TExeStream);
   end;
 
 var
@@ -172,8 +171,6 @@ begin
   if (DLLFolder = '') then
     DLLFolder := ExtractFilePath(ParamStr(0));
 
-  PHPEngine.DLLFolder := AnsiString(DLLFolder);
-
   if FileExists(engineDir + '\php.ini') then
     PHPEngine.IniPath := AnsiString(engineDir + '\php.ini')
   else if FileExists(iniDir + '\php.ini') then
@@ -182,7 +179,6 @@ begin
     PHPEngine.IniPath := AnsiString(progDir)
   else
     PHPEngine.IniPath := AnsiString(PHPEngine.DLLFolder);
-
   /// FS := TFileStream.Create(PHPEngine.IniPath, fmOpenRead, fmShareDenyWrite);
 
   core_Init(PHPEngine, phpMOD.psvPHP);
@@ -246,12 +242,6 @@ var
 begin
   GetTempPath(1023, WinDir);
   Result := AnsiString(StrPas(WinDir));
-end;
-
-class procedure T__fMain.extractPHPEngine(EM: TExeStream);
-
-begin
-
 end;
 
 procedure T__fMain.o1Click(Sender: TObject);

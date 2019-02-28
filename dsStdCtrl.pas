@@ -5,7 +5,8 @@ unit dsStdCtrl;
 interface
 
 uses Forms, Dialogs, SysUtils, Windows, Types, UITypes, TypInfo, Classes, Controls, Buttons,
-  Messages, StdCtrls, Graphics, ExtCtrls, ShellAPI, ComCtrls, Vcl.Themes, DragDrop, DropTarget, DragDropFile;
+  Messages, StdCtrls, Graphics, ExtCtrls, ShellAPI, ComCtrls,
+  DragDrop, DropTarget, DragDropFile;
 {$M+}
 {$TypeInfo On}
 type

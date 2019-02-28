@@ -1,5 +1,5 @@
 unit guiProperties;
-
+{$I PHP.inc}
 {$ifdef fpc}
 {$mode delphi}{$H+}
 {$endif}
@@ -14,6 +14,8 @@ uses
   PHPAPI,
   php4delphi,
   propertiesEngine,
+  Dialogs,
+  Controls,
   RTTI;
 
 procedure InitializeGuiProperties(PHPEngine: TPHPEngine);
@@ -57,6 +59,9 @@ procedure gui_class_method_exist
 procedure gui_methodCall(ht: integer; return_value: pzval; return_value_ptr: pzval;
   this_ptr: pzval; return_value_used: integer; TSRMLS_DC: pointer); cdecl;
   //Вызов метода
+procedure gui_methodrtype(ht: integer; return_value: pzval; return_value_ptr: pzval;
+  this_ptr: pzval; return_value_used: integer; TSRMLS_DC: pointer); cdecl;
+  //Проверка возвращаемого значения метода
 procedure gui_get_evt_paramss(ht: integer; return_value: pzval; return_value_ptr: pzval;
   this_ptr: pzval; return_value_used: integer; TSRMLS_DC: pointer); cdecl;
   //Получение списка параметров (строки) для подсказок
@@ -78,9 +83,6 @@ procedure gui_get_method_params(ht: integer; return_value: pzval; return_value_p
 procedure gui_method_params(ht: integer; return_value: pzval; return_value_ptr: pzval;
   this_ptr: pzval; return_value_used: integer; TSRMLS_DC: pointer); cdecl;
   //Получение строки параметров метода класса
-procedure  gcreate(ht: integer; return_value: pzval; return_value_ptr: pzval;
-  this_ptr: pzval; return_value_used: integer; TSRMLS_DC: pointer); cdecl;
-  //Создание объекта (альтернативный вариант)
 procedure gui_get_all_unitsclasses(ht: integer; return_value: pzval; return_value_ptr: pzval;
   this_ptr: pzval; return_value_used: integer; TSRMLS_DC: pointer); cdecl;
   //Получение списка всех классов
@@ -114,7 +116,7 @@ begin
  if(p[1]^._type = IS_STRING) THEN //Если тип второго аргумента/параметра - строка, то
       begin
       //Вызываем функцию получения значения свойства и возвращаем результат
-        variant2zval(getProperty(integer(Z_LVAL(p[0]^)),Z_STRVAL(p[1]^)), return_value);
+        variant2zval(getProperty(integer(Z_LVAL(p[0]^)),{$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[1]^)), return_value);
       end;
 
   dispose_pzval_array(p);
@@ -133,7 +135,7 @@ begin
   //Получаем аргументы
   zend_get_parameters_my(ht, p, TSRMLS_DC);
   //Возвращаем в хэш-массив return_value тип/вид параметра/свойства объекта
-  ZVAL_LONG(return_value, getPropertyType(Z_LVAL(p[0]^), Z_STRVAL(p[1]^)));
+  ZVAL_LONG(return_value, getPropertyType(Z_LVAL(p[0]^), {$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[1]^)));
 
   dispose_pzval_array(p);
 end;
@@ -151,7 +153,7 @@ begin
   zend_get_parameters_my(ht, p, TSRMLS_DC);
   //Проверяем свойство на существование,
   //Возращаем булево число = 0 u 1
-  ZVAL_BOOL(return_value, existProperty(Z_LVAL(p[0]^), Z_STRVAL(p[1]^)));
+  ZVAL_BOOL(return_value, existProperty(Z_LVAL(p[0]^), {$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[1]^)));
 
   dispose_pzval_array(p);
 end;
@@ -168,20 +170,121 @@ begin
   zend_get_parameters_my(ht, p, TSRMLS_DC);
   //Проверяем метод на существование,
   //Возращаем булево число = 0 u 1
-  ZVAL_BOOL(return_value, existMethod(Z_LVAL(p[0]^), Z_STRVAL(p[1]^)));
+  ZVAL_BOOL(return_value, existMethod(Z_LVAL(p[0]^), {$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[1]^)));
 
   dispose_pzval_array(p);
 end;
+procedure zval_TVALUE(v: TValue; p: pzval);
+begin
+    case v.Kind of
+            tkUnknown:
+              ZVAL_NULL(p);
+            tkInteger:
+              ZVAL_LONG(p, v.AsInteger);
+            tkInt64:
+              ZVAL_DOUBLE(p, integer(v.AsInt64));
+            tkEnumeration:
+              ZVAL_LONG(p, v.AsOrdinal);
+            tkWChar:
+              ZVAL_STRINGW(p, PWideChar(v.AsType<WideChar>), true);
+            tkChar:
+              ZVAL_STRING(p, PAnsiChar(v.AsType<AnsiChar>), true);
+            tkFloat:
+              ZVAL_STRINGW(p, PWideChar(v.AsExtended.ToString), true);
+            tkString:
+              ZVAL_STRINGW(p, PChar(String(v.AsType<ShortString>)), true);
+            tkClass:
+              ZVAL_LONG(p, integer( v.AsObject ));
+            tkUString:
+              ZVAL_STRING(p, PAnsiChar(AnsiString(v.AsType<UnicodeString>)), true );
+            tkPointer:
+              ZVAL_LONG(p, integer( v.AsType<Pointer> ));
+            tkAnsiString:
+              ZVAL_STRING(p, PAnsiChar(AnsiString(v.AsType<AnsiString>)), true);
+            tkWString:
+              ZVAL_STRINGW(p, PChar(v.AsType<WideString>), true);
+            tkVariant:
+              variant2zval(v.AsVariant, p);
+            end;
+    v := nil;
+end;
+procedure gui_methodrtype;
+label ex1;
+var p: pzval_array;
+  ctx     : TRttiContext;
+  lType   : TRttiType;
+  lMethod : TRttiMethod;
+  c       : TObject;
+begin
+  if (ht < 2) and (ht > 3) then
+  begin
+    zend_wrong_param_count(TSRMLS_DC);
+    Exit;
+  end;
+  zend_get_parameters_my(ht, p, TSRMLS_DC);
+   ctx := TRttiContext.Create;
+  ZVAL_LONG(return_value, -1);
+  if p[0]^^._type = IS_LONG then
+  begin
+        c   := TObject(integer(Z_LVAL(p[0]^)));
+        if not Assigned(c) then goto ex1;
 
+        lType:=ctx.GetType(c.ClassInfo);
+  end else begin
+              if Assigned(FindClass({$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[0]^)) ) then
+               lType:=ctx.GetType(FindClass({$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[0]^)))
+               else goto ex1;
+           end;
+        if not Assigned(lType) then goto ex1;
+          if Assigned(lType) then
+            begin
+             lMethod:=lType.GetMethod( {$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[1]^) );
+
+             if Assigned(lMethod) then
+              if Assigned(lMethod.ReturnType) then
+              if ht = 3 then begin
+              if Z_BVAL(p[2]^) then
+               begin
+                case lMethod.ReturnType.TypeKind of
+                  tkClass:
+                    ZVAL_STRINGW(return_value, PChar(lMethod.ReturnType.ToString), false);
+                  tkClassRef:
+                    ZVAL_STRINGW(return_value, PChar(lMethod.ReturnType.ToString), false);
+                  tkSet:
+                    ZVAL_STRINGW(return_value, PChar(lMethod.ReturnType.AsSet.ElementType.ToString),false);
+                  tkEnumeration:
+                    ZVAL_STRINGW(return_value, PChar(lMethod.ReturnType.AsOrdinal.ToString), false);
+                end;
+               end
+               else
+                ZVAL_LONG(return_value, integer(lMethod.ReturnType.TypeKind));
+              end else
+                ZVAL_LONG(return_value, integer(lMethod.ReturnType.TypeKind));
+            end else goto ex1;
+  ex1:
+  dispose_pzval_array(p);//не забываем освобождать память, иначе забьётса
+  Exit;
+end;
 procedure gui_methodCall;
+label ex1;
 var
   p: pzval_array; //хэш-массив передаваемых параметров
   ar: TArrayVariant; //хэш-массив для переданного массива
   arr: array of TValue; //массив, нужный для вызова метода и передачи ему аргументов
   x: variant;           //некий вариант(переменная любого типа)
-  params: TArray<TTypeKind>;//типы передаваемых параметров (нужно для проверки перед передачей)
-  I: integer;           //число для итерирования в массиве всех аргументов
+  params: TArray<Rtti.TRttiParameter>;//типы передаваемых параметров (нужно для проверки перед передачей)
+  I, L: integer;           //число для итерирования в массиве всех аргументов
+  xp: Rtti.TRttiParameter;
   method: ^TNotifyEvent;//собственно, сам метод
+  //
+  ctx     : TRttiContext;
+  lType   : TRttiType;
+  lMethod : TRttiMethod;
+  c       : TObject;
+  mc     : TRttiInstanceType;
+  mct     : TClass;
+  vr      : TValue;
+  objbuf  : TObject;
 begin
   if (ht < 2) or (ht > 3) then //костыль, потому-что в дельфийском Switch-Case нету Default:
   begin
@@ -189,132 +292,83 @@ begin
     Exit;
   end;
   zend_get_parameters_my(ht, p, TSRMLS_DC);
-
+  if not existMethod(Z_LVAL(p[0]^), {$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[1]^)) then Exit;
   case ht of //получаем количество переданных аргументов
     2: begin
       //если аргумента два - соответственно, аргументы вызова метода не переданы,
       //передаём ему пустой массив
-      variant2zval(callMethod(Z_LVAL(p[0]^), Z_STRVAL(p[1]^), []), return_value);
+      zval_TVALUE(callMethod(Z_LVAL(p[0]^), {$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[1]^), []), return_value);
     end;
     3: begin
       if p[2]^._type <> IS_ARRAY then
       //если нам передали массив(единственное, что можно передать ._.)
        begin
         zend_wrong_param_count(TSRMLS_DC);
-        Exit;
+        goto ex1;
        end;
       HashToArray(p[2]^.value.ht, ar);//превращаем его из хэш-таблицы в массив
       if (Length(ar) = 0) then //если длина массива равна нулю (если он пустой)
       begin
         //Возвращаем результат вызова функции/метода с передачей пустого массива аргументов.
-        variant2zval(callMethod(Z_LVAL(p[0]^), Z_STRVAL(p[1]^), []), return_value);
+        zval_TVALUE(callMethod(Z_LVAL(p[0]^), {$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[1]^), []), return_value);
       end
       else
       begin
       //Задаём длину массиву для передачи свойств
         SetLength(arr, 0);
         //Получаем тип всех параметров метода
-        params := getMethodParams(Z_LVAL(p[0]^), Z_STRVAL(p[1]^));
-        //Если количество требуемых и переданных параметров совпало, то...
-        if  Length(ar) = Length(params) then
-        begin
+
+        ctx := TRttiContext.Create;
+
+        c   := TObject(integer(Z_LVAL(p[0]^)));
+        if not Assigned(c) then goto ex1;
+
+        lType:=ctx.GetType(c.ClassInfo);
+        if not Assigned(lType) then goto ex1;
+          if Assigned(lType) then
+            begin
+             lMethod:=lType.GetMethod( {$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[1]^) );
+
+             if Assigned(lMethod) then
+                params := lMethod.GetParameters;
+            end else goto ex1;
+          L := Length(ar);
         //Пробегаемся по массиву параметров (типов аргументов)
-          for I := 0 to High(params) do
+          I := -1;
+          try
+          for xp in params do
           begin
             SetLength(arr, Length(arr)+1);
-            case params[I] of
-              tkUnknown:      begin
-                arr[High(arr)]  := TValue.FromVariant(ar[I]);
-              end;
-              tkInteger:      begin
-                arr[High(arr)]  := TValue.FromVariant(ar[I]);
-              end;
-              tkChar:         begin
-                arr[High(arr)]  := TValue.FromVariant(ar[I]);
-              end;
-              ///tkEnumeration<???>///
-              ///  Не знаю как передать, не сработали варианты
-              ///  Т.к это спецэфический объект-перечислитель
-              ///  как Iterable в PHP...
-              tkFloat:        begin
-                arr[High(arr)]  := TValue.FromVariant(ar[I]);
-              end;
-              tkString:       begin
-                arr[High(arr)]  := TValue.FromVariant(ar[I]);
-              end;
-              //tkSet
-              tkClass:        begin
-              {///?
-               Throws Access Violation
-              ?}///
-              ///  Выбрасывает ошибку Access Violation
-                arr[High(arr)]  := TValue.From<TObject>( TObject(integer(ar[I])) );
-              end;
-              ///tkMethod  - do not add (non-applicable for this)
-              ///or not, idk==
-              ///  ВООБЩЕ НЕ ПРОВЕРЯЛ
-              tkMethod:       begin
-                method          := Pointer(integer(ar[I]));
-                arr[High(arr)]  := TValue.From<TNotifyEvent>( method^ );
-              end;
-              tkWChar:        begin
-                arr[High(arr)]  := TValue.FromVariant(ar[I]);
-              end;
-              tkLString:      begin
-                arr[High(arr)]  := TValue.FromVariant(ar[I]);
-              end;
-              tkWString:      begin
-                arr[High(arr)]  := TValue.FromVariant(ar[I]);
-              end;
-              tkVariant:      begin
-                arr[High(arr)]  := TValue.FromVariant(ar[I]);
-              end;
-              tkArray:        begin
-                arr[High(arr)]  := TValue.FromVariant(ar[I]);
-              end;
-              tkRecord:       begin
-              ///???///
-              ///  Иногда выбрасывает ошибку
-                arr[High(arr)]  := TValue.FromVariant(ar[I]);
-              end;
-              tkInterface:    begin
-              ///???///
-              ///  Иногда выбрасывает ошибку
-                arr[High(arr)]  := TValue.FromVariant(integer(ar[I]));
-              end;
-              tkInt64:        begin
-                arr[High(arr)]  := TValue.FromVariant(ar[I]);
-              end;
-              tkDynArray:     begin
-                arr[High(arr)]  := TValue.FromVariant(ar[I]);
-              end;
-              tkUString:      begin
-                arr[High(arr)]  := TValue.FromVariant(ar[I]);
-              end;
-              ///tkClassRef<???>///
-              ///Нужно добавить как-то, не знаю как, пока не смог///
-              tkPointer:      begin
-                arr[High(arr)]  := TValue( Pointer(integer(ar[I])) );
-              end;
-              tkProcedure:    begin
-                arr[High(arr)]  := TValue( Pointer(integer(ar[I])) );
-              end;
+            I := I + 1;
+            //Если количество требуемых и переданных параметров не совпало...
+            if L < I then     begin
+               //... - пишем, что аргументов передано недостаточно
+                zend_wrong_param_count(TSRMLS_DC);
+                 dispose_pzval_array(p);
+                Exit;
             end;
+                if xp.ParamType.TypeKind = tkClass then
+                begin
+                    arr[High(arr)]  := TValue.From<TObject>(TObject( integer( ar[I] )));
+                end else
+                  arr[High(arr)]  := ValueFromVariant(ar[I], xp.ParamType.TypeKind);
+
             //arr[High(arr)] := TValue.FromVariant(ar[I]);
          end;
-          variant2zval(callMethod(Z_LVAL(p[0]^), Z_STRVAL(p[1]^), arr), return_value);
-        end
-        else
-        begin
-            //Если не совпало - пишем, что аргументов передано недостаточно
-            zend_wrong_param_count(TSRMLS_DC);
-            Exit;
-        end;
+          except
+              on E: exception do
+              begin
+                dispose_pzval_array(p);
+                Exit;
+              end;
+          end;
+          zval_TVALUE(callMethod(Z_LVAL(p[0]^), {$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[1]^), arr), return_value);
       end;
     end;
   end;
-
+  ex1:
   dispose_pzval_array(p);
+  Exit;
 end;
 
 procedure gui_methodList;
@@ -349,14 +403,12 @@ begin
   if ht <2 then
   begin
      ZVAL_STRINGW(return_value, PWideChar(getProperties(Z_LVAL(p[0]^), -1)), True);
-  dispose_pzval_array(p);
   end
   else
   begin
     ZVAL_STRINGW(return_value, PWideChar(getProperties(Z_LVAL(p[0]^), Z_LVAL(p[1]^))), True);
-  dispose_pzval_array(p);
   end;
-
+  dispose_pzval_array(p);
 end;
 
 procedure gui_class_propList;
@@ -373,15 +425,13 @@ begin
 
   if ht <2 then
   begin
-     ZVAL_STRINGW(return_value, PWideChar(getPropertiesfClass(Z_STRVAL(p[0]^), -1)), True);
-  dispose_pzval_array(p);
+     ZVAL_STRINGW(return_value, PWideChar(getPropertiesfClass({$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[0]^), -1)), True);
   end
   else
   begin
-    ZVAL_STRINGW(return_value, PWideChar(getPropertiesfClass(Z_STRVAL(p[0]^), Z_LVAL(p[1]^))), True);
-  dispose_pzval_array(p);
+    ZVAL_STRINGW(return_value, PWideChar(getPropertiesfClass({$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[0]^), Z_LVAL(p[1]^))), True);
   end;
-
+  dispose_pzval_array(p);
 end;
 procedure gui_class_propArray;
 var
@@ -399,17 +449,24 @@ begin
 
   if ht < 2 then
   begin
-     getPropertiesfClassArr(Z_STRVAL(p[0]^), -1, @arrn, @arrv);
+     getPropertiesfClassArr({$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[0]^), -1, @arrn, @arrv);
      ZVAL_ARRAYWS(return_value, arrn, arrv);
-    dispose_pzval_array(p);
   end
   else
   begin
-     getPropertiesfClassArr(Z_STRVAL(p[0]^), Z_LVAL(p[1]^), @arrn, @arrv);
+     getPropertiesfClassArr({$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[0]^), Z_LVAL(p[1]^), @arrn, @arrv);
      ZVAL_ARRAYWS(return_value, arrn, arrv);
-    dispose_pzval_array(p);
   end;
-
+  dispose_pzval_array(p);
+end;
+procedure log(ast: AnsiString);
+var ass: TStringList;
+begin
+   ass := TStringList.Create();
+   if( FileExists('kr_log.txt') )
+    then ass.LoadFromFile('kr_log.txt');
+   ass.Append(ast);
+   ass.SaveToFile('kr_log.txt');
 end;
 procedure gui_propSet;
 var
@@ -421,8 +478,13 @@ begin
     Exit;
   end;
   zend_get_parameters_my(ht, p, TSRMLS_DC);
-  if p[2]^^._type in [IS_LONG, IS_BOOL, IS_DOUBLE, IS_STRING] then
-    ZVAL_BOOL(return_value, setProperty(Z_LVAL(p[0]^), Z_STRVAL(p[1]^), zval2variant(p[2]^^)));
+    if p[0]^^._type <> IS_NULL then
+    begin
+      ZVAL_BOOL(return_value,
+      setProperty(Z_LVAL(p[0]^), {$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[1]^), zval2variant(p[2]^^)));
+    end
+    else
+      ZVAL_FALSE(return_value);
 
   dispose_pzval_array(p);
 end;
@@ -442,13 +504,13 @@ begin
   if (p[0]^^._type = IS_LONG) and (p[1]^^._type = IS_STRING) then
   begin
     ZVAL_STRINGW(return_value, PWideChar(
-    evt_params( Z_LVAL(p[0]^), Z_STRVAL(p[1]^) )
+    evt_params( Z_LVAL(p[0]^), {$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[1]^) )
     ), True);
   end
   else
   begin
     ZVAL_STRINGW(return_value, PWideChar(
-    evt_params( Z_STRVAL(p[0]^), Z_STRVAL(p[1]^) )
+    evt_params( {$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[0]^), {$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[1]^) )
     ), True);
   end;
 
@@ -468,7 +530,7 @@ begin
 
   zend_get_parameters_my(ht, p, TSRMLS_DC);
 
-     evt_param_names(Z_STRVAL(p[0]^), Z_STRVAL(p[1]^), @arrn);
+     evt_param_names({$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[0]^), {$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[1]^), @arrn);
      ZVAL_ARRAY(return_value, arrn);
     dispose_pzval_array(p);
 
@@ -487,7 +549,7 @@ begin
 
   zend_get_parameters_my(ht, p, TSRMLS_DC);
 
-     evt_param_types(Z_STRVAL(p[0]^), Z_STRVAL(p[1]^), @arrn);
+     evt_param_types({$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[0]^), {$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[1]^), @arrn);
      ZVAL_ARRAY(return_value, arrn);
     dispose_pzval_array(p);
 
@@ -505,8 +567,8 @@ begin
   end;
 
   zend_get_parameters_my(ht, p, TSRMLS_DC);
-     evt_param_names(Z_STRVAL(p[0]^), Z_STRVAL(p[1]^), @arrn);
-     evt_param_types(Z_STRVAL(p[0]^), Z_STRVAL(p[1]^), @arrv);
+     evt_param_names({$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[0]^), {$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[1]^), @arrn);
+     evt_param_types({$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[0]^), {$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[1]^), @arrv);
      ZVAL_ARRAYWS(return_value, arrn, arrv);
     dispose_pzval_array(p);
 
@@ -514,7 +576,7 @@ end;
 procedure gui_class_methodList;
 var
   p: pzval_array;
-  arrv:  TWSDate;
+  arrn, arrv:  TWSDate;
 begin
   if ht <> 1 then
   begin
@@ -523,8 +585,8 @@ begin
   end;
 
   zend_get_parameters_my(ht, p, TSRMLS_DC);
-     listMethodfClass( Z_STRVAL(p[0]^), @arrv );
-     ZVAL_ARRAY(return_value, arrv);
+     listMethodfClass( {$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[0]^), @arrn, @arrv );
+     ZVAL_ARRAYWS(return_value, arrn, arrv);
     dispose_pzval_array(p);
 
 end;
@@ -542,7 +604,7 @@ begin
   end;
 
   zend_get_parameters_my(ht, p, TSRMLS_DC);
-getMethodParamsfClass(Z_STRVAL(p[0]^), Z_STRVAL(p[1]^), @arrn, @arrv);
+getMethodParamsfClass({$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[0]^), {$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[1]^), @arrn, @arrv);
      ZVAL_ARRAYWS(return_value, arrn, arrv);
     dispose_pzval_array(p);
 
@@ -559,7 +621,7 @@ begin
   zend_get_parameters_my(ht, p, TSRMLS_DC);
   //Проверяем метод на существование,
   //Возращаем булево число = 0 u 1
-  ZVAL_BOOL(return_value, existMethodClass(Z_STRVAL(p[0]^), Z_STRVAL(p[1]^)));
+  ZVAL_BOOL(return_value, existMethodClass({$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[0]^), {$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[1]^)));
 
   dispose_pzval_array(p);
 end;
@@ -574,22 +636,7 @@ begin
   end;
   zend_get_parameters_my(ht, p, TSRMLS_DC);
 
-  ZVAL_STRINGW(return_value, PWideChar(getMethodParamss(Z_STRVAL(p[0]^), Z_STRVAL(p[1]^))), True);
-
-  dispose_pzval_array(p);
-end;
-procedure  gcreate;
-var
-  p: pzval_array;
-begin
-  if ht <> 2 then
-  begin
-    zend_wrong_param_count(TSRMLS_DC);
-    Exit;
-  end;
-  zend_get_parameters_my(ht, p, TSRMLS_DC);
-
-  ZVAL_LONG(return_value, gui_create(Z_STRVAL(p[0]^), Z_LVAL(p[1]^)));
+  ZVAL_STRINGW(return_value, PWideChar(getMethodParamss({$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[0]^), {$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[1]^))), True);
 
   dispose_pzval_array(p);
 end;
@@ -616,7 +663,7 @@ begin
   end;
   zend_get_parameters_my(ht, p, TSRMLS_DC);
 
-  ZVAL_BOOL(return_value, LoadTypeLib(string(Z_STRVAL(p[0]^))));
+  ZVAL_BOOL(return_value, LoadTypeLib(string({$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[0]^))));
 
   dispose_pzval_array(p);
 end;
@@ -631,7 +678,7 @@ begin
   end;
   zend_get_parameters_my(ht, p, TSRMLS_DC);
 
-  ZVAL_BOOL(return_value, LoadTypePackage(string(Z_STRVAL(p[0]^))));
+  ZVAL_BOOL(return_value, LoadTypePackage(string({$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[0]^))));
 
   dispose_pzval_array(p);
 end;
@@ -646,7 +693,7 @@ begin
   end;
   zend_get_parameters_my(ht, p, TSRMLS_DC);
 
-  ZVAL_BOOL(return_value, getPropReadable(string(Z_STRVAL(p[0]^)), string(Z_STRVAL(p[1]^))));
+  ZVAL_BOOL(return_value, getPropReadable(string({$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[0]^)), string({$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[1]^))));
 
   dispose_pzval_array(p);
 end;
@@ -661,7 +708,7 @@ begin
   end;
   zend_get_parameters_my(ht, p, TSRMLS_DC);
 
-  ZVAL_BOOL(return_value, getPropWritable(string(Z_STRVAL(p[0]^)), string(Z_STRVAL(p[1]^))));
+  ZVAL_BOOL(return_value, getPropWritable(string({$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[0]^)), string({$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[1]^))));
 
   dispose_pzval_array(p);
 end;
@@ -676,7 +723,7 @@ if ht <> 1 then
     Exit;
   end;
   zend_get_parameters_my(ht, p, TSRMLS_DC);
-  form_fixwm(THandle(Z_STRVAL(p[0]^)));
+  form_fixwm(THandle({$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[0]^)));
   dispose_pzval_array(p);
 end;
 procedure InitializeGuiProperties(PHPEngine: TPHPEngine);
@@ -687,6 +734,7 @@ begin
   PHPEngine.AddFunction('gui_methodList', @gui_methodList);
   PHPEngine.AddFunction('gui_methodExists', @gui_methodExists);
   PHPEngine.AddFunction('gui_methodCall', @gui_methodCall);
+  PHPEngine.AddFunction('gui_methodrtype', @gui_methodrtype);
   PHPEngine.AddFunction('gui_propList', @gui_propList);
   PHPEngine.AddFunction('gui_class_propList', @gui_class_propList);
   PHPEngine.AddFunction('gui_class_propArray', @gui_class_propArray);
@@ -705,8 +753,6 @@ begin
 
   PHPEngine.AddFunction('ldtl', @ldl);
   PHPEngine.AddFunction('lbpl', @lbpll);
-
-  PHPEngine.AddFunction('guiccreate', @gcreate);
 end;
 
 

@@ -4,7 +4,7 @@ interface
 
 uses
   SysUtils, Classes, Variants, Dialogs,
-  PHPCommon, PHPCustomLibrary, phpLibrary, phpFunctions, CategoryButtons,
+  PHPCommon, PHPCustomLibrary, phpLibrary, phpFunctions, dsCategoryButtons,
   ImgList, Controls;
 
 type

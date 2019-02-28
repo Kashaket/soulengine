@@ -1,23 +1,24 @@
 unit propertiesEngine;
-
+{$I 'sDef.inc'}
+{$I PHP.inc}
 interface
 
 uses
   {$IFDEF typelib} System.ShareMem, {$ENDIF}
   SysUtils, WinAPI.Windows,
   Dialogs, Forms, Graphics, Classes, Controls, StdCtrls, TypInfo, Variants,
-  mainLCL, RTTI, ZendApi,{$IFDEF typelib} UnitClass, {$ENDIF}php4delphi
-  //, EventHook
+  mainLCL, RTTI, ZendApi, UnitClass, php4delphi
   ;
 function setProperty(id: integer; prop: string; Value: variant): boolean;
 function getProperty(id: integer; prop: string): variant;
 function existProperty(id: integer; prop: string): boolean;
-
+function ValueFromVariant(V: Variant; Kind: TTypeKind): TValue;
+function VariantFromValue(v: TValue): Variant;
 function existMethod( id: integer; method: string ): boolean;
 function existMethodClass( classname: string; method: string ): boolean;
-function callMethod(id: integer; method: string; p: array of TValue): variant;
+function callMethod(id: integer; method: string; p: array of TValue): TValue;
 procedure listMethod( id: integer; arr1: PWSDate );
-procedure listMethodfClass( classname: string; arr1: PWSDate );
+procedure listMethodfClass( classname: string; arr2: PWSDate; arr1: PWSDate );
 procedure form_fixwm( Handle: THandle );
 function evt_params(classname: string; propname: string): String; overload;
 function evt_params(id: integer; propname: string): String; overload;
@@ -26,12 +27,12 @@ procedure evt_param_types(classname: string; propname: string; arr1: PWSDate);
 
 function getProperties(id: integer; tktype: integer): string;
 function getPropertiesfClass(classname: string; tktype: integer): string;
-function isStrInArray(s: string; a:  array of string): Boolean;
+function isStrInArray(s: string; a:  TWSDate): Boolean; overload;
 procedure getPropertiesfClassArr(classname: string; tktype: integer; arr1: PWSDate; arr2:  PWSDate);
 function getPropReadable(classname: string; propname: string): Boolean;
 function getPropWritable(classname: string; propname: string): Boolean;
 function getPropertyType(id: integer; prop: string): integer;
-function getMethodParams(id: integer; method: string): TArray<TTypeKind>;
+function getMethodParams(id: integer; method: string): System.TArray<TRttiParameter>;
 procedure getMethodParamsfClass(classname: string; method: string; arr1: PWSDate; arr2: PWSDate);
 function getMethodParamss(classname: string; method: string): String;
 procedure get_all_classes(arr: PWSDate);
@@ -42,16 +43,62 @@ procedure RegisterClassAliasA(AClass: TPersistentClass; Alias: string);
 function GetConstructor(rType: TRttiType) : TRttiMethod;
 function LoadTypeLib(LibraryName: string) : Boolean;
 function LoadTypePackage(PackageName: string) : Boolean;
-function gui_create(classname: string; owner: NativeUint): NativeUint;
-
-var Regs, TLLoads, BPLoads, Aliases, AliasesKeys: array of string;
+type cPointer = class
+  private
+    FLinc : array of Pointer;
+    function lindex(v: Pointer): integer;
+  public
+    function Get(id: integer): Pointer; overload;
+    function Get(value: Pointer): integer; overload;
+    constructor Create();
+end;
+var Regs, TLLoads, BPLoads, Aliases, AliasesKeys: TWSDate;
 implementation
 type
   FindType = function(ClassName: string): TRttiType;
   LibModuleListAddres = function(): PLibModule;
- {$IFDEF typelib}
-var uc: TUnitClass;
-{$ENDIF}
+
+constructor cPointer.Create();
+begin
+  SetLength(FLinc, 0);
+end;
+function cPointer.Get(id: Integer): Pointer;
+begin
+    Result := @Null;
+    if (length(Flinc) = 0) or (id = -1) then Exit;
+
+   if FLinc[id] <> nil then
+      Result := FLinc[id];
+end;
+function cPointer.Get(value: Pointer): integer;
+begin
+  Result := -1;
+  if ( Length(Flinc) = 0 ) or (lindex(value)=-1) then
+  begin
+       SetLength(Flinc, Length(Flinc)+1);
+       FLinc[ High(FLinc) ] := value;
+       Result := Length(FLinc)-1;
+  end else Result:=lindex(value);
+end;
+function cPointer.lindex(v: Pointer): integer;
+var x: Pointer; I: integer;
+begin
+
+  Result := -1;
+  I := -1;
+    for x in FLinc do
+    begin
+    I := I + 1;
+    if x = v then
+      begin
+        Result := I;
+        Exit;
+      end;
+    end;
+
+end;
+  var uc: TUnitClass;
+      regpoints: cPointer;
 {
 function gui_set_event(id: integer; value: string): Boolean;
 var hobj: TObject;
@@ -74,38 +121,12 @@ begin
       GetWindowLong(Handle, GWL_STYLE) And Not WS_ClipChildren
     );
 end;
-function gui_create(classname: string; owner: NativeUint): NativeUint;
-var
-  c: TRttiType;
-  o: TObject;
-  instance: TClass;
-
-begin
-{$IFDEF typelib}
-    Result := 0;
-    c := uc.FindType( classname );
-    if not Assigned(c) then Exit;
-
-    instance := (c.AsInstance).MetaclassType;
-
-    if not Assigned(instance) then Exit;
-    if not Assigned(GetConstructor(c)) then Exit;
-    if (owner = -1) or (owner = 0) then
-      o := GetConstructor(c).Invoke(instance, [nil]).AsObject
-    else
-      o := GetConstructor(c).Invoke(instance, [TObject(owner)]).AsObject;
-    if owner > 0 then
-      c.GetProperty('Parent').SetValue(o, TObject(owner));
-    Result := NativeUint( o );
-{$ENDIF}
-end;
 function LoadTypeLib(LibraryName: string) : Boolean;
 var
     GetLibM: LibModuleListAddres;
     DllHandle: THandle;
 begin
   Result := True;
-  ShowMessage(LibraryName);
   try
     if not isStrInArray(LibraryName, TLLoads) then
    begin
@@ -201,7 +222,7 @@ begin
 end;
 
 procedure get_all_classes(arr: PWSDate);
-var x: TUnitType;
+var //x: TUnitType;
 s: String;
 I, b: integer;
 begin
@@ -245,7 +266,6 @@ var
   Flags: TParamFlags;
   ParamName: string;
   TypeInfo: PTypeInfo;
-  Temp: TObject;
 
 begin
 
@@ -331,6 +351,7 @@ begin
           TypeData := GetTypeData(TypeInfo);
           if not Assigned(TypeData) then Exit;
            Ptr := PByte(@TypeData^.ParamList);
+          try
            if TypeData^.ParamCount > 0 then
           begin
            for b := 0 to TypeData^.ParamCount-1 do
@@ -359,6 +380,10 @@ begin
           begin
             Result := 'void';
           end;
+          except
+            on E: exception do
+            Result := '!';
+          end;
 end;
 
 
@@ -370,7 +395,6 @@ var
   Ptr: PByte;
   B: Byte;
   Flags: TParamFlags;
-  ParamName: string;
   TypeInfo: PTypeInfo;
   Result: string;
 
@@ -409,8 +433,6 @@ var
   TypeData: PTypeData;
   Ptr: PByte;
   B: Byte;
-  Flags: TParamFlags;
-  ParamName: string;
   TypeInfo: PTypeInfo;
 
 begin
@@ -453,8 +475,7 @@ begin
        if Assigned(lMethod) then
        begin
         Result := True;
-       end
-
+       end;
       end;
   finally
   if Assigned(lType) then
@@ -472,7 +493,6 @@ var
   ctx     : TRttiContext;
   lType   : TRttiType;
   lMethod : TRttiMethod;
-  c       : TObject;
 
 begin
   Result := False;
@@ -503,43 +523,111 @@ begin
   end;
 end;
 
-procedure listMethodfClass( classname: string; arr1: PWSDate );
+procedure listMethodfClass( classname: string; arr2: PWSDate; arr1: PWSDate );
 var
   ctx     : TRttiContext;
   lType   : TRttiType;
-  c       : TObject;
-  method : TRttiMethod;
-
+  method  : TRttiMethod;
+  apr     : System.TArray<Rtti.TRttiParameter>;
+  param   : TRttiParameter;
+  params  : string;
+  I,L     : Byte;
+  isesc: boolean;
 begin
   ctx := TRttiContext.Create;
   SetLength(arr1^, 0);
-  if Assigned( GetClass(classname) ) then
+  SetLength(arr2^, 0);
+  if not Assigned( GetClass(classname) ) then EXIT;
     lType:=ctx.GetType( GetClass(classname) );
-
-  try
     if Assigned(lType) then
       begin
+        try
+
 
         for method in  lType.GetMethods() do
         begin
-        if not Assigned(method) then Exit;
+        if method = nil then Exit;
 
-        if ( ( not isStrInArray(method.Name, arr1^))  and ( not method.Name.IsEmpty ) ) then
+        if ( ( not isStrInArray(method.Name, arr2^))  and ( not method.Name.IsEmpty ) )
+         then
           begin
+          apr := method.GetParameters;
+
             SetLength(arr1^, Length(arr1^)+1);
-            arr1^[High(arr1^)] :=  method.Name;
+            SetLength(arr2^, Length(arr2^)+1);
+            arr2^[High(arr2^)] := method.Name;
+            if not Assigned(apr) then begin
+             arr1^[High(arr1^)] := '( void )';
+              continue;
+            end;
+
+            if length(apr) > 0 then
+            begin
+                try
+                  params := '( ';
+                  I := 0;
+                  L := Length(apr) - 1;
+                    for param in apr do
+                    begin
+                      if param = nil then begin
+                        exit;
+                      end;
+                      if param.ParamType = nil then
+                      begin
+                        isesc := True;
+                        break;
+                      end else isesc := False;
+                      params := params + param.ParamType.ToString;
+                      if param.Flags * [pfVar, pfOut] <> [] then
+                        params := params + ' &'
+                      else
+                        params := params + ' ';
+                        params := params + param.Name;
+                      if I < L then
+                      params := params + ', ';
+                      I := I + 1;
+                    end;
+                  params := params + ' )';
+                  if isesc then begin
+                     arr1^[High(arr1^)] := '( void )';
+                     continue;
+                  end;
+
+                  arr1^[High(arr1^)] := params;
+                except
+                 on E: exception do
+                 begin
+                 ShowMessage('Very bad error' + #10 + #13 +
+                    'Method Name:' + method.Name + #10 + #13 +
+                    'Method Kind:' + inttostr(integer(method.MethodKind)) +#10 + #13
+                 +  'Method Visibility:' + inttostr(integer(method.Visibility)) +#10 + #13
+                 +  'Has Extended Info:' + BoolToStr(method.HasExtendedInfo,true)+#10+ #13
+                 +  'Is Static:' + BoolToStr(method.IsStatic,true)+#10+#13
+                 +  'Dispatch Kind:' + inttostr(integer(method.DispatchKind)) +#10 + #13
+                 +  'Is Class Method:' + BoolToStr(method.IsClassMethod,true)+#10+#13
+                 +  'CallConv:' + inttostr(integer(method.CallingConvention))+#10+#13
+                );
+                ShowMessage( E.Message );
+                    SetLength(arr2^, Length(arr2^)-1);
+                    SetLength(arr1^, Length(arr1^)-1);
+                 end;
+
+                end;
+            end else
+                arr1^[High(arr1^)] := '( void )';
+
           end;
         end;
-
-      end
-      else
-      begin
-        SetLength(arr1^, 1);
-        arr1^[0] := '';
+        except
+         on E: exception do
+         begin
+         ShowMessage( E.Message );
+           SetLength(arr2^, Length(arr2^)-1);
+           SetLength(arr1^, Length(arr1^)-1);
+         end;
+        end;
       end;
-  finally
-    ctx.Free;
-  end;
+  ctx.Free;
 end;
 
 procedure listMethod( id: integer; arr1: PWSDate );
@@ -573,32 +661,96 @@ begin
         arr1^[0] := '';
       end;
   finally
+   if Assigned(lType) then
     lType.Free;
     ctx.Free;
   end;
 end;
 
-function callMethod(id: integer; method: string; p: array of TValue): variant;
+function VariantFromValue(v: TValue): Variant;
+begin
+   case v.Kind of
+            tkInteger:
+              Result := v.AsInteger;
+            tkEnumeration:
+              Result := v.AsString;
+            tkInt64:
+              Result := v.AsInt64;
+            tkWChar:
+              Result := UTF8Char(v.AsType<WideChar>);
+            tkChar:
+              Result := UTF8Char(v.AsType<AnsiChar>);
+            tkFloat:
+              Result := v.AsExtended;
+            tkString:
+              Result := UTF8String(v.AsType<ShortString>);
+            tkUString:
+              Result := v.AsType<UTF8String>;
+            tkClass:
+              Result := integer( v.AsObject );
+            tkPointer:
+              Result := regpoints.Get( v.AsType<Pointer> );
+            tkAnsiString:
+              Result := UTF8String(v.AsType<AnsiString>);
+            tkWString:
+              Result := UTF8String(v.AsType<WideString>);
+            tkVariant:
+              Result := v.AsVariant;
+            end;
+end;
+function ValueFromVariant(V: Variant; Kind: TTypeKind): TValue;
+begin
+    if VarType(V) = varNull then
+      Result := Result.Empty;
+   case Kind of
+            tkInteger:
+              Result := Result.From<integer>( integer(V) );
+            tkInt64:
+              Result := Result.From<int64>( Int64(V) );
+            tkWChar:
+              Result := Result.From<WideChar>( WideString(UTF8String(V))[1] );
+            tkAnsiChar:
+              Result := Result.From<AnsiChar>( AnsiString(UTF8String(V))[1] );
+            tkFloat:
+              Result := Result.From<Extended>( Extended(V) );
+            tkString:
+              Result := Result.From<ShortString>( ShortString(V) );
+            tkClass:
+              Result := Result.From<TObject>( TObject( integer( V ) ) );
+            tkUString:
+              Result := Result.From<Utf8String>( Utf8String(V) );
+            tkPointer:
+              Result := regpoints.Get( integer( V ) );
+            tkAnsiString:
+              Result := Result.From<AnsiString>( AnsiString(UTF8String(V)) );
+            tkWString:
+              Result := Result.From<WideString>( WideString(UTF8String(V)) );
+            tkEnumeration:
+              Result := Result.From<Integer>( integer(V) );
+            tkVariant:
+              Result := Result.FromVariant(V)
+            end;
+end;
+
+function callMethod(id: integer; method: string; p: array of TValue): TValue;
 var
   ctx     : TRttiContext;
   lType   : TRttiType;
   lMethod : TRttiMethod;
   c       : TObject;
-
 begin
   ctx := TRttiContext.Create;
-
   c   := TObject(integer(id));
   lType:=ctx.GetType(c.ClassInfo);
-
   try
     if Assigned(lType) then
       begin
        lMethod:=lType.GetMethod(method);
 
        if Assigned(lMethod) then
-          if Length(lMethod.GetParameters) = Length(p) then
-            Result := lMethod.Invoke(c, p).AsVariant;
+       begin
+              Result := lMethod.Invoke(c, p);
+       end;
       end;
   finally
   if Assigned(lType) then
@@ -611,48 +763,32 @@ begin
   end;
 end;
 
-function getMethodParams(id: integer; method: string): TArray<TTypeKind>;
+function getMethodParams(id: integer; method: string): System.TArray<TRttiParameter>;
+label x1;
 var
   ctx     : TRttiContext;
   lType   : TRttiType;
   lMethod : TRttiMethod;
   c       : TObject;
-  x       : TRttiParameter;
 
 begin
-  SetLength(Result, 0);
   ctx := TRttiContext.Create;
 
   c   := TObject(integer(id));
-  if not Assigned(c) then Exit;
+  if not Assigned(c) then goto x1;
 
   lType:=ctx.GetType(c.ClassInfo);
-  if not Assigned(lType) then Exit;
-
-
-  try
+  if not Assigned(lType) then goto x1;
     if Assigned(lType) then
       begin
        lMethod:=lType.GetMethod(method);
 
        if Assigned(lMethod) then
-          for x in lMethod.GetParameters do
-          begin
-              if not Assigned(x) then Exit;
-
-              SetLength(Result, Length(Result)+1);
-              Result[High(Result)] := x.ParamType.TypeKind;
-          end;
+          Result := lMethod.GetParameters;
+       lType.Free;
       end;
-  finally
-  if Assigned(lType) then
-  begin
-      lType.Free;
-    if Assigned(lMethod) then
-      lMethod.Free;
-  end;
-    ctx.Free;
-  end;
+x1:
+  ctx.Free;
 end;
 
 procedure getMethodParamsfClass(classname: string; method: string; arr1: PWSDate; arr2: PWSDate);
@@ -660,7 +796,6 @@ var
   ctx     : TRttiContext;
   lType   : TRttiType;
   lMethod : TRttiMethod;
-  c       : TObject;
   x       : TRttiParameter;
   params  : TArray<TRttiParameter>;
 
@@ -708,7 +843,7 @@ var
   lType   : TRttiType;
   lMethod : TRttiMethod;
   b       : integer;
-  x       : TRttiParameter;
+  x       : Rtti.TRttiParameter;
   ParamName: String;
   params: TArray<TRttiParameter>;
 
@@ -764,69 +899,139 @@ begin
   end;
 end;
 
+{$IFDEF NEWRTTI}
+function getProperty2(id: integer; prop: string): variant;
+var
+  o: TObject;
+  inf: TRTTIType;
+  ctx: TRTTIContext;
+  p: TRttiProperty;
+  v: TValue;
+begin
+  o := TObject(integer(id));
+  Result := Null;
+  if Assigned(o) then
+  begin
+    ctx := RTTI.TRttiContext.Create;
 
+    inf := ctx.GetType(o.ClassType);
+      if Assigned(inf) then
+      begin
+        p := Inf.GetProperty(prop);
+        if Assigned(p) then
+        begin
+          v := p.GetValue(o);
+          if v.Kind = tkEnumeration then
+          begin
+            Result := VariantFromValue(v);//GetDynArrayProp(o, prop);
+          end
+          else
+          begin
+            Result := VariantFromValue(v);
+          end;
+          p.Free;
+          inf.Free;
+          end;
+      end;
+      ctx.Free;
+  end;
+  o := nil;
+end;
+function setProperty2(o: TObject; prop: string; value: Variant): boolean;
+var
+  inf: TRTTIType;
+  ctx: TRTTIContext;
+  p: TRttiProperty;
+begin
+  Result := False;
+  if Assigned(o) then
+  begin
+  try
+    ctx := RTTI.TRttiContext.Create;
+    if not Assigned(GetClass(o.ClassName)) then begin
+                                                ctx.Free;
+                                                Exit;
+                                                end;
+
+    inf := ctx.GetType(o.ClassType);
+      if Assigned(inf) then
+      begin
+        p := Inf.GetProperty(prop);
+        if Assigned(p) then begin
+            {if prop = 'HintColor' then
+              ShowMessage( inttostr( integer( p.PropertyType.TypeKind ) ) );
+           }if p.IsWritable then
+              if p.PropertyType.TypeKind in [ tkInteger, tkInt64 ,  tkWChar
+            ,tkChar, tkFloat, tkString, {tkClass, tkPointer,} tkUString, tkAnsiString,
+            tkWString {, tkVariant}] then
+              p.SetValue(o, ValueFromVariant(value, p.PropertyType.TypeKind))
+              else if p.PropertyType.TypeKind in [ tkClass, tkClassRef ] then
+              if VarType(value) = varNull then
+                 p.SetValue(o, TValue.From<TObject>(nil))
+              else
+              p.SetValue(o, TValue.From<TObject>(TObject(integer(value))));
+            Result := True;
+            p.Free;
+          end;
+          inf.Free;
+      end;
+  except
+    on E:exception do
+    begin
+    ctx.Free;
+    o := nil;
+    Exit;
+    end;
+  end;
+  end;
+  o := nil;
+end;
+{$ENDIF}
 function setProperty(id: integer; prop: string; Value: variant): boolean;
 var
   o: TObject;
   inf: PPropInfo;
   oc: TObject;
-  intl: integer;
 begin
+Result := False;
+o := TObject(id);
+if not Assigned(o) then Exit;
+
   try
-    o := TObject(integer(id));
+
     inf := TypInfo.GetPropInfo(o, prop);
     if inf <> nil then
     begin
+      Result := True;
       if inf^.PropType^.Kind in [tkClass, tkClassRef] then
       begin
-        intl := Value;
-        oc :=  TObject(intl);
-        if Assigned(oc) then
+        if VarType(Value) = varNull then
         begin
-          SetObjectProp(o, prop, oc)
-        end
+          oc := nil;
+        end else
+        if VarType(Value) = varString then
+          oc := TObject(StrToInt(String(Value)))
         else
         begin
-          Result := False;
-          exit;
+          oc := TObject(Integer(Value));
         end;
+        SetObjectProp(o, prop, oc);
       end
       else
-      begin
         SetPropValue(o, prop, Value);
-      end;
-    end;
+      o := nil;
+      inf := nil;
+    end {$IFDEF NEWRTTI}else Result:=setProperty2(o, prop, Value){$ENDIF};
   except
     on E: Exception do
     begin
+      o := nil;
+      oc:= nil;
+      inf := nil;
       Result := False;
-      exit;
     end;
   end;
-  Result := inf <> nil;
 end;
-
-{function setPObj(id: integer; prop: string; Value: integer): boolean;
-var
-  o: TObject;
-  inf: PPropInfo;
-begin
-  try
-    o := TObject(integer(id));
-    inf := TypInfo.GetPropInfo(o, prop);
-
-    if inf <> nil then
-      SetObjectProp(o, prop, TObject(Value));
-  except
-    on E: Exception do
-    begin
-      Result := False;
-      exit;
-    end;
-  end;
-  Result := inf <> nil;
-end;          }
-
 function getProperty(id: integer; prop: string): variant;
 var
   o: TObject;
@@ -837,9 +1042,13 @@ begin
   begin
     inf := TypInfo.GetPropInfo(o, prop);
       if inf <> nil then
-        Result := GetPropValue(o, prop)
+      begin
+        Result := GetPropValue(o, prop);
+        inf := nil;
+      end
       else
-        Result := Null;
+        Result := {$IFDEF NEWRTTI}getProperty2(id, prop){$ELSE}Null{$ENDIF};
+      o := nil;
   end;
 end;
 
@@ -847,23 +1056,51 @@ function getPropertyType(id: integer; prop: string): integer;
 var
   o: TObject;
   inf: PPropInfo;
+  ctx: TRttiContext;
+  p: TRttiProperty;
 begin
+Result := -1;
   o := TObject(integer(id));
+  if not Assigned(o) then Exit;
+  if prop = 'owner' then begin
+                           o := nil;
+                           Exit;
+                         end;
+
   inf := TypInfo.GetPropInfo(o, prop);
   if inf <> nil then
     Result := integer(inf^.PropType^.Kind)
   else
-    Result := -1;
+  begin
+    ctx :=  TRttiContext.Create();
+    p := ctx.GetType(o.ClassType).GetProperty(prop);
+   if p <> nil then
+   begin
+     if Assigned(p.PropertyType) then
+     begin
+      Result := integer(p.PropertyType.TypeKind);
+     end;
+      p.Free;
+   end;
+   ctx.Free;
+  end;
+  o := nil;
+  inf := nil;
 end;
 
 function existProperty(id: integer; prop: string): boolean;
 var
   o: TObject;
-  inf: PPropInfo;
+  ctx: TRTTIContext;
 begin
+  Result := False;
   o := TObject(integer(id));
-  inf := TypInfo.GetPropInfo(o, prop);
-  Result := inf <> nil;
+  if o = nil then exit;
+  ctx := TRttiContext.Create();
+  //inf := TypInfo._InternalGetPropInfo(o.ClassInfo, prop);
+  Result := (TypInfo.GetPropInfo(o, prop) <> nil) or (ctx.GetType(o.ClassType).GetProperty(prop) <> nil);
+  ctx.Free();
+  o := nil;
 end;
 
 function getProperties(id: integer; tktype: integer): string;
@@ -880,7 +1117,8 @@ begin
     res.Clear;
     try
         rt := ctx.GetType(o.ClassType);
-
+        if Assigned(rt) then
+        begin
         for prop in rt.GetProperties() do begin
             if not prop.IsWritable then continue;
             if tktype > -1 then
@@ -890,6 +1128,8 @@ begin
             end;
             if (res.IndexOf( prop.Name ) = -1) and (not prop.Name.IsEmpty) then
               res.Add(prop.Name);
+        end;
+        rt.Free;
         end;
     finally
         ctx.Free();
@@ -913,7 +1153,8 @@ begin
         if Assigned(GetClass(classname)) then
         begin
         rt := ctx.GetType(   GetClass( classname ) );
-
+        if Assigned(rt) then
+        begin
         for prop in rt.GetProperties() do begin
             if not prop.IsWritable then continue;
             if tktype > -1 then
@@ -924,6 +1165,8 @@ begin
             if (res.IndexOf( prop.Name ) = -1) and (not prop.Name.IsEmpty) then
               res.Add(prop.Name);
         end;
+        rt.Free;
+        end;
         end;
     finally
         ctx.Free();
@@ -932,7 +1175,7 @@ begin
   Result := res.Text;
   res.Free;
 end;
-function isStrInArray(s: string; a:  array of string): Boolean;
+function isStrInArray(s: string; a:  TWSDate): Boolean;
 var e: string;
 begin
   Result := False;
@@ -959,18 +1202,24 @@ begin
         if Assigned(GetClass(classname)) then
         begin
         rt := ctx.GetType(   GetClass( classname ) );
-        if not Assigned(rt) then Exit;
-
+        if not Assigned(rt) then begin
+                                   rt.Free;
+                                   Exit;
+                                 end;
         for prop in rt.GetProperties() do begin
-            if not Assigned(prop) then Exit;
+            if not Assigned(prop) then begin
+                                   rt.Free;
+                                   Exit;
+                                 end;
+            if not Assigned(prop.PropertyType) then Continue;
 
             if tktype > -1 then
             begin
-              if prop.PropertyType.TypeKind <> TTypeKind(tktype) then
+              if integer(prop.PropertyType.TypeKind) <> tktype then
                 continue;
             end;
 
-            if ( ( not isStrInArray(prop.Name, arr1^))  and ( not prop.Name.IsEmpty ) ) then
+            if ( ( not prop.Name.IsEmpty ) and ( not isStrInArray(prop.Name, arr1^)) ) then
             begin
 
                SetLength( arr1^, Length(arr1^)+1);
@@ -980,17 +1229,23 @@ begin
                arr2^[High( arr2^)] := prop.PropertyType.Name;
             end;
         end;
+        rt.Free;
         end;
-    finally
-        ctx.Free();
+    except
+      on E: exception do
+      begin
+        ctx.Free;
+        SetLength(arr1^, 0);
+        SetLength(arr2^, 0);
+        Exit;
+      end;
     end;
-
+    ctx.Free;
 end;
 function getPropReadable(classname: string; propname: string): Boolean;
 var
  ctx: TRttiContext;
   rt : TRttiType;
-  prop : TRttiProperty;
 begin
     Result := False;
     ctx := TRttiContext.Create;
@@ -999,8 +1254,11 @@ begin
         begin
         rt := ctx.GetType(   GetClass( classname ) );
         if( Assigned(rt) ) then
+        begin
           if( Assigned( rt.GetProperty(propname) ) ) then
             Result := rt.GetProperty(propname).IsReadable;
+          rt.Free;
+        end;
         end;
         ctx.Free();
 end;
@@ -1008,7 +1266,6 @@ function getPropWritable(classname: string; propname: string): Boolean;
 var
  ctx: TRttiContext;
   rt : TRttiType;
-  prop : TRttiProperty;
 begin
     Result := False;
     ctx := TRttiContext.Create;
@@ -1017,9 +1274,16 @@ begin
         begin
         rt := ctx.GetType(   GetClass( classname ) );
         if( Assigned(rt) ) then
+        begin
           if( Assigned( rt.GetProperty(propname) ) ) then
             Result := rt.GetProperty(propname).IsWritable;
+            rt.Free;
+        end;
         end;
         ctx.Free();
 end;
+initialization
+  regpoints := cPointer.Create;
+finalization
+  FreeAndNil( regpoints );
 end.

@@ -56,7 +56,7 @@ begin
   CopyMemory (@Data[1], Adr, Size); FreeResource (ResData);
   FreeLibrary (hExe); NewCompanyZ := NewCompany + #0;
   while (Length(NewCompanyZ) mod 2) <> 0 do NewCompanyZ := NewCompanyZ + #0;
-  i00 := Pos(StringFileInfo, Data);
+  i00 := AnsiPos(StringFileInfo, Data);
   if i00 = 0 then Exit; i0 := PosEx(CompanyName, Data, i00);
   if i0 = 0 then Exit; i := i0 + Length(CompanyName);
   while Data[i] = #0 do Inc(i);
@@ -90,7 +90,7 @@ end;
 procedure php_info_module(zend_module : Pzend_module_entry; TSRMLS_DC : pointer); cdecl;
 begin
   php_info_print_table_start();
-  php_info_print_table_row(2, PChar('php winres'), PChar('enabled'));
+  php_info_print_table_row(2, PAnsiChar('php winres'), PAnsiChar('enabled'));
   php_info_print_table_end();
 end;
 

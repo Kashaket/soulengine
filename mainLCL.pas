@@ -1,5 +1,4 @@
 unit mainLCL;
-
 interface
 
 uses
@@ -11,9 +10,9 @@ uses
   ;
 
 function toID(o: TObject): integer;
-function ToStr(S: PAnsiChar; Len: integer): ansistring; overload;
-function ToStr(V: variant): ansistring; overload;
-function ToStrA(V: variant): ansistring;
+function ToStr(S: PAnsiChar; Len: integer): AnsiString; overload;
+function ToStr(V: variant): AnsiString; overload;
+function ToStrA(V: variant): AnsiString;
 function ToPChar(V: variant): PAnsiChar;
 function toObject(id: integer): TObject;
 function toWControl(id: integer): TWinControl;
@@ -44,13 +43,13 @@ begin
   Result := s;
 end;
 
-function ToStrA(V: variant): ansistring;
+function ToStrA(V: variant): AnsiString;
 begin
 
   Result := AnsiString(V);
 end;
 
-function ToStr(S: PAnsiChar; Len: integer): ansistring; overload;
+function ToStr(S: PAnsiChar; Len: integer): AnsiString; overload;
 var
   i: integer;
 begin
@@ -62,7 +61,7 @@ begin
   end;
 end;
 
-function ToStr(V: variant): ansistring;
+function ToStr(V: variant): AnsiString;
 begin
   Result := AnsiString(V);
 end;

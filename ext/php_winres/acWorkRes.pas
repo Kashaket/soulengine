@@ -498,7 +498,7 @@ begin
   else           c3 := OPEN_EXISTING;
   if GetVersion and $80000000 = 0 then
        result := CreateFileW(fileName,                            c1, c2, nil, c3, 0, 0)
-  else result := CreateFileA(pchar(string(wideString(fileName))), c1, c2, nil, c3, 0, 0);
+  else result := CreateFileA(pansichar(ansistring(wideString(fileName))), c1, c2, nil, c3, 0, 0);
 end;
 
 function BeginUpdateResourceS(const Filename: String; const delExistingRes: Boolean): DWORD; stdcall;

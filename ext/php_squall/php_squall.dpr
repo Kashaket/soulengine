@@ -6,7 +6,7 @@ uses
   zendTypes,
   ZENDAPI,
   PHPAPI,
-  Win_D_api,
+  Windows,
   Squall;
 
 {$R *.res}

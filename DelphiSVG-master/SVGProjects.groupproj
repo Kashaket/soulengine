@@ -1,0 +1,96 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <ProjectGuid>{740F3D4F-3334-44F6-BC92-84B3F3A6AD9E}</ProjectGuid>
+    </PropertyGroup>
+    <ItemGroup>
+        <Projects Include="svg\SVGPackage.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="vcl\svgimage\SVGImagePackageR.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="vcl\svgimage\SVGImagePackageD.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="vcl\SvgViewer.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="fmx\FMXSVGViewer.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="fmx\FMXSVGImage.dproj">
+            <Dependencies/>
+        </Projects>
+    </ItemGroup>
+    <ProjectExtensions>
+        <Borland.Personality>Default.Personality.12</Borland.Personality>
+        <Borland.ProjectType/>
+        <BorlandProject>
+            <Default.Personality/>
+        </BorlandProject>
+    </ProjectExtensions>
+    <Target Name="SVGPackage">
+        <MSBuild Projects="svg\SVGPackage.dproj"/>
+    </Target>
+    <Target Name="SVGPackage:Clean">
+        <MSBuild Projects="svg\SVGPackage.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="SVGPackage:Make">
+        <MSBuild Projects="svg\SVGPackage.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="SVGImagePackageR">
+        <MSBuild Projects="vcl\svgimage\SVGImagePackageR.dproj"/>
+    </Target>
+    <Target Name="SVGImagePackageR:Clean">
+        <MSBuild Projects="vcl\svgimage\SVGImagePackageR.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="SVGImagePackageR:Make">
+        <MSBuild Projects="vcl\svgimage\SVGImagePackageR.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="SVGImagePackageD">
+        <MSBuild Projects="vcl\svgimage\SVGImagePackageD.dproj"/>
+    </Target>
+    <Target Name="SVGImagePackageD:Clean">
+        <MSBuild Projects="vcl\svgimage\SVGImagePackageD.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="SVGImagePackageD:Make">
+        <MSBuild Projects="vcl\svgimage\SVGImagePackageD.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="SvgViewer">
+        <MSBuild Projects="vcl\SvgViewer.dproj"/>
+    </Target>
+    <Target Name="SvgViewer:Clean">
+        <MSBuild Projects="vcl\SvgViewer.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="SvgViewer:Make">
+        <MSBuild Projects="vcl\SvgViewer.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="FMXSVGViewer">
+        <MSBuild Projects="fmx\FMXSVGViewer.dproj"/>
+    </Target>
+    <Target Name="FMXSVGViewer:Clean">
+        <MSBuild Projects="fmx\FMXSVGViewer.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="FMXSVGViewer:Make">
+        <MSBuild Projects="fmx\FMXSVGViewer.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="FMXSVGImage">
+        <MSBuild Projects="fmx\FMXSVGImage.dproj"/>
+    </Target>
+    <Target Name="FMXSVGImage:Clean">
+        <MSBuild Projects="fmx\FMXSVGImage.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="FMXSVGImage:Make">
+        <MSBuild Projects="fmx\FMXSVGImage.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Build">
+        <CallTarget Targets="SVGPackage;SVGImagePackageR;SVGImagePackageD;SvgViewer;FMXSVGViewer;FMXSVGImage"/>
+    </Target>
+    <Target Name="Clean">
+        <CallTarget Targets="SVGPackage:Clean;SVGImagePackageR:Clean;SVGImagePackageD:Clean;SvgViewer:Clean;FMXSVGViewer:Clean;FMXSVGImage:Clean"/>
+    </Target>
+    <Target Name="Make">
+        <CallTarget Targets="SVGPackage:Make;SVGImagePackageR:Make;SVGImagePackageD:Make;SvgViewer:Make;FMXSVGViewer:Make;FMXSVGImage:Make"/>
+    </Target>
+    <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
+</Project>

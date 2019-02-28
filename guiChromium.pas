@@ -1,5 +1,5 @@
 unit guiChromium;
-
+{$I PHP.inc}
 {$ifdef fpc}
 {$mode delphi}{$H+}
 {$ELSE}
@@ -51,8 +51,6 @@ var
 procedure chromium_settings;
 var
   p: pzval_array;
-  id: integer;
-  s: ansistring;
 begin
   if ht < 10 then
   begin
@@ -62,16 +60,16 @@ begin
   zend_get_parameters_my(ht, p, TSRMLS_DC);
 
 
-  CefCache := Z_STRVAL(p[0]^);
-  CefUserAgent := Z_STRVAL(p[1]^);
-  CefProductVersion := Z_STRVAL(p[2]^);
-  CefLocale := Z_STRVAL(p[3]^);
-  CefLogFile := Z_STRVAL(p[4]^);
-  CefExtraPluginPaths := Z_STRVAL(p[5]^);
+  CefCache := {$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[0]^);
+  CefUserAgent := {$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[1]^);
+  CefProductVersion := {$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[2]^);
+  CefLocale := {$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[3]^);
+  CefLogFile := {$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[4]^);
+  CefExtraPluginPaths := {$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[5]^);
   CefLocalStorageQuota := Z_LVAL(p[6]^);
   CefSessionStorageQuota := Z_LVAL(p[7]^);
 
-  CefJavaScriptFlags := Z_STRVAL(p[8]^);
+  CefJavaScriptFlags := {$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[8]^);
   CefAutoDetectProxySettings := Z_BVAL(p[9]^);
 
   dispose_pzval_array(p);
@@ -104,7 +102,7 @@ begin
     for i := zend_hash_num_elements(arr) - 1 downto 0 do
     begin
       zend_hash_index_find(arr, i, tmp);
-      AllowedCall.SetValue(LowerCase(String(Z_STRVAL(tmp^^))), '');
+      AllowedCall.SetValue(LowerCase(String({$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(tmp^^))), '');
     end;
     Dispose(tmp);
   end;
@@ -149,7 +147,7 @@ begin
     IS_LONG: Result := TCefv8ValueRef.CreateInt(arg.Value.lval);
     IS_DOUBLE: Result := TCefv8ValueRef.CreateDouble(arg.Value.dval);
     IS_BOOL: Result := TCefv8ValueRef.CreateBool(boolean(arg.Value.lval));
-    IS_STRING: Result := TCefv8ValueRef.CreateString(String(Z_STRVAL(arg)));
+    IS_STRING: Result := TCefv8ValueRef.CreateString(String({$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(arg)));
     else
       Result := TCefv8ValueRef.CreateNull;
   end;
@@ -158,7 +156,8 @@ end;
 function TExtension.Execute(const Name: ustring; const obj: ICefv8Value;
   const arguments: TCefv8ValueArray; var retval: ICefv8Value;
   var Exception: ustring): boolean;
-var
+  label ex1;
+  var
   S: ansistring;
   Args: pzval_array_ex;
   Return, Func: pzval;
@@ -179,7 +178,7 @@ begin
       if (AllowedCall.FSize = 0) or (not AllowedCall.HasKey(LowerCase(S))) then
       begin
         Result := False;
-        exit;
+        goto ex1;
       end;
 
       Func := MAKE_STD_ZVAL;
@@ -217,6 +216,11 @@ begin
       _zval_dtor(Return, nil, 0);
     end;
   end;
+  ex1:
+
+{  if length(args) > 0 then
+  for x in args do
+     Freemem(x); }
 end;
 
 const
@@ -240,13 +244,14 @@ procedure InitializeGuiChromium(PHPEngine: TPHPEngine);
 begin
   PHPEngine.AddFunction('chromium_settings', @chromium_settings);
   PHPEngine.AddFunction('chromium_load', @chromium_load);
-  PHPEngine.AddFunction('chromium_allowedcall', @chromium_allowedcall);
+  {$MESSAGE 'Check wether else method exist'}
+  //PHPEngine.AddFunction('chromium_allowedcall', @chromium_allowedcall);
 
-  CefLoadLibAfter := callback_CefLoadLib;
+  //CefLoadLibAfter := callback_CefLoadLib;
 end;
 
 
 initialization
-  AllowedCall := TStringHashTable.Create(256);
+  //AllowedCall := TStringHashTable.Create(256);
 
 end.

@@ -1,7 +1,7 @@
 program soulEngine;
 
 {$I 'sDef.inc'}
-
+{$DEFINE UNICODE}
 uses
   Forms,
   Dialogs,

@@ -79,6 +79,14 @@ object __fMain: T__fMain
     Font.Pitch = fpFixed
     Font.Style = []
     TabOrder = 2
+    CodeFolding.GutterShapeSize = 11
+    CodeFolding.CollapsedLineColor = clGrayText
+    CodeFolding.FolderBarLinesColor = clGrayText
+    CodeFolding.IndentGuidesColor = clGray
+    CodeFolding.IndentGuides = True
+    CodeFolding.ShowCollapsedLine = False
+    CodeFolding.ShowHintMark = True
+    UseCodeFolding = False
     BorderStyle = bsNone
     Gutter.AutoSize = True
     Gutter.BorderStyle = gbsRight
@@ -98,6 +106,7 @@ object __fMain: T__fMain
     TabWidth = 4
     WantTabs = True
     OnDropFiles = M1DropFiles
+    FontSmoothing = fsmNone
   end
   object n: TMainMenu
     Left = 504
@@ -170,6 +179,9 @@ object __fMain: T__fMain
     Top = 48
   end
   object sps: TSynPHPSyn
+    Options.AutoDetectEnabled = False
+    Options.AutoDetectLineLimit = 0
+    Options.Visible = False
     CommentAttri.Foreground = clGreen
     IdentifierAttri.Foreground = 1710618
     KeyAttri.Foreground = clHighlight

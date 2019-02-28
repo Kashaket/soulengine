@@ -97,7 +97,7 @@ begin
   for I := #0 to #255 do
   begin
     HashTable[I] := Ord(I);
-    InsensitiveHashTable[I] := Ord(AnsiUpperCase(string(I))[1]);
+    InsensitiveHashTable[I] := Ord(AnsiString(AnsiUpperCase(string(I)))[1]);
   end;
   RandSeed := 111;
   for I := #1 to #255 do

@@ -1,5 +1,5 @@
 unit dsUtils;
-
+{$I PHP.inc}
 {$ifdef fpc}
 {$mode delphi}{$H+}
 {$endif}
@@ -8,7 +8,7 @@ interface
 
 uses
   Classes, SysUtils, Dialogs, Controls, Forms, ShellAPI, ClipBrd, Windows, ShlObj,
-  Graphics, Vcl.Imaging.pngimage, GifImage2, Jpeg, exemod,
+  Graphics, Vcl.Imaging.pngimage, svgimage, GifImage2, Jpeg, exemod,
 
   {$ifdef fpc}
   LCLType,
@@ -31,7 +31,12 @@ uses
             return_value_used : integer; TSRMLS_DC : pointer); cdecl;
   procedure clipboard_get(ht : integer; return_value: pzval; return_value_ptr: pzval; this_ptr : pzval;
             return_value_used : integer; TSRMLS_DC : pointer); cdecl;
+  procedure clipboard_checkformat(ht : integer; return_value: pzval; return_value_ptr: pzval; this_ptr : pzval;
+            return_value_used : integer; TSRMLS_DC : pointer); cdecl;
   procedure clipboard_assignpic(ht : integer; return_value: pzval; return_value_ptr: pzval; this_ptr : pzval;
+            return_value_used : integer; TSRMLS_DC : pointer); cdecl;
+
+              procedure exemod_count(ht : integer; return_value: pzval; return_value_ptr: pzval; this_ptr : pzval;
             return_value_used : integer; TSRMLS_DC : pointer); cdecl;
 implementation
 
@@ -105,16 +110,16 @@ begin
           Continue;
 
         if i = 0 then
-            FileList := FileList + (Z_STRVAL(tmp^^))
+            FileList := FileList + ({$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(tmp^^))
         else
-            FileList := FileList + #0 + (Z_STRVAL(tmp^^));
+            FileList := FileList + #0 + ({$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(tmp^^));
      end;
      Dispose(tmp);
 
 
      CopyFilesToClipboard( FileList );
   end else
-     CopyFilesToClipboard( Z_STRVAL(p[0]^) );
+     CopyFilesToClipboard( {$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[0]^) );
 
   dispose_pzval_array(p);
 end;
@@ -132,7 +137,7 @@ begin
   for i := 0 to FileList.Count - 1 do
     add_index_stringl(return_value, i, PAnsiChar(FileList[i]), Length(FileList[i]), 1);
 
-  FileList.Free;
+  FileList.Destroy;
 end;
 
 
@@ -143,6 +148,7 @@ procedure clipboard_assign;
   PNG: TPNGImage;
   JPG: TJPEGImage;
   GIF: GifImage2.TGIFImage;
+  SVG: TSVGGraphic;
   Pic: TPicture;
 begin
   if ht < 1 then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
@@ -152,11 +158,11 @@ if (ht > 1) and (p[1]^._type <> IS_NULL) then
 begin
   Pic := TPicture.Create;
   M := TMemoryStream.Create;
-  format := LowerCase(Z_STRVAL(p[1]^));
+  format := LowerCase({$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[1]^));
 
   try
 
-    String2Stream( Z_STRVAL(p[0]^), M );
+    String2Stream( {$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[0]^), M );
   if ( format = 'png' )  then
   begin
        PNG := TPNGImage.Create;
@@ -166,7 +172,7 @@ begin
            Pic.Assign(PNG);
 
        end;
-       PNG.Free;
+       PNG.Destroy;
   end
   else if ( (format = 'jpeg') or (format = 'jpg') ) then
   begin
@@ -176,7 +182,7 @@ begin
            LoadFromStream( M );
            Pic.Assign(JPG);
        end;
-       JPG.Free;
+       JPG.Destroy;
   end
   else if ( format = 'gif' ) then
   begin
@@ -186,7 +192,17 @@ begin
            LoadFromStream( M );
            Pic.Assign(GIF);
        end;
-       GIF.Free;
+       GIF.Destroy;
+  end
+  else if ( format = 'svg' ) then
+  begin
+       SVG := TSVGGraphic.Create();
+       with SVG do
+       begin
+           LoadFromStream( M );
+           Pic.Assign(SVG);
+       end;
+       SVG.Destroy;
   end
   else if ( format = 'ico' ) then
        Pic.Icon.LoadFromStream( M )
@@ -195,7 +211,7 @@ begin
 
        Clipboard.Assign( Pic );
   finally
-     M.Free;
+     M.Destroy;
      Pic.Free;
   end;
 
@@ -209,6 +225,47 @@ begin
    ZVAL_LONG(return_value, Integer(Clipboard));
 end;
 
+procedure clipboard_checkformat;
+var p: pzval_array;
+format: ansistring;
+begin
+  if ht <> 1 then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
+  zend_get_parameters_ex(ht, p);
+  format := LowerCase({$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[0]^));
+  if (format = 'text') or (format = 'word') or (format = '1') then
+  ZVAL_BOOL( return_value, Clipboard.HasFormat( CF_TEXT ) or Clipboard.HasFormat( CF_OEMTEXT )
+  or Clipboard.HasFormat( CF_UNICODETEXT ) or Clipboard.HasFormat( CF_LOCALE )
+  or Clipboard.HasFormat( CF_DSPTEXT ) )
+  else if (format = 'pic') or (format = 'picture') or (format = '2') then
+  ZVAL_BOOL(return_value, Clipboard.HasFormat( CF_GIF ) or Clipboard.HasFormat( CF_BITMAP )
+  or Clipboard.HasFormat( CF_METAFILEPICT ) or Clipboard.HasFormat( CF_TIFF )
+  or Clipboard.HasFormat( CF_DIB ) or Clipboard.HasFormat( CF_DIBV5 )
+  or Clipboard.HasFormat( CF_DSPBITMAP ) or Clipboard.HasFormat( CF_DSPMETAFILEPICT )
+  or Clipboard.HasFormat( CF_DSPENHMETAFILE ) or Clipboard.HasFormat( CF_PICTURE ))
+  else if (format = 'c') or (format='component') or (format='3') then
+  ZVAL_BOOL(return_value, Clipboard.HasFormat( CF_COMPONENT ) )
+  else if (format = 'aud') or (format='audio') or (format='sound') or (format='4') then
+  ZVAL_BOOL(return_value, Clipboard.HasFormat( CF_WAVE ) or Clipboard.HasFormat( CF_RIFF ) )
+  else if (format = 'hdrop') or (format='drop') or (format='dragdrop') or (format='5') then
+  ZVAL_BOOL(return_value, Clipboard.HasFormat( CF_HDROP ) )
+  else if (format = 'gdi') or (format = 'gdiobj') or (format='6') then
+  ZVAL_BOOL(return_value, Clipboard.HasFormat( CF_GDIOBJFIRST ) and Clipboard.HasFormat( CF_GDIOBJLAST ))
+  else if (format = 'palette') or (format = 'pal') or (format='hpalette') or (format='7') then
+  ZVAL_BOOL(return_value, Clipboard.HasFormat(CF_PALETTE))
+  else if (format = 'pen') or (format='hpen') or (format='pendata') or (format='8') then
+  ZVAL_BOOL(return_value, Clipboard.HasFormat( CF_PENDATA ) )
+  else if (format = 'cust') or (format='custom') or (format='9') then
+  ZVAL_BOOL(return_value, Clipboard.HasFormat( CF_PRIVATEFIRST ) or Clipboard.HasFormat( CF_PRIVATELAST ) )
+  else if (format = 'ownerdisplay') or (format = 'ownerdisp') or (format='display') or (format='10') then
+  ZVAL_BOOL(return_value, Clipboard.HasFormat( CF_OWNERDISPLAY ))
+  else
+  ZVAL_LONG(return_value, -1);
+  dispose_pzval_array(p);
+end;
+procedure exemod_count;
+begin
+   ZVAL_LONG(return_value, exemod.getcnt);
+end;
 procedure clipboard_assignpic;
 var p: pzval_array; o: TObject;
 label e1;
@@ -233,7 +290,10 @@ begin
   PHPEngine.AddFunction('clipboard_getFiles', @clipboard_getFiles);
   PHPEngine.AddFunction('clipboard_assign', @clipboard_assign);
   PHPEngine.AddFunction('clipboard_get', @clipboard_get);
+  PHPEngine.AddFunction('clipboard_checkformat', @ clipboard_checkformat);
   PHPEngine.AddFunction('clipboard_assignpic', @clipboard_assignpic);
+
+  PHPEngine.AddFunction('exemod_count', @exemod_count);
 end;
 
 

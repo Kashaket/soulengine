@@ -12,16 +12,6 @@ object phpMOD: TphpMOD
   object PHPLibrary: TPHPLibrary
     Functions = <
       item
-        FunctionName = '__message'
-        Tag = 0
-        Parameters = <
-          item
-            Name = 'P1'
-            ParamType = tpUnknown
-          end>
-        OnExecute = PHPLibraryFunctions0Execute
-      end
-      item
         FunctionName = 'component_create'
         Tag = 0
         Parameters = <
@@ -36,20 +26,6 @@ object phpMOD: TphpMOD
         OnExecute = PHPLibraryFunctions1Execute
       end
       item
-        FunctionName = 'cntr_parent'
-        Tag = 0
-        Parameters = <
-          item
-            Name = 'cntl'
-            ParamType = tpUnknown
-          end
-          item
-            Name = 'parent'
-            ParamType = tpUnknown
-          end>
-        OnExecute = PHPLibraryFunctions2Execute
-      end
-      item
         FunctionName = 'obj_free'
         Tag = 0
         Parameters = <
@@ -60,123 +36,7 @@ object phpMOD: TphpMOD
         OnExecute = PHPLibraryFunctions3Execute
       end
       item
-        FunctionName = '__rtti_set'
-        Tag = 0
-        Parameters = <
-          item
-            Name = 'obj'
-            ParamType = tpUnknown
-          end
-          item
-            Name = 'prop'
-            ParamType = tpUnknown
-          end
-          item
-            Name = 'val'
-            ParamType = tpUnknown
-          end>
-        OnExecute = PHPLibraryFunctions4Execute
-      end
-      item
-        FunctionName = '__rtii_set'
-        Tag = 0
-        Parameters = <
-          item
-            Name = 'obj'
-            ParamType = tpUnknown
-          end
-          item
-            Name = 'prop'
-            ParamType = tpUnknown
-          end
-          item
-            Name = 'val'
-            ParamType = tpUnknown
-          end>
-        OnExecute = PHPLibraryFunctions4Execute
-      end
-      item
-        FunctionName = '__rtti_get'
-        Tag = 0
-        Parameters = <
-          item
-            Name = 'obj'
-            ParamType = tpUnknown
-          end
-          item
-            Name = 'prop'
-            ParamType = tpUnknown
-          end>
-        OnExecute = PHPLibraryFunctions5Execute
-      end
-      item
-        FunctionName = '__rtii_get'
-        Tag = 0
-        Parameters = <
-          item
-            Name = 'obj'
-            ParamType = tpUnknown
-          end
-          item
-            Name = 'prop'
-            ParamType = tpUnknown
-          end>
-        OnExecute = PHPLibraryFunctions5Execute
-      end
-      item
-        FunctionName = '__rtti_exists'
-        Tag = 0
-        Parameters = <
-          item
-            Name = 'obj'
-            ParamType = tpUnknown
-          end
-          item
-            Name = 'prop'
-            ParamType = tpUnknown
-          end>
-        OnExecute = PHPLibraryFunctions6Execute
-      end
-      item
-        FunctionName = '__rtii_exists'
-        Tag = 0
-        Parameters = <
-          item
-            Name = 'obj'
-            ParamType = tpUnknown
-          end
-          item
-            Name = 'prop'
-            ParamType = tpUnknown
-          end>
-        OnExecute = PHPLibraryFunctions6Execute
-      end
-      item
-        FunctionName = 'cntr_owner5'
-        Tag = 0
-        Parameters = <
-          item
-            Name = 'obj'
-            ParamType = tpUnknown
-          end>
-        OnExecute = PHPLibraryFunctions7Execute
-      end
-      item
         FunctionName = '__rtti_link'
-        Tag = 0
-        Parameters = <
-          item
-            Name = 'P1'
-            ParamType = tpUnknown
-          end
-          item
-            Name = 'P2'
-            ParamType = tpUnknown
-          end>
-        OnExecute = PHPLibraryFunctions8Execute
-      end
-      item
-        FunctionName = '__rtii_link'
         Tag = 0
         Parameters = <
           item
@@ -194,84 +54,10 @@ object phpMOD: TphpMOD
         Tag = 0
         Parameters = <
           item
-            Name = 'P1'
+            Name = 'Param1'
             ParamType = tpUnknown
           end>
         OnExecute = PHPLibraryFunctions9Execute
-      end
-      item
-        FunctionName = '__rtii_class'
-        Tag = 0
-        Parameters = <
-          item
-            Name = 'P1'
-            ParamType = tpUnknown
-          end>
-        OnExecute = PHPLibraryFunctions9Execute
-      end
-      item
-        FunctionName = '__rtti_set_object'
-        Tag = 0
-        Parameters = <
-          item
-            Name = 'self'
-            ParamType = tpUnknown
-          end
-          item
-            Name = 'prop'
-            ParamType = tpUnknown
-          end
-          item
-            Name = 'object'
-            ParamType = tpUnknown
-          end>
-        OnExecute = PHPLibraryFunctions10Execute
-      end
-      item
-        FunctionName = '__rtii_set_object'
-        Tag = 0
-        Parameters = <
-          item
-            Name = 'self'
-            ParamType = tpUnknown
-          end
-          item
-            Name = 'prop'
-            ParamType = tpUnknown
-          end
-          item
-            Name = 'object'
-            ParamType = tpUnknown
-          end>
-        OnExecute = PHPLibraryFunctions10Execute
-      end
-      item
-        FunctionName = '__rtti_is_class'
-        Tag = 0
-        Parameters = <
-          item
-            Name = 'obj'
-            ParamType = tpUnknown
-          end
-          item
-            Name = 'class'
-            ParamType = tpUnknown
-          end>
-        OnExecute = PHPLibraryFunctions11Execute
-      end
-      item
-        FunctionName = '__rtii_is_class'
-        Tag = 0
-        Parameters = <
-          item
-            Name = 'obj'
-            ParamType = tpUnknown
-          end
-          item
-            Name = 'class'
-            ParamType = tpUnknown
-          end>
-        OnExecute = PHPLibraryFunctions11Execute
       end
       item
         FunctionName = 'control_repaint'
@@ -310,16 +96,6 @@ object phpMOD: TphpMOD
             ParamType = tpUnknown
           end>
         OnExecute = PHPLibraryFunctions14Execute
-      end
-      item
-        FunctionName = 'object_is_nil'
-        Tag = 0
-        Parameters = <
-          item
-            Name = 'P1'
-            ParamType = tpUnknown
-          end>
-        OnExecute = PHPLibraryFunctions15Execute
       end
       item
         FunctionName = 'bitmap_empty'
@@ -542,16 +318,6 @@ object phpMOD: TphpMOD
         OnExecute = PHPLibraryFunctions37Execute
       end
       item
-        FunctionName = 'fileexists'
-        Tag = 0
-        Parameters = <
-          item
-            Name = 'P1'
-            ParamType = tpUnknown
-          end>
-        OnExecute = PHPLibraryFunctions38Execute
-      end
-      item
         FunctionName = 'show_hint'
         Tag = 0
         Parameters = <
@@ -768,16 +534,6 @@ object phpMOD: TphpMOD
         OnExecute = PHPLibraryFunctions57Execute
       end
       item
-        FunctionName = '__copyright'
-        Tag = 0
-        Parameters = <
-          item
-            Name = 'P1'
-            ParamType = tpString
-          end>
-        OnExecute = PHPLibraryFunctions58Execute
-      end
-      item
         FunctionName = 'include_enc2'
         Tag = 0
         Parameters = <
@@ -800,34 +556,6 @@ object phpMOD: TphpMOD
             ParamType = tpUnknown
           end>
         OnExecute = PHPLibraryFunctions62Execute
-      end
-      item
-        FunctionName = 'b64_encode'
-        Tag = 0
-        Parameters = <
-          item
-            Name = 'P1'
-            ParamType = tpUnknown
-          end
-          item
-            Name = 'P2'
-            ParamType = tpUnknown
-          end>
-        OnExecute = PHPLibraryFunctions64Execute
-      end
-      item
-        FunctionName = 'b64_decode'
-        Tag = 0
-        Parameters = <
-          item
-            Name = 'P1'
-            ParamType = tpUnknown
-          end
-          item
-            Name = 'P2'
-            ParamType = tpUnknown
-          end>
-        OnExecute = PHPLibraryFunctions65Execute
       end
       item
         FunctionName = 'wtime_str'
@@ -1003,7 +731,7 @@ object phpMOD: TphpMOD
             Name = 'P2'
             ParamType = tpUnknown
           end>
-        OnExecute = guiFunctions16Execute
+        OnExecute = guiFunctions10Execute
       end
       item
         FunctionName = 'gui_setscrollpos'
@@ -1026,6 +754,36 @@ object phpMOD: TphpMOD
             ParamType = tpUnknown
           end>
         OnExecute = guiFunctions17Execute
+      end
+      item
+        FunctionName = 'gui_isset'
+        Tag = 0
+        Parameters = <
+          item
+            Name = 'P1'
+            ParamType = tpUnknown
+          end>
+        OnExecute = guiFunctions13Execute
+      end
+      item
+        FunctionName = 'gui_class_isset'
+        Tag = 0
+        Parameters = <
+          item
+            Name = 'Param1'
+            ParamType = tpString
+          end>
+        OnExecute = guiFunctions1Execute
+      end
+      item
+        FunctionName = 'gui_class_parent'
+        Tag = 0
+        Parameters = <
+          item
+            Name = 'p1'
+            ParamType = tpString
+          end>
+        OnExecute = guiFunctions2Execute
       end>
     Left = 544
     Top = 72
@@ -1044,24 +802,6 @@ object phpMOD: TphpMOD
         OnExecute = libFormsFunctions0Execute
       end
       item
-        FunctionName = 'font_prop'
-        Tag = 0
-        Parameters = <
-          item
-            Name = 'obj'
-            ParamType = tpUnknown
-          end
-          item
-            Name = 'prop'
-            ParamType = tpUnknown
-          end
-          item
-            Name = 'val'
-            ParamType = tpUnknown
-          end>
-        OnExecute = libFormsFunctions2Execute
-      end
-      item
         FunctionName = 'form_close'
         Tag = 0
         Parameters = <
@@ -1070,20 +810,6 @@ object phpMOD: TphpMOD
             ParamType = tpUnknown
           end>
         OnExecute = libFormsFunctions3Execute
-      end
-      item
-        FunctionName = 'font_get'
-        Tag = 0
-        Parameters = <
-          item
-            Name = 'obj'
-            ParamType = tpUnknown
-          end
-          item
-            Name = 'prop'
-            ParamType = tpUnknown
-          end>
-        OnExecute = libFormsFunctions4Execute
       end
       item
         FunctionName = 'tabsheet_parent'
@@ -1098,20 +824,6 @@ object phpMOD: TphpMOD
             ParamType = tpUnknown
           end>
         OnExecute = libFormsFunctions5Execute
-      end
-      item
-        FunctionName = 'font_assign'
-        Tag = 0
-        Parameters = <
-          item
-            Name = 'P1'
-            ParamType = tpUnknown
-          end
-          item
-            Name = 'P2'
-            ParamType = tpUnknown
-          end>
-        OnExecute = libFormsFunctions6Execute
       end
       item
         FunctionName = 'form_modalresult'
@@ -1158,6 +870,20 @@ object phpMOD: TphpMOD
             ParamType = tpUnknown
           end>
         OnExecute = libFormsFunctions9Execute
+      end
+      item
+        FunctionName = 'tpersistent_assign'
+        Tag = 0
+        Parameters = <
+          item
+            Name = 'p1'
+            ParamType = tpInteger
+          end
+          item
+            Name = 'p2'
+            ParamType = tpInteger
+          end>
+        OnExecute = libFormsFunctions1Execute
       end>
     Left = 408
     Top = 128
@@ -1320,12 +1046,6 @@ object phpMOD: TphpMOD
             ParamType = tpUnknown
           end>
         OnExecute = libApplicationFunctions11Execute
-      end
-      item
-        FunctionName = 'app_find_components'
-        Tag = 0
-        Parameters = <>
-        OnExecute = libApplicationFunctions12Execute
       end>
     Left = 408
     Top = 16
@@ -1364,7 +1084,7 @@ object phpMOD: TphpMOD
         OnExecute = libDialogsFunctions2Execute
       end>
     Left = 408
-    Top = 184
+    Top = 176
   end
   object winApi: TPHPLibrary
     LibraryName = 'winApi'
@@ -1991,20 +1711,6 @@ object phpMOD: TphpMOD
         OnExecute = TPictureLibFunctions8Execute
       end
       item
-        FunctionName = 'bitmap_assign'
-        Tag = 0
-        Parameters = <
-          item
-            Name = 'P1'
-            ParamType = tpUnknown
-          end
-          item
-            Name = 'P2'
-            ParamType = tpUnknown
-          end>
-        OnExecute = TPictureLibFunctions9Execute
-      end
-      item
         FunctionName = 'picture_empty'
         Tag = 0
         Parameters = <
@@ -2049,20 +1755,6 @@ object phpMOD: TphpMOD
         OnExecute = _TPictureLibFunctions13Execute
       end
       item
-        FunctionName = 'picture_assign'
-        Tag = 0
-        Parameters = <
-          item
-            Name = 'P1'
-            ParamType = tpUnknown
-          end
-          item
-            Name = 'P2'
-            ParamType = tpUnknown
-          end>
-        OnExecute = _TPictureLibFunctions14Execute
-      end
-      item
         FunctionName = 'picture_clear'
         Tag = 0
         Parameters = <
@@ -2085,20 +1777,6 @@ object phpMOD: TphpMOD
             ParamType = tpUnknown
           end>
         OnExecute = _TPictureLibFunctions16Execute
-      end
-      item
-        FunctionName = 'icon_assign_ico'
-        Tag = 0
-        Parameters = <
-          item
-            Name = 'P1'
-            ParamType = tpUnknown
-          end
-          item
-            Name = 'P2'
-            ParamType = tpUnknown
-          end>
-        OnExecute = _TPictureLibFunctions17Execute
       end
       item
         FunctionName = 'picture_loadstream'
@@ -2805,16 +2483,6 @@ object phpMOD: TphpMOD
         OnExecute = OSApiFunctions10Execute
       end
       item
-        FunctionName = '__get_handle'
-        Tag = 0
-        Parameters = <
-          item
-            Name = 'P1'
-            ParamType = tpUnknown
-          end>
-        OnExecute = OSApiFunctions11Execute
-      end
-      item
         FunctionName = 'control_perform'
         Tag = 0
         Parameters = <
@@ -2933,20 +2601,6 @@ object phpMOD: TphpMOD
         OnExecute = OSApiFunctions20Execute
       end
       item
-        FunctionName = 'setcaretpos'
-        Tag = 0
-        Parameters = <
-          item
-            Name = 'P1'
-            ParamType = tpUnknown
-          end
-          item
-            Name = 'P2'
-            ParamType = tpUnknown
-          end>
-        OnExecute = OSApiFunctions21Execute
-      end
-      item
         FunctionName = 'mouse_event'
         Tag = 0
         Parameters = <
@@ -3013,20 +2667,6 @@ object phpMOD: TphpMOD
             ParamType = tpUnknown
           end>
         OnExecute = OSApiFunctions26Execute
-      end
-      item
-        FunctionName = 'trayicon_assign'
-        Tag = 0
-        Parameters = <
-          item
-            Name = 'P1'
-            ParamType = tpUnknown
-          end
-          item
-            Name = 'P2'
-            ParamType = tpUnknown
-          end>
-        OnExecute = OSApiFunctions36Execute
       end
       item
         FunctionName = 'setcurrentdir'
@@ -3232,24 +2872,6 @@ object phpMOD: TphpMOD
         OnExecute = _MenusFunctions7Execute
       end
       item
-        FunctionName = 'stylemenu_command'
-        Tag = 0
-        Parameters = <
-          item
-            Name = 'P1'
-            ParamType = tpUnknown
-          end
-          item
-            Name = 'P2'
-            ParamType = tpUnknown
-          end
-          item
-            Name = 'P3'
-            ParamType = tpUnknown
-          end>
-        OnExecute = _MenusFunctions8Execute
-      end
-      item
         FunctionName = 'mainmenu_additem'
         Tag = 0
         Parameters = <
@@ -3362,6 +2984,44 @@ object phpMOD: TphpMOD
             ParamType = tpUnknown
           end>
         OnExecute = _MenusFunctions17Execute
+      end
+      item
+        FunctionName = 'menuitem_itemcount'
+        Tag = 0
+        Parameters = <
+          item
+            Name = 'P1'
+            ParamType = tpInteger
+          end>
+        OnExecute = _MenusFunctions18Execute
+      end
+      item
+        FunctionName = 'menuitem_getitem'
+        Tag = 0
+        Parameters = <
+          item
+            Name = 'P1'
+            ParamType = tpInteger
+          end
+          item
+            Name = 'P2'
+            ParamType = tpInteger
+          end>
+        OnExecute = _MenusFunctions19Execute
+      end
+      item
+        FunctionName = 'menuitem_remitem'
+        Tag = 0
+        Parameters = <
+          item
+            Name = 'P1'
+            ParamType = tpInteger
+          end
+          item
+            Name = 'P2'
+            ParamType = tpInteger
+          end>
+        OnExecute = _MenusFunctions20Execute
       end>
     Left = 48
     Top = 232
@@ -3493,6 +3153,12 @@ object phpMOD: TphpMOD
             ParamType = tpUnknown
           end>
         OnExecute = _ExeModFunctions10Execute
+      end
+      item
+        FunctionName = 'exemod_save'
+        Tag = 0
+        Parameters = <>
+        OnExecute = _ExeModFunctions11Execute
       end>
     Left = 48
     Top = 104
@@ -3626,76 +3292,6 @@ object phpMOD: TphpMOD
   end
   object _TSynEdit: TPHPLibrary
     Functions = <
-      item
-        FunctionName = 'synedit_caret_x'
-        Tag = 0
-        Parameters = <
-          item
-            Name = 'P1'
-            ParamType = tpUnknown
-          end
-          item
-            Name = 'P2'
-            ParamType = tpUnknown
-          end>
-        OnExecute = _TSynEditFunctions0Execute
-      end
-      item
-        FunctionName = 'synedit_caret_y'
-        Tag = 0
-        Parameters = <
-          item
-            Name = 'P1'
-            ParamType = tpUnknown
-          end
-          item
-            Name = 'P2'
-            ParamType = tpUnknown
-          end>
-        OnExecute = _TSynEditFunctions1Execute
-      end
-      item
-        FunctionName = 'synedit_selstart'
-        Tag = 0
-        Parameters = <
-          item
-            Name = 'P1'
-            ParamType = tpUnknown
-          end
-          item
-            Name = 'P2'
-            ParamType = tpUnknown
-          end>
-        OnExecute = _TSynEditFunctions2Execute
-      end
-      item
-        FunctionName = 'synedit_selend'
-        Tag = 0
-        Parameters = <
-          item
-            Name = 'P1'
-            ParamType = tpUnknown
-          end
-          item
-            Name = 'P2'
-            ParamType = tpUnknown
-          end>
-        OnExecute = _TSynEditFunctions3Execute
-      end
-      item
-        FunctionName = 'synedit_linetext'
-        Tag = 0
-        Parameters = <
-          item
-            Name = 'P1'
-            ParamType = tpUnknown
-          end
-          item
-            Name = 'P2'
-            ParamType = tpUnknown
-          end>
-        OnExecute = _TSynEditFunctions4Execute
-      end
       item
         FunctionName = 'syncomplete_activate'
         Tag = 0
@@ -3925,20 +3521,6 @@ object phpMOD: TphpMOD
             ParamType = tpUnknown
           end>
         OnExecute = _TSynEditFunctions23Execute
-      end
-      item
-        FunctionName = 'synedit_highlight'
-        Tag = 0
-        Parameters = <
-          item
-            Name = 'P1'
-            ParamType = tpUnknown
-          end
-          item
-            Name = 'P2'
-            ParamType = tpUnknown
-          end>
-        OnExecute = _TSynEditFunctions24Execute
       end
       item
         FunctionName = 'syncomplete_edit'
@@ -4268,6 +3850,30 @@ object phpMOD: TphpMOD
             ParamType = tpUnknown
           end>
         OnExecute = _CanvasFunctions20Execute
+      end
+      item
+        FunctionName = 'picture_getgraphic'
+        Tag = 0
+        Parameters = <
+          item
+            Name = 'P1'
+            ParamType = tpInteger
+          end>
+        OnExecute = _CanvasFunctions21Execute
+      end
+      item
+        FunctionName = 'tgraphic_prop'
+        Tag = 0
+        Parameters = <
+          item
+            Name = 'self'
+            ParamType = tpInteger
+          end
+          item
+            Name = 'prop'
+            ParamType = tpInteger
+          end>
+        OnExecute = _CanvasFunctions23Execute
       end>
     Left = 168
     Top = 112

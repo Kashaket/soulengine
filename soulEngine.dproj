@@ -41,9 +41,9 @@
         <Base>true</Base>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base)'!=''">
+        <DCC_AssertionsAtRuntime>false</DCC_AssertionsAtRuntime>
         <Custom_Styles>&quot;Turquoise Gray|VCLSTYLE|$(BDSCOMMONDIR)\Styles\TurquoiseGray.vsf&quot;</Custom_Styles>
-        <DCC_TypedAtParameter>true</DCC_TypedAtParameter>
-        <DCC_UnitSearchPath>images;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
+        <DCC_UnitSearchPath>images;DelphiSVG-master\gdip;DelphiSVG-master\svg;DelphiSVG-master\vcl\svgimage;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
         <SanitizedProjectName>soulEngine</SanitizedProjectName>
         <DCC_ImageBase>00400000</DCC_ImageBase>
         <VerInfo_Locale>1049</VerInfo_Locale>
@@ -56,9 +56,7 @@
         <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0;Comments=;CFBundleName=</VerInfo_Keys>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Win32)'!=''">
-        <DCC_ImportedDataReferences>false</DCC_ImportedDataReferences>
-        <DCC_Alignment>0</DCC_Alignment>
-        <DCC_TypedAtParameter>true</DCC_TypedAtParameter>
+        <BRCC_CodePage>0</BRCC_CodePage>
         <UWP_DelphiLogo44>$(BDS)\bin\Artwork\Windows\UWP\delphi_UwpDefault_44.png</UWP_DelphiLogo44>
         <UWP_DelphiLogo150>$(BDS)\bin\Artwork\Windows\UWP\delphi_UwpDefault_150.png</UWP_DelphiLogo150>
         <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
@@ -77,19 +75,14 @@
         <DCC_SymbolReferenceInfo>0</DCC_SymbolReferenceInfo>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1_Win32)'!=''">
-        <BRCC_CodePage>1251</BRCC_CodePage>
+        <DCC_ImportedDataReferences>false</DCC_ImportedDataReferences>
+        <BRCC_EnableMultiByte>true</BRCC_EnableMultiByte>
+        <DCC_DebugInformation>2</DCC_DebugInformation>
+        <DCC_SymbolReferenceInfo>2</DCC_SymbolReferenceInfo>
         <DCC_TypedAtParameter>false</DCC_TypedAtParameter>
-        <BRCC_Language>Russian</BRCC_Language>
         <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
         <DCC_LocalDebugSymbols>true</DCC_LocalDebugSymbols>
-        <BRCC_EnableMultiByte>true</BRCC_EnableMultiByte>
-        <DCC_CodePage>1251</DCC_CodePage>
-        <DCC_Inlining>off</DCC_Inlining>
-        <DCC_GenerateStackFrames>true</DCC_GenerateStackFrames>
         <DCC_ShowGeneralMessages>true</DCC_ShowGeneralMessages>
-        <DCC_DebugDCUs>true</DCC_DebugDCUs>
-        <DCC_IntegerOverflowCheck>true</DCC_IntegerOverflowCheck>
-        <DCC_ImportedDataReferences>false</DCC_ImportedDataReferences>
         <UsePackages>false</UsePackages>
         <Debugger_RunParams>&quot;C:\DevelStudio 3.0 beta\system\include.pse&quot;</Debugger_RunParams>
         <BRCC_OutputDir>trash</BRCC_OutputDir>
@@ -100,7 +93,7 @@
         <DCC_UnitSearchPath>obj;php4delphi;SynEdit-master\Source;Sources\Next Inspector;Sources;The-Drag-and-Drop-Component-Suite-for-Delphi-master\Library;The-Drag-and-Drop-Component-Suite-for-Delphi-master\Source;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
         <VerInfo_Locale>1033</VerInfo_Locale>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
-        <DCC_ExeOutput>C:\DevelStudio 3.0 beta</DCC_ExeOutput>
+        <DCC_ExeOutput>C:\DS Se\</DCC_ExeOutput>
         <VerInfo_Keys>CompanyName=;FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName);FileDescription=$(MSBuildProjectName);ProductName=$(MSBuildProjectName)</VerInfo_Keys>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2)'!=''">
@@ -109,6 +102,7 @@
         <DCC_Define>DEBUG;$(DCC_Define)</DCC_Define>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
+        <DCC_Alignment>4</DCC_Alignment>
         <UsePackages>true</UsePackages>
         <DCC_UsePackage>vclactnband;tb2k_d14;TBX_D2010;vcl;PngComponents;acntDX10Berlin_R;VirtualTreesR;vclimg;NextEngineSet;vclwinx;rtl;aceDX10Berlin_R;vclsmp;vclx;vclie;vcltouch;Synedit_R101B;$(DCC_UsePackage)</DCC_UsePackage>
         <BT_BuildType>Debug</BT_BuildType>
@@ -136,9 +130,7 @@
         <DCCReference Include="uGuiScreen.pas"/>
         <DCCReference Include="uApplication.pas"/>
         <DCCReference Include="uPHPCatButtons.pas"/>
-        <DCCReference Include="regGui.pas">
-            <Form>$R *.res</Form>
-        </DCCReference>
+        <DCCReference Include="regGui.pas"/>
         <BuildConfiguration Include="Debug">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>

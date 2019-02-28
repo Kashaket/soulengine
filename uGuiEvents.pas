@@ -18,7 +18,7 @@ interface
                 NxInspector,{$IFDEF ADD_SYN_EV}
                 SynEditTypes, SynEdit, SynCompletionProposal,
                 {$ENDIF}
-                CategoryButtons
+                dsCategoryButtons
       {$ENDIF}
     ;
 
@@ -1017,7 +1017,7 @@ end;
 procedure TEventItem.onMouseCursor(Sender: TObject;
   const aLineCharPos: TBufferCoord; var aCursor: TCursor);
 begin
-  doEvent( Sender,'OnMouseCursor',[integer(Sender),aLineCharPos.AnsiChar,aLineCharPos.Line],'');
+  doEvent( Sender,'OnMouseCursor',[integer(Sender),aLineCharPos.Char,aLineCharPos.Line],'');
 end;
 {$ENDIF}
 {$ENDIF}

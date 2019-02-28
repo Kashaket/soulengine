@@ -9,7 +9,7 @@ uses Forms, Dialogs, SysUtils, Windows, Classes, Controls, Buttons,
   propertiesEngine,
   StdCtrls, ComCtrls, Menus, ExtCtrls, Mask, Grids,
   Tabs, Graphics, MImage, mainLCL, uGuiScreen, cooltrayicon,
-  GIFImage2,
+  GIFImage2, svgimage, svgimagelist, vcl.imaging.jpeg,
  { uFreeImageImage, uAnimatedJPEG, uTiffImage, uRawImage, }
   dsStdCtrl {, rkSmartTabs}
   {$IFDEF ADD_AC}, sDialogs  {$ENDIF}
@@ -92,7 +92,7 @@ uses Forms, Dialogs, SysUtils, Windows, Classes, Controls, Buttons,
   SynEdit,
   SynCompletionProposal,
   {$ENDIF}
-  CategoryButtons
+  dsCategoryButtons
 {$ENDIF}
 {$IFDEF NOT_LITE}
     , CheckLst
@@ -273,7 +273,9 @@ begin
 
   RegisterClassA(ExtCtrls.TPanel);
   RegisterClassA(TDSPanel);
+        {$IFDEF VS_EDITOR}
   RegisterClassA({[TDragDockObjectCep,} TCustomDockFormCep{]});
+        {$ENDIF}
   RegisterClassA(dsStdCtrl.TTransparentPanel);
 end;
 
@@ -318,9 +320,12 @@ end;
 
 procedure registerGraph;
 begin
-  registerArr([TFont, TMImage, Graphics.TGraphicsObject, Graphics.TPen,
+  registerArr([TFont, TMImage, TGraphic,
+  Graphics.TGraphicsObject, Graphics.TPen,
     Graphics.TBrush, Graphics.TPicture, Graphics.TMetafileCanvas,
-    Graphics.TBitmap, Graphics.TMetafile, Graphics.TIcon]);
+    Graphics.TBitmap, TPNGIMage, TJpegImage, TSVGGraphic,
+    TSVGImage, TSVGImageList, TGIFImage, TGIFImagelist,
+    Graphics.TMetafile, Graphics.TIcon]);
 end;
 
 procedure registerSamples;
@@ -335,6 +340,7 @@ end;
 procedure registerForms;
 begin
   registerArr([TControl, TWinControl, TForm, TCustomForm,
+    TApplication,
 {$IFDEF NOT_LITE}
     TFrame, TCustomFrame,
     TColorDialog, TCommonDialog,

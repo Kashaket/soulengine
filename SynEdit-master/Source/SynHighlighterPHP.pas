@@ -263,7 +263,9 @@ var
   i: Integer;
 begin
   for i := Low(FIdentFuncTable) to High(FIdentFuncTable) do
-    if KeyIndices[i] = -1 then
+  if i > 222 then
+      FIdentFuncTable[i] := AltFunc
+  else if KeyIndices[i] = -1 then
       FIdentFuncTable[i] := AltFunc;
 
   for i := Low(FIdentFuncTable) to High(FIdentFuncTable) do

@@ -1,43 +1,44 @@
 ﻿library php_osinfo;
 
-//{$I PHP.INC}
+{$I PHP.INC}
 //{$smartlink on}
 
 uses
   SysUtils,
   Classes,
+  Math, NB30,
   zendTypes,
   ZENDAPI,
   phpTypes,
   PHPAPI,
   Variants,
-  Registry,
+  u2Registry,
   uPHPUtils, windows;
 
 {$R *.res}
-function GetAdapterInfo(Lana: Char): String; 
+function GetAdapterInfo(Lana: AnsiChar): String;
 var 
-  Adapter: TAdapterStatus; 
-  NCB: TNCB; 
-begin 
-  FillChar(NCB, SizeOf(NCB), 0); 
-  NCB.ncb_command := Char(NCBRESET); 
-  NCB.ncb_lana_num := Lana; 
-  if Netbios(@NCB) <> Char(NRC_GOODRET) then 
+  Adapter: TAdapterStatus;
+  NCB: TNCB;
+begin
+  FillChar(NCB, SizeOf(NCB), 0);
+  NCB.ncb_command := AnsiChar(NCBRESET);
+  NCB.ncb_lana_num := Lana;
+  if Netbios(@NCB) <> AnsiChar(NRC_GOODRET) then
   begin 
     Result := 'mac not found'; 
     Exit; 
   end; 
 
   FillChar(NCB, SizeOf(NCB), 0); 
-  NCB.ncb_command := Char(NCBASTAT); 
+  NCB.ncb_command := AnsiChar(NCBASTAT);
   NCB.ncb_lana_num := Lana; 
   NCB.ncb_callname := '*'; 
 
-  FillChar(Adapter, SizeOf(Adapter), 0); 
+  FillChar(Adapter, SizeOf(Adapter), 0);
   NCB.ncb_buffer := @Adapter; 
   NCB.ncb_length := SizeOf(Adapter); 
-  if Netbios(@NCB) <> Char(NRC_GOODRET) then 
+  if Netbios(@NCB) <> AnsiChar(NRC_GOODRET) then
   begin 
     Result := 'mac not found'; 
     Exit; 
@@ -56,10 +57,10 @@ var
   AdapterList: TLanaEnum; 
   NCB: TNCB; 
 begin 
-  FillChar(NCB, SizeOf(NCB), 0); 
-  NCB.ncb_command := Char(NCBENUM); 
-  NCB.ncb_buffer := @AdapterList; 
-  NCB.ncb_length := SizeOf(AdapterList); 
+  FillChar(NCB, SizeOf(NCB), 0);
+  NCB.ncb_command := AnsiChar(NCBENUM);
+  NCB.ncb_buffer := @AdapterList;
+  NCB.ncb_length := SizeOf(AdapterList);
   Netbios(@NCB); 
   if Byte(AdapterList.length) > 0 then 
     Result := GetAdapterInfo(AdapterList.lana[0]) 
@@ -90,13 +91,14 @@ end;
 procedure php_info_module(zend_module : Pzend_module_entry; TSRMLS_DC : pointer); cdecl;
 begin
   php_info_print_table_start();
-  php_info_print_table_row(2, PChar('php OSINFO'), PChar('enabled'));
+  php_info_print_table_row(2, PAnsiChar('php OSINFO'), PAnsiChar('enabled'));
   php_info_print_table_end();
 end;
 
 
 function minit (_type : integer; module_number : integer; TSRMLS_DC : pointer) : integer; cdecl;
-begin       
+begin
+
   regConstL('MEMORY_LOAD', 0, TSRMLS_DC);
   regConstL('MEMORY_TOTALPHYS', 1, TSRMLS_DC);
   regConstL('MEMORY_AVAILPHYS', 2, TSRMLS_DC);
@@ -220,7 +222,7 @@ begin
   regConstL('LOCALE_FONTSIGNATURE',$000058, TSRMLS_DC);
   regConstL('LOCALE_SISO639LANGNAME',$000059, TSRMLS_DC);
   regConstL('LOCALE_SISO3166CTRYNAME',$00005A, TSRMLS_DC);
-                   
+
   RESULT := SUCCESS;
 end;
 
@@ -353,7 +355,7 @@ begin
         WinVersion := GetVersion and $0000FFFF;
         Res := IntToStr(Lo(WinVersion))+'.'+IntToStr(Hi(WinVersion));
 
-        ZVAL_STRING(return_value, PChar(Res), false);
+        ZVAL_STRING(return_value, PAnsiChar(Res), false);
    except
        ZVAL_NULL(return_value);
    end;
@@ -374,7 +376,7 @@ begin
         DosVersion := GetVersion shr 16;
         Res := IntToStr(Hi(DosVersion))+'.'+IntToStr(Lo(DosVersion));
 
-        ZVAL_STRING(return_value, PChar(Res), false);
+        ZVAL_STRING(return_value, PAnsiChar(Res), false);
    except
        ZVAL_NULL(return_value);
    end;
@@ -386,7 +388,7 @@ function GetLocaleInformation(Flag: Integer): AnsiString;
 var
   pcLCA: array [0..20] of AnsiChar;
 begin
-  if GetLocaleInfo(LOCALE_SYSTEM_DEFAULT, Flag, pcLCA, 19) <= 0 then
+  if GetLocaleInfoA(LOCALE_SYSTEM_DEFAULT, Flag, pcLCA, 19) <= 0 then
     pcLCA[0] := #0;
   Result := pcLCA;
 end;
@@ -405,7 +407,7 @@ begin
 
         Res := GetLocaleInformation( prs[0] );
 
-        ZVAL_STRING(return_value, PChar(Res), false);
+        ZVAL_STRING(return_value, PAnsiChar(Res), false);
    except
        ZVAL_NULL(return_value);
    end;
@@ -534,14 +536,14 @@ begin
    dispose_pzval_array(param);
 end;
 
-function GetHardDiskSerial(const DriveLetter: Char): string;
+function GetHardDiskSerial(const DriveLetter: AnsiChar): string;
 var
   NotUsed:     DWORD;
   VolumeFlags: DWORD;
-  VolumeInfo:  array[0..MAX_PATH] of Char;
+  VolumeInfo:  array[0..MAX_PATH] of AnsiChar;
   VolumeSerialNumber: DWORD;
 begin
-  GetVolumeInformation(PChar(DriveLetter + ':\'),
+  GetVolumeInformationA(PAnsiChar(DriveLetter + ':\'),
     nil, SizeOf(VolumeInfo), @VolumeSerialNumber, NotUsed,
     VolumeFlags, nil, 0);
   Result := Format('%8.8X',
@@ -563,17 +565,17 @@ begin
         res := prs[0];
         Res := GetHardDiskSerial( res[1] );
 
-        ZVAL_STRING(return_value, PChar(Res), false);
+        ZVAL_STRING(return_value, PAnsiChar(Res), false);
    except
        ZVAL_NULL(return_value);
    end;
    dispose_pzval_array(param);
 end;
 
-function GetDiskSize(drive: Char; var free_size, total_size: Int64): Boolean;
+function GetDiskSize(drive: AnsiChar; var free_size, total_size: Int64): Boolean;
  var
-   RootPath: array[0..4] of Char;
-   RootPtr: PChar;
+   RootPath: array[0..4] of AnsiChar;
+   RootPtr: PAnsiChar;
    current_dir: string;
  begin
    RootPath[0] := Drive;
@@ -584,7 +586,7 @@ function GetDiskSize(drive: Char; var free_size, total_size: Int64): Boolean;
    current_dir := GetCurrentDir;
    if SetCurrentDir(drive + ':\') then
    begin
-      GetDiskFreeSpaceEx(RootPtr, Free_size, Total_size, nil);
+      GetDiskFreeSpaceExA(RootPtr, Free_size, Total_size, nil);
       // this to turn back to original dir
       SetCurrentDir(current_dir);
       Result := True;
@@ -749,18 +751,18 @@ begin
 end;
 
 
-function ReadComputerName:string;
+function ReadComputerName:AnsiString;
 {�Drkb v.3(2007): www.drkb.ru,
 �Vit (Vitaly Nevzorov) - nevzorov@yahoo.com}
 
 var
 i:DWORD;
-p:PChar;
+p:PAnsiChar;
 begin
 i:=255;
 GetMem(p, i);
-GetComputerName(p, i);
-Result:=String(p);
+GetComputerNameA(p, i);
+Result:=AnsiString(p);
 FreeMem(p);
 end;
 
@@ -786,14 +788,14 @@ begin
 end;
 
 
-function GetUserFromWindows: string;
+function GetUserFromWindows: AnsiString;
 var
 UserName : string;
 UserNameLen : Dword;
 begin
 UserNameLen := 255;
 SetLength(userName, UserNameLen);
-if GetUserName(PChar(UserName), UserNameLen) then
+if GetUserNameA(PAnsiChar(UserName), UserNameLen) then
    Result := Copy(UserName,1,UserNameLen - 1)
 else
    Result := '';
@@ -841,7 +843,7 @@ begin
    except
        ZVAL_NULL(return_value);
    end;
-   dispose_pzval_array(param); 
+   dispose_pzval_array(param);
 end;
 
 var
@@ -864,7 +866,7 @@ begin
   ModuleEntry.request_startup_func := @rinit;
   ModuleEntry.request_shutdown_func := @rshutdown;
   ModuleEntry.info_func := @php_info_module;
-  ModuleEntry.version := '1.2';
+  ModuleEntry.version := '2.1';
 
   ModuleEntry.module_started := 0;
   ModuleEntry._type := MODULE_PERSISTENT;
@@ -882,72 +884,55 @@ begin
   // ���������� �������...
   Module_entry_table[0].fname := 'osinfo_dotnet';
   Module_entry_table[0].handler := @osinfo_dotnet;
-  Module_entry_table[0].arg_info := nil;
 
   Module_entry_table[1].fname := 'osinfo_isnt';
   Module_entry_table[1].handler := @osinfo_isnt;
-  Module_entry_table[1].arg_info := nil;
 
   Module_entry_table[2].fname := 'osinfo_winver';
   Module_entry_table[2].handler := @osinfo_winver;
-  Module_entry_table[2].arg_info := nil;
 
   Module_entry_table[3].fname := 'osinfo_dosver';
   Module_entry_table[3].handler := @osinfo_dosver;
-  Module_entry_table[3].arg_info := nil;
 
   Module_entry_table[4].fname := 'osinfo_locale';
   Module_entry_table[4].handler := @osinfo_locale;
-  Module_entry_table[4].arg_info := nil;
 
   Module_entry_table[5].fname := 'osinfo_memory';
   Module_entry_table[5].handler := @osinfo_memory;
-  Module_entry_table[5].arg_info := nil;
 
   Module_entry_table[6].fname := 'osinfo_isadmin';
   Module_entry_table[6].handler := @osinfo_isadmin;
-  Module_entry_table[6].arg_info := nil;
 
   Module_entry_table[7].fname := 'osinfo_diskserial';
   Module_entry_table[7].handler := @osinfo_diskserial;
-  Module_entry_table[7].arg_info := nil;
 
   Module_entry_table[8].fname := 'osinfo_disktotal';
   Module_entry_table[8].handler := @osinfo_disktotal;
-  Module_entry_table[8].arg_info := nil;
 
   Module_entry_table[9].fname := 'osinfo_diskfree';
   Module_entry_table[9].handler := @osinfo_diskfree;
-  Module_entry_table[9].arg_info := nil;
 
   Module_entry_table[10].fname := 'osinfo_macaddress';
   Module_entry_table[10].handler := @osinfo_macaddress;
-  Module_entry_table[10].arg_info := nil;
 
   Module_entry_table[11].fname := 'osinfo_get';
   Module_entry_table[11].handler := @osinfo_get;
-  Module_entry_table[11].arg_info := nil;
 
   Module_entry_table[12].fname := 'osinfo_displaydevice';
   Module_entry_table[12].handler := @osinfo_displaydevice;
-  Module_entry_table[12].arg_info := nil;
 
   { **** drives * }
   Module_entry_table[13].fname := 'osinfo_drivetype';
   Module_entry_table[13].handler := @osinfo_drivetype;
-  Module_entry_table[13].arg_info := nil;
 
   Module_entry_table[14].fname := 'osinfo_computername';
   module_entry_table[14].handler := @osinfo_computername;
-  Module_entry_table[14].arg_info := nil;
 
   Module_entry_table[15].fname := 'osinfo_username';
   module_entry_table[15].handler := @osinfo_username;
-  Module_entry_table[15].arg_info := nil;
 
   Module_entry_table[16].fname := 'osinfo_syslang';
   module_entry_table[16].handler := @osinfo_syslang;
-  Module_entry_table[16].arg_info := nil;
 
   ModuleEntry.functions :=  @module_entry_table[0];
   ModuleEntry._type := MODULE_PERSISTENT;

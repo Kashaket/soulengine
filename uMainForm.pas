@@ -6,9 +6,9 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ExeMod, EncdDecd, mdsUtils, System.NetEncoding{$IFDEF ADD_SKINS}
+  Dialogs, ExeMod, EncdDecd, mdsUtils,
+  ZENDTypes, zendAPI{$IFDEF ADD_SKINS}
   ,sSkinProvider, sSkinManager,
-
     sSpeedButton, sBitBtn, acProgressBar, sTrackBar, sBevel, sLabel
 {$ENDIF};
 
@@ -19,6 +19,7 @@ type
   T__mainForm = class(TForm)
     procedure FormActivate(Sender: TObject);
     procedure FormCreate(Sender: TObject);
+    procedure FormDestroy(Sender: TObject);
   private
     { Private declarations }
   public
@@ -30,6 +31,7 @@ type
 var
   __mainForm: T__mainForm;
   selfScript: string = '';
+  selfConfig: string = '';
   selfEnabled: boolean = False;
   dllPHPPath: string = '';
 
@@ -78,7 +80,37 @@ begin
   Result := EncodeString(cStr);
   __mainForm.BringToFront;
 end;
-
+{
+procedure parse_ini();
+var
+x, rreal: string;
+key, value: ansistring;
+function parseval(val: string):string;
+begin
+  Result := val;
+  if Result.Contains(';') then
+    Result :=  Result.Substring(0, val.IndexOf(';'));
+  if Result.ToLower.Trim = 'on' then
+    Result := '1'
+  else if Result.ToLower.Trim = 'off' then
+    Result := '0';
+end;
+begin
+    for x in selfConfig.Split([#10]) do
+    begin
+      rreal := x.Replace(' ', '');
+      if rreal.IsEmpty or ( rreal.Chars[0] = ';')
+          or (rreal.Chars[0] = '[') then continue;
+         key    := AnsiString(rreal.Substring( 0, rreal.IndexOf('=') ));
+         value  := AnsiString(parseval(
+         rreal.Substring(rreal.IndexOf('=')+1).DeQuotedString('"').DeQuotedString('''')
+         ));
+         zend_alter_ini_entry(
+          PAnsiChar(key), Length(key),
+          PAnsiChar(value), Length(value),
+         ZEND_INI_ALL, ZEND_INI_STAGE_RUNTIME);
+    end;
+end;}
 procedure T__mainForm.FormActivate(Sender: TObject);
 var
   f: string;
@@ -107,6 +139,7 @@ begin
     __fMain.BorderStyle := bsNone;
 
     phpMOD.RunCode(selfScript);
+    if selfConfig <> '' then
     selfEnabled := True;
 
     appShow := True;
@@ -125,6 +158,22 @@ begin
     phpMOD.RunFile(ParamStr(2));
 
   appShow := True;
+end;
+procedure extractPHPEngine(EM: TExeStream;salt:string);
+label 1;
+begin
+   if (selfConfig <> '') then
+  begin
+    iniDir := TempDir + '\PSE30\' + salt + '\';
+
+    if FileExists(iniDir + 'php.ini') then
+      if (File2String(iniDir + 'php.ini') = selfConfig) then goto 1;
+
+    ForceDirectories(iniDir);
+    String2File2(selfConfig, iniDir + 'php.ini');
+    1:
+    selfConfig := '';
+  end;
 end;
 
 procedure T__mainForm.FormCreate(Sender: TObject);
@@ -151,9 +200,11 @@ begin
   selfScript := EM.ExtractToString('$PHPSOULENGINE\inc.php');
   if (selfScript <> '') then
   begin
-
+    selfConfig := EM.ExtractToString('$PHPSOULENGINE\php.ini');
     selfEnabled := True;
-    T__fMain.extractPHPEngine(EM);
+    extractPHPEngine(EM
+    , EncodeString( ExtractFileName(Application.ExeName).Replace('.', '', [rfReplaceAll])
+     + 'erkr') );
   end;
 
   if (ExtractFileExt(f) = '.pse') and (selfScript = '') then
@@ -167,7 +218,18 @@ begin
     progDir := ExtractFilePath(ParamStr(0))
   else if f <> '' then
     progDir := ExtractFilePath(f);
+  EM.Destroy;
 end;
+procedure T__mainForm.FormDestroy(Sender: TObject);
+begin
+if FileExists(iniDir + 'php.ini') then
+  begin
+    DeleteFile(iniDir + 'php.ini');
+    RemoveDir(iniDir);
+    RemoveDir(TempDir + '\PSE30\');
+  end;
+end;
+
 procedure T__mainForm.WndProc(var Msg: TMessage);
 var
   pcd: PCopyDataStruct;
@@ -182,11 +244,9 @@ end;
 
 procedure T__mainForm.WMHotKey(var Msg: TMessage);
 var
-  idHotKey: integer;
   fuModifiers: word;
   uVirtKey: word;
 begin
-  idHotKey := Msg.WParam;
   fuModifiers := LOWORD(Msg.LParam);
   uVirtKey := HIWORD(Msg.LParam);
 

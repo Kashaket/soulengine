@@ -1,4 +1,5 @@
 unit guiComponents;
+{$I PHP.inc}
 {$I 'sDef.inc'}
 {$ifdef fpc}
 {$mode delphi}{$H+}
@@ -15,20 +16,18 @@ uses
   php4delphi,
   uPhpEvents,
   vcl.imaging.pngimage, {$IFDEF ADD_SKINS}sBitBtn, sButton, sSpeedButton,{$ENDIF}
-  Graphics, dsStdCtrl, vcl.dialogs, vcl.buttons;
+  Graphics, dsStdCtrl, vcl.dialogs, vcl.buttons {$IFDEF testeh2k}, eh2k{$ENDIF};
 
 procedure InitializeGuiComponents(PHPEngine: TPHPEngine);
 
 procedure gui_registerSuperGlobal(ht: integer; return_value: pzval;
   return_value_ptr: pzval; this_ptr: pzval; return_value_used: integer;
   TSRMLS_DC: pointer); cdecl;
-
-procedure gui_hi(ht: integer; return_value: pzval; return_value_ptr: pzval;
-  this_ptr: pzval; return_value_used: integer; TSRMLS_DC: pointer); cdecl;
-procedure gui_lo(ht: integer; return_value: pzval; return_value_ptr: pzval;
-  this_ptr: pzval; return_value_used: integer; TSRMLS_DC: pointer); cdecl;
-procedure gui_uchr(ht: integer; return_value: pzval; return_value_ptr: pzval;
-  this_ptr: pzval; return_value_used: integer; TSRMLS_DC: pointer); cdecl;
+  {$IFDEF testeh2k}
+procedure gui_settest(ht: integer; return_value: pzval;
+  return_value_ptr: pzval; this_ptr: pzval; return_value_used: integer;
+  TSRMLS_DC: pointer); cdecl;
+  {$ENDIF}
 
 procedure gui_parent(ht: integer; return_value: pzval; return_value_ptr: pzval;
   this_ptr: pzval; return_value_used: integer; TSRMLS_DC: pointer); cdecl;
@@ -178,7 +177,7 @@ begin
   end;
   zend_get_parameters_my(ht, p, TSRMLS_DC);
 
-  Name := Z_STRVAL(p[0]^);
+  Name := {$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[0]^);
 
   ZVAL_LONG(return_value, zend_register_auto_global(PAnsiChar(Name),
     Length(Name), nil, nil));
@@ -186,43 +185,8 @@ begin
   dispose_pzval_array(p);
 end;
 
-procedure gui_hi;
-var
-  p: pzval_array;
-  id: integer;
-begin
-  if ht < 1 then
-  begin
-    zend_wrong_param_count(TSRMLS_DC);
-    Exit;
-  end;
-  zend_get_parameters_my(ht, p, TSRMLS_DC);
-
-  id := Z_LVAL(p[0]^);
-  ZVAL_LONG(return_value, hi(id));
-
-  dispose_pzval_array(p);
-end;
-
-procedure gui_lo;
-var
-  p: pzval_array;
-  id: integer;
-begin
-  if ht < 1 then
-  begin
-    zend_wrong_param_count(TSRMLS_DC);
-    Exit;
-  end;
-  zend_get_parameters_my(ht, p, TSRMLS_DC);
-
-  id := Z_LVAL(p[0]^);
-  ZVAL_LONG(return_value, lo(id));
-
-  dispose_pzval_array(p);
-end;
-
-procedure gui_uchr;
+{$IFDEF testeh2k}
+ procedure gui_settest;
 var
   p: pzval_array;
   id: integer;
@@ -230,27 +194,22 @@ var
   S: ansistring;
   CH: UTF8String;
 begin
-  if ht < 1 then
+  if ht <> 1 then
   begin
     zend_wrong_param_count(TSRMLS_DC);
     Exit;
   end;
   zend_get_parameters_my(ht, p, TSRMLS_DC);
-
-  id := Z_LVAL(p[0]^);
-
-  SW := widechar(id);
-  CH := UTF8Encode(SW);
-
-  S := CH;
-
-  ZVAL_STRINGL(return_value, PAnsiChar(S), Length(S), True);
-
+  eh2k.EventHookObject.OnBefore := procedure(Base: TBaseEvent; var Params: TArray<PVarRec>)
+   begin
+    //ShowMessage('Works!');
+    Params[1]^.VWideChar := Char('a');
+   end;
+   eh2k.EventHookObject.ESet(TMemo(TObject(Z_LVAL(p[0]^))),
+   'OnKeyPress');
   dispose_pzval_array(p);
 end;
-
-
-
+{$ENDIF}
 
 procedure gui_destroy;
 var
@@ -313,7 +272,7 @@ begin
   end;
   zend_get_parameters_my(ht, p, TSRMLS_DC);
 
-  variant2zval(regGUI.createComponent(Z_STRVAL(p[0]^), Z_LVAL(p[1]^)), return_value);
+  variant2zval(regGUI.createComponent({$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[0]^), Z_LVAL(p[1]^)), return_value);
 
   dispose_pzval_array(p);
 end;
@@ -399,7 +358,7 @@ begin
   zend_get_parameters_my(ht, p, TSRMLS_DC);
 
 
-  variant2zval(regGUI.objectIs(Z_LVAL(p[0]^), Z_STRVAL(p[1]^)), return_value);
+  variant2zval(regGUI.objectIs(Z_LVAL(p[0]^), {$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[1]^)), return_value);
 
   dispose_pzval_array(P);
 end;
@@ -432,9 +391,9 @@ begin
   end;
   zend_get_parameters_my(ht, p, TSRMLS_DC);
 
-   //   ShowMessage( Z_LVAL(p[0]^).ToString + #10#13 +  Z_STRVAL(p[1]^) );
+   //   ShowMessage( Z_LVAL(p[0]^).ToString + #10#13 +  {$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[1]^) );
 
-  regGUI.StringToComponentProc(Z_LVAL(p[0]^), Z_STRVAL(p[1]^));
+  regGUI.StringToComponentProc(Z_LVAL(p[0]^), {$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[1]^));
 
   dispose_pzval_array(p);
 end;
@@ -842,7 +801,7 @@ begin
   end;
   zend_get_parameters_my(ht, p, TSRMLS_DC);
 
-  TScriptThread.SetBeforeCode(Z_STRVAL(p[0]^));
+  TScriptThread.SetBeforeCode({$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[0]^));
 
   dispose_pzval_array(p);
 end;
@@ -862,7 +821,7 @@ begin
   ID := Z_LVAL(p[0]^);
   if (ID <> 0) and (TObject(ID) is TScriptThread) then
   begin
-    TScriptThread(ID).Sync(Z_STRVAL(p[1]^), Z_STRVAL(p[2]^));
+    TScriptThread(ID).Sync({$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[1]^), {$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[2]^));
   end;
 
   dispose_pzval_array(p);
@@ -885,10 +844,10 @@ begin
   if (ID <> 0) and (TObject(ID) is TScriptThread) then
   begin
     if ht > 2 then
-      TScriptThread(ID).addDATA.SetValue(Z_STRVAL(p[1]^), Z_STRVAL(p[2]^))
+      TScriptThread(ID).addDATA.SetValue({$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[1]^), {$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[2]^))
     else
     begin
-      S := TScriptThread(ID).addDATA.Get(Z_STRVAL(p[1]^));
+      S := TScriptThread(ID).addDATA.Get({$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[1]^));
       ZVAL_STRINGL(return_value, PAnsiChar(S), Length(S), True);
     end;
   end;
@@ -911,7 +870,7 @@ begin
   ID := Z_LVAL(p[0]^);
   if (ID <> 0) and (TObject(ID) is TScriptThread) then
   begin
-    ZVAL_BOOL(return_value, TScriptThread(ID).addDATA.HasKey(Z_STRVAL(p[1]^)));
+    ZVAL_BOOL(return_value, TScriptThread(ID).addDATA.HasKey({$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[1]^)));
   end;
 
   dispose_pzval_array(p);
@@ -934,7 +893,7 @@ begin
   if (ID <> 0) and (TObject(ID) is TScriptThread) then
   begin
     ZVAL_BOOL(return_value, True);
-    TScriptThread(ID).addDATA.RemoveKey(Z_STRVAL(p[1]^));
+    TScriptThread(ID).addDATA.RemoveKey({$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[1]^));
   end;
 
   dispose_pzval_array(p);
@@ -1022,7 +981,7 @@ begin
   O := TObject(Z_LVAL(p[0]^));
   if O <> nil then
   begin
-    M := TStringStream.Create(Z_STRVAL(p[1]^));
+    M := TStringStream.Create({$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[1]^));
         {$IFDEF ADD_SKINS}
         if O is TsSpeedButton then
           TsSpeedButton(O).Glyph.LoadFromStream(M)
@@ -1053,7 +1012,7 @@ begin
   zend_get_parameters_my(ht, p, TSRMLS_DC);
 
   O := TObject(Z_LVAL(p[0]^));
-  S := Z_STRVAL(p[1]^);
+  S := {$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[1]^);
 
   if O <> nil then
   begin
@@ -1196,11 +1155,9 @@ end;
 
 procedure InitializeGuiComponents(PHPEngine: TPHPEngine);
 begin
-  //PHPEngine.AddFunction('hi', @gui_hi);
-  //PHPEngine.AddFunction('lo', @gui_lo);
-
-
-  PHPEngine.AddFunction('u8chr', @gui_uchr);
+{$IFDEF testeh2k}
+  PHPEngine.AddFunction('gui_settest', @gui_settest);
+{$ENDIF}
   PHPEngine.AddFunction('gui_registerSuperGlobal', @gui_registerSuperGlobal);
 
 
