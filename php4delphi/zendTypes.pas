@@ -7,7 +7,7 @@
 { serge_perevoznyk@hotmail.com                          }
 { http://users.telenet.be/ws36637                       }
 {*******************************************************}
-{$I PHP.INC}
+{$I 'PHP.inc'}
 
 { $Id: ZendTypes.pas,v 7.2 10/2009 delphi32 Exp $ }
 
@@ -37,7 +37,12 @@ const ZEND_BUILD_DEBUG  = '';
 
 {$IFDEF PHP_COMPILER_ID}
 {$IFDEF COMPILER_VC9}
-const ZEND_BUILD_SYSTEM  = ',VC9';
+const ZEND_BUILD_SYSTEM  =
+{$IFDEF COMPILER_VC14}
+',VC14'
+{$ELSE}
+{$IFDEF COMPILER_VC11}',VC11'{$ELSE}',VC9'{$ENDIF}
+{$ENDIF};
 {$ELSE}
 {$IFDEF COMPILER_VC6}
 const ZEND_BUILD_SYSTEM  = ',VC6';
@@ -319,8 +324,16 @@ const
 
   //zend_modules.h
 const
+{$IFDEF PHP700}
+   ZEND_MODULE_API_NO = 20151012;
+{$ELSE}
   {$IFDEF PHP530}
-    ZEND_MODULE_API_NO                        = {$IFDEF PHP540}20100525{$ELSE}20090626{$ENDIF};
+    ZEND_MODULE_API_NO                        =
+   {$IFDEF PHP560}
+    20131226
+   {$ELSE}
+    {$IFDEF PHP550}20121212{$ELSE}{$IFDEF PHP540}20100525{$ELSE}20090626{$ENDIF}{$ENDIF}
+    {$ENDIF};
   {$ELSE}
   {$IFDEF PHP520}
     ZEND_MODULE_API_NO                          = 20060613;
@@ -344,7 +357,7 @@ const
    {$ENDIF}
    {$ENDIF}
 {$ENDIF}
-
+{$ENDIF}
 {$IFDEF ZTS}
 const
   USING_ZTS                                       = 1;
@@ -882,7 +895,7 @@ type
       0: (lval: longint);
       1: (dval: double);
       2: (str: record
-          val: PAnsiChar;
+          val: {$IFDEF PHP_UNICE}PUTF8Char{$ELSE}PAnsiChar{$ENDIF};
           len: integer;
         end);
       3: (ht: PHashTable);

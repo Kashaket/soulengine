@@ -20,7 +20,9 @@ unit zendAPI;
 interface
 
 uses
-  Win_D_api, SysUtils, ZendTypes, Variants, PHPTypes;
+  Windows, SysUtils,
+  ZendTypes, Variants,
+  PHPTypes;
 type
 TArrayVariant = array of variant;
  TWSDate = array of string;
@@ -28,26 +30,38 @@ TArrayVariant = array of variant;
    TASDate = array of AnsiString;
   PASDate = ^TWSDate;
 const
+PHPWin =
 {$IFDEF PHP_DEBUG}
- {$IFDEF PHP5}
-  PHPWin = 'php5ts_debug.dll';
-  {$ELSE}
-  PHPWin = 'php4ts_debug.dll';
-  {$ENDIF}
+{$IFDEF PHP700}
+  'php7phpdbg.dll'
 {$ELSE}
  {$IFDEF PHP5}
-
+  'php5ts_debug.dll'
+  {$ELSE}
+  'php4ts_debug.dll'
+  {$ENDIF}
+ {$ENDIF}
+{$ELSE}
+ {$IFDEF PHP5}
+    {$IFDEF PHP700}
     {$IFDEF LINUX}
-         PHPWin = 'php5ts.so';
+         'php7ts.so'
    {$ENDIF}
    {$IFDEF MSWINDOWS}
-    PHPWin = 'php5ts.dll';
+    'php7ts.dll'
      {$ENDIF}
-
+    {$ELSE}
+    {$IFDEF LINUX}
+         'php5ts.so'
+   {$ENDIF}
+   {$IFDEF MSWINDOWS}
+    'php5ts.dll'
+     {$ENDIF}
+    {$ENDIF}
   {$ELSE}
-  PHPWin = 'php4ts.dll';
+  'php4ts.dll'
   {$ENDIF}
-{$ENDIF}
+{$ENDIF};
 
 type
   EPHP4DelphiException = class(Exception)
@@ -72,14 +86,20 @@ function  ZENDLoaded: boolean;
 
 {Memory management functions}
 var
+  {$IFDEF PHP700}
+  zend_strndup   : function(const s: PChar; length: integer): PChar; cdecl;
+  {$ELSE}
   zend_strndup   : function(s: PAnsiChar; length: Integer): PAnsiChar; cdecl;
+  {$ENDIF}
   _emalloc       : function(size: size_t; __zend_filename: PAnsiChar; __zend_lineno: uint; __zend_orig_filename: PAnsiChar; __zend_orig_line_no: uint): pointer; cdecl;
   _efree         : procedure(ptr: pointer; __zend_filename: PAnsiChar; __zend_lineno: uint; __zend_orig_filename: PAnsiChar; __zend_orig_line_no: uint); cdecl;
   _ecalloc       : function(nmemb: size_t; size: size_t; __zend_filename: PAnsiChar; __zend_lineno: uint; __zend_orig_filename: PAnsiChar; __zend_orig_line_no: uint): pointer; cdecl;
   _erealloc      : function(ptr: pointer; size: size_t; allow_failure: integer; __zend_filename: PAnsiChar; __zend_lineno: uint; __zend_orig_filename: PAnsiChar; __zend_orig_line_no: uint): pointer; cdecl;
   _estrdup       : function(const s: PAnsiChar; __zend_filename: PAnsiChar; __zend_lineno: uint; __zend_orig_filename: PAnsiChar; __zend_orig_line_no: uint): pointer; cdecl;
   _estrndup      : function(s: PAnsiChar; Len: Cardinal; __zend_filename: PAnsiChar; __zend_lineno: uint; __zend_orig_filename: PAnsiChar; __zend_orig_line_no: uint): PAnsiChar; cdecl;
-
+  _estrndupu     : function(s: PUTF8Char; Len: Cardinal; __zend_filename: PUTF8Char;
+  __zend_lineno: uint; __zend_orig_filename: PUTF8Char;
+  __zend_orig_line_no: uint): PUTF8Char; cdecl;
 function emalloc(size: size_t): pointer;
 procedure efree(ptr: pointer);
 function ecalloc(nmemb: size_t; size: size_t): pointer;
@@ -101,9 +121,11 @@ var
   zend_register_resource       : function (rsrc_result : pzval;  rsrc_pointer : pointer;  rsrc_type : integer) : integer; cdecl;
   zend_fetch_resource          : function (passed_id  : ppzval; TSRMLS_DC : pointer; default_id : integer;  resource_type_name : PAnsiChar;  found_resource_type : pointer; num_resource_types: integer; resource_type: integer) : pointer; cdecl;
   zend_list_insert             : function (ptr : pointer; _type: integer) : integer; cdecl;
+  {$IFNDEF PHP700}
   _zend_list_addref            : function (id  : integer; TSRMLS_DC : pointer) : integer; cdecl;
   _zend_list_delete            : function (id : integer; TSRMLS_DC : pointer) : integer; cdecl;
   _zend_list_find              : function (id : integer; _type : pointer; TSRMLS_DC : pointer) : pointer; cdecl;
+  {$ENDIF}
   zend_rsrc_list_get_rsrc_type : function (resource: integer; TSRMLS_DC : pointer) : PAnsiChar; cdecl;
   zend_fetch_list_dtor_id      : function (type_name : PAnsiChar) : integer; cdecl;
   zend_register_list_destructors_ex : function (ld : pointer; pld : pointer; type_name : PAnsiChar; module_number : integer) : integer; cdecl;
@@ -531,6 +553,7 @@ var
   _zend_bailout                                   : procedure (filename : PAnsiChar; lineno : uint); cdecl;
 
   zend_alter_ini_entry                            : function(name: PAnsiChar; name_length: uint; new_value: PAnsiChar; new_value_length: uint; modify_type: Integer; stage: Integer): Integer; cdecl;
+  zend_alter_ini_entry_ex                            : function(name: PAnsiChar; name_length: uint; new_value: PAnsiChar; new_value_length: uint; modify_type: Integer; stage: Integer; force_change: integer): Integer; cdecl;
 
   zend_restore_ini_entry                          : function(name: PAnsiChar; name_length: uint; stage: Integer): Integer; cdecl;
 
@@ -692,6 +715,7 @@ function ZendToVariant(const Value: pppzval): Variant; overload;
 function ZendToVariant(const Value: ppzval): Variant; overload;
 
 procedure ZVAL_STRING(z: pzval; s: PAnsiChar; duplicate: boolean);
+procedure ZVAL_STRINGU(z: pzval; s: PUtf8Char; duplicate: boolean);
 procedure ZVAL_STRINGW(z: pzval; s: PWideChar; duplicate: boolean);
 
 procedure ZVAL_STRINGL(z: pzval; s: PAnsiChar; l: integer; duplicate: boolean);
@@ -777,6 +801,7 @@ function Z_LVAL(z : Pzval) : longint;
 function Z_BVAL(z : Pzval) : boolean;
 function Z_DVAL(z : Pzval) : double;
 function Z_STRVAL(z : Pzval) : AnsiString;
+function Z_STRUVAL(z : PZval): UTF8String;
 function Z_STRWVAL(z : pzval) : String;
 function Z_STRLEN(z : Pzval) : longint;
 function Z_ARRVAL(z : Pzval ) : PHashTable;
@@ -812,7 +837,13 @@ begin
      else
       Result := nil;
 end;
-
+function estrndupu(s: PUtf8Char; len: Cardinal): PUTf8Char;
+begin
+  if assigned(s) then
+    Result := _estrndupu(s, len, nil, 0, nil, 0)
+     else
+      Result := nil;
+end;
 function emalloc(size: size_t): pointer;
 begin
   Result := _emalloc(size, nil, 0, nil, 0);
@@ -891,6 +922,23 @@ procedure ZVAL_DOUBLE(z: pzval; d: double);
 begin
   z^._type := IS_DOUBLE;
   z^.value.dval := d;
+end;
+procedure ZVAL_STRINGU(z: pzval; s: PUtf8Char; duplicate: boolean);
+var
+  __s : PUTF8Char;
+begin
+  if not assigned(s) then
+   __s := ''
+    else
+     __s := s;
+
+  z^.value.str.len := length(__s);
+  if duplicate then
+
+   z^.value.str.val := estrndup(__s, z^.value.str.len)
+  else
+    z^.value.str.val := __s;
+  z^._type := IS_STRING;
 end;
 
 procedure ZVAL_STRING(z: pzval; s: PAnsiChar; duplicate: boolean);
@@ -1177,7 +1225,6 @@ procedure ZVAL_ARRAY(z: pzval; arr:  TWSDate); overload;
 var
   i : integer;
 begin
- z.refcount := Length(arr); //Передаём количество возвращаемых массивов
  if _array_init(z, nil, 0) = FAILURE then //Создаём массив первого уровня
   begin
     ZVAL_FALSE(z);
@@ -1186,7 +1233,7 @@ begin
 
   if Length(arr) = 0 then
   begin
-    ZVAL_FALSE(z);
+    z^.refcount := 1;
     Exit;
   end;
 
@@ -1201,7 +1248,6 @@ procedure ZVAL_ARRAY(z: pzval; arr:  TASDate); overload;
 var
   i : integer;
 begin
- z.refcount := Length(arr); //Передаём количество возвращаемых массивов
  if _array_init(z, nil, 0) = FAILURE then //Создаём массив первого уровня
   begin
     ZVAL_FALSE(z);
@@ -1210,7 +1256,7 @@ begin
 
   if Length(arr) = 0 then
   begin
-    ZVAL_FALSE(z);
+    z^.refcount := 1;
     Exit;
   end;
 
@@ -1225,7 +1271,6 @@ procedure ZVAL_ARRAY(z: pzval; arr: array of string); overload;
 var
   i: integer;
 begin
- z.refcount := Length(arr); //Передаём количество возвращаемых массивов
  if _array_init(z, nil, 0) = FAILURE then //Создаём массив первого уровня
   begin
     ZVAL_FALSE(z);
@@ -1234,7 +1279,7 @@ begin
 
   if Length(arr) = 0 then
   begin
-    ZVAL_FALSE(z);
+    z^.refcount := 1;
     Exit;
   end;
 
@@ -1249,7 +1294,6 @@ procedure ZVAL_ARRAY(z: pzval; arr:  array of AnsiString); overload;
 var
   i: integer;
 begin
- z.refcount := Length(arr); //Передаём количество возвращаемых массивов
  if _array_init(z, nil, 0) = FAILURE then //Создаём массив первого уровня
   begin
     ZVAL_FALSE(z);
@@ -1258,7 +1302,7 @@ begin
 
   if Length(arr) = 0 then
   begin
-    ZVAL_FALSE(z);
+    z^.refcount := 1;
     Exit;
   end;
 
@@ -1273,7 +1317,6 @@ procedure ZVAL_ARRAY(z: pzval; arr:  array of variant); overload;
 var
   i: integer;
 begin
- z.refcount := Length(arr); //Передаём количество возвращаемых массивов
  if _array_init(z, nil, 0) = FAILURE then //Создаём массив первого уровня
   begin
     ZVAL_FALSE(z);
@@ -1282,7 +1325,7 @@ begin
 
   if Length(arr) = 0 then
   begin
-    ZVAL_FALSE(z);
+    z^.refcount := 1;
     Exit;
   end;
 
@@ -1296,7 +1339,6 @@ procedure ZVAL_ARRAY(z: pzval; arr: System.TArray<System.integer>); overload;
 var
   i: integer;
 begin
- z.refcount := Length(arr); //Передаём количество возвращаемых массивов
  if _array_init(z, nil, 0) = FAILURE then //Создаём массив первого уровня
   begin
     ZVAL_FALSE(z);
@@ -1305,7 +1347,7 @@ begin
 
   if Length(arr) = 0 then
   begin
-    ZVAL_FALSE(z);
+    z^.refcount := 1;
     Exit;
   end;
 
@@ -1321,7 +1363,6 @@ var
   i: integer;
   V: TVarData;
 begin
- z.refcount := arr.PVarArray.DimCount; //Передаём количество возвращаемых массивов
  if _array_init(z, nil, 0) = FAILURE then //Создаём массив первого уровня
   begin
     ZVAL_FALSE(z);
@@ -1389,25 +1430,24 @@ end;
 procedure ZVAL_ARRAYAC(z: pzval; keynames: Array of PAnsiChar; keyvals: Array of PAnsiChar);
 var
   i : integer;
-  endarr: pzval;
 begin
- z.refcount := Length(keynames);
  if _array_init(z, nil, 0) = FAILURE then
   begin
     ZVAL_FALSE(z);
     Exit;
   end;
 
-
+  if (Length(keynames) = 0)and(Length(keynames) = Length(keyvals)) then
+  begin
+    z^.refcount := 1;
+    Exit;
+  end;
 
   if Length(keynames) = Length(keyvals) then
    begin
    for i := 0 to Length(keynames)-1 do
     begin
-    endarr := MAKE_STD_ZVAL;
-     ZVAL_STRING(endarr, keyvals[i], true);
-
-      add_assoc_zval_ex(z, keynames[i], StrLen(keynames[i]) + 1, endarr);
+      add_assoc_string_ex(z, keynames[i], StrLen(keynames[i]) + 1, keyvals[i], 1);
     end;
     Exit;
    end
@@ -1421,26 +1461,24 @@ end;
 procedure ZVAL_ARRAYWC(z: pzval; keynames: Array of PWideChar; keyvals: Array of PWideChar);
 var
   i : integer;
-  endarr: pzval;
 begin
- z.refcount := Length(keynames);
  if _array_init(z, nil, 0) = FAILURE then
   begin
     ZVAL_FALSE(z);
     Exit;
   end;
 
-
+  if (Length(keynames) = 0)and(Length(keynames) = Length(keyvals)) then
+  begin
+    z^.refcount := 1;
+    Exit;
+  end;
 
   if Length(keynames) = Length(keyvals) then
    begin
    for i := 0 to Length(keynames)-1 do
     begin
-    endarr := MAKE_STD_ZVAL;
-
-      ZVAL_STRINGW(endarr, keyvals[i], true);
-
-      add_assoc_zval_ex(z, PAnsiChar(keynames[i]), StrLen(PAnsiChar(keynames[i])) + 1, endarr);
+      add_assoc_string_ex(z, PAnsiChar(keynames[i]), StrLen(PAnsiChar(keynames[i])) + 1, PAnsiChar(keyvals[i]), 1);
     end;
     Exit;
    end
@@ -1454,34 +1492,28 @@ end;
 procedure ZVAL_ARRAYWS(z: pzval; keynames:  TWSDate; keyvals:  TWSDate); overload;
 var
   i : integer;
-  endarr: pzval;
 begin
- z.refcount := Length(keynames); //Передаём количество возвращаемых массивов
  if _array_init(z, nil, 0) = FAILURE then //Создаём массив первого уровня
   begin
     ZVAL_FALSE(z);
     Exit;
   end;
-
-
+   //z^.refcount := Length(keynames); //Передаём количество возвращаемых массивов
+  if (Length(keynames) = 0) then
+  begin
+    z^.refcount := 1;
+    Exit;
+  end;
 
   if Length(keynames) = Length(keyvals) then
    begin
    for i := 0 to Length(keynames)-1 do
     begin
-    endarr := MAKE_STD_ZVAL;
-     {//Код для создания подвложенных массивов...без новых индексов (числовое индексирование)
-     if _array_init(endarr, nil, 0) = FAILURE then
-       begin
-        ZVAL_FALSE(z);
-        Exit;
-       end;
-      add_next_index_string(endarr, PAnsiChar(AnsiString(keyvals[i])), 1);
-      //Arr[$key] = ''; }
                     //Создаём строку в массиве первого уровня
-       ZVAL_STRINGW(endarr, PWideChar(keyvals[i]), true);
                     //Создаём ассоциацию строки с ключём первого уровня
-      add_assoc_zval_ex(z, PAnsiChar(AnsiString(keynames[i])), StrLen(PAnsiChar(AnsiString(keynames[i]))) + 1, endarr);
+      add_assoc_string_ex(z, PAnsiChar(AnsiString(keynames[i])), StrLen(PAnsiChar(AnsiString(keynames[i]))) + 1,
+      PAnsiChar(AnsiString(keyvals[i])), 1);
+
                     //Продолжаем цикл
     end;
     Exit;
@@ -1496,25 +1528,25 @@ end;
 procedure ZVAL_ARRAYWS(z: pzval; keynames:  array of string; keyvals:  array of string); overload;
 var
   i : integer;
-  endarr: pzval;
 begin
- z.refcount := Length(keynames);
  if _array_init(z, nil, 0) = FAILURE then
   begin
     ZVAL_FALSE(z);
     Exit;
   end;
 
-
+  if (Length(keynames) = 0)and(Length(keynames) = Length(keyvals)) then
+  begin
+    z^.refcount := 1;
+    Exit;
+  end;
 
   if Length(keynames) = Length(keyvals) then
    begin
    for i := 0 to Length(keynames)-1 do
     begin
-    endarr := MAKE_STD_ZVAL;
-
-       ZVAL_STRINGW(endarr, PWideChar(keyvals[i]), true);
-      add_assoc_zval_ex(z, PAnsiChar(AnsiString(keynames[i])), StrLen(PAnsiChar(AnsiString(keynames[i]))) + 1, endarr);
+      add_assoc_string_ex(z, PAnsiChar(AnsiString(keynames[i])), StrLen(PAnsiChar(AnsiString(keynames[i]))) + 1,
+      PAnsiChar(AnsiString(keyvals[i])), 1);
     end;
     Exit;
    end
@@ -1528,25 +1560,24 @@ end;
 procedure ZVAL_ARRAYAS(z: pzval; keynames: TASDate; keyvals: TASDate); overload;
 var
   i : integer;
-  endarr: pzval;
 begin
- z.refcount := Length(keynames);
  if _array_init(z, nil, 0) = FAILURE then
   begin
     ZVAL_FALSE(z);
     Exit;
   end;
 
-
+  if (Length(keynames) = 0)and(Length(keynames) = Length(keyvals)) then
+  begin
+    z^.refcount := 1;
+    Exit;
+  end;
 
   if Length(keynames) = Length(keyvals) then
    begin
    for i := 0 to Length(keynames)-1 do
     begin
-    endarr := MAKE_STD_ZVAL;
-
-      ZVAL_STRING(endarr, PAnsiChar(keyvals[i]), true);
-      add_assoc_zval_ex(z, PAnsiChar(keynames[i]), StrLen(PAnsiChar(keynames[i])) + 1, endarr);
+      add_assoc_string_ex(z, PAnsiChar(keynames[i]), StrLen(PAnsiChar(keynames[i])) + 1, PAnsiChar(keyvals[i]), 1);
     end;
     Exit;
    end
@@ -1560,25 +1591,24 @@ end;
 procedure ZVAL_ARRAYAS(z: pzval; keynames: Array of AnsiString; keyvals: Array of AnsiString); overload;
 var
   i : integer;
-  endarr: pzval;
 begin
- z.refcount := Length(keynames);
  if _array_init(z, nil, 0) = FAILURE then
   begin
     ZVAL_FALSE(z);
     Exit;
   end;
 
-
+  if (Length(keynames) = 0)and(Length(keynames) = Length(keyvals)) then
+  begin
+    z^.refcount := 1;
+    Exit;
+  end;
 
   if Length(keynames) = Length(keyvals) then
    begin
    for i := 0 to Length(keynames)-1 do
     begin
-    endarr := MAKE_STD_ZVAL;
-
-      ZVAL_STRING(endarr, PAnsiChar(keyvals[i]), true);
-      add_assoc_zval_ex(z, PAnsiChar(keynames[i]), StrLen(PAnsiChar(keynames[i])) + 1, endarr);
+      add_assoc_string_ex(z, PAnsiChar(keynames[i]), StrLen(PAnsiChar(keynames[i])) + 1, PAnsiChar(keyvals[i]), 1);
     end;
     Exit;
    end
@@ -1648,9 +1678,11 @@ begin
   zend_register_resource :=           GetProcAddress(PHPLib, 'zend_register_resource');
   zend_fetch_resource :=              GetProcAddress(PHPLib, 'zend_fetch_resource');
   zend_list_insert :=                 GetProcAddress(PHPLib, 'zend_list_insert');
+  {$IFNDEF PHP700}
   _zend_list_addref :=                GetProcAddress(PHPLib, '_zend_list_addref');
   _zend_list_delete :=                GetProcAddress(PHPLib, '_zend_list_delete');
   _zend_list_find :=                  GetProcAddress(PHPLib, '_zend_list_find');
+  {$ENDIF}
   zend_rsrc_list_get_rsrc_type :=     GetProcAddress(PHPLib, 'zend_rsrc_list_get_rsrc_type');
   zend_fetch_list_dtor_id :=          GetProcAddress(PHPLib, 'zend_fetch_list_dtor_id');
 
@@ -1668,7 +1700,6 @@ begin
 
   // -- ts_free_id
   ts_free_id := GetProcAddress(PHPLib, 'ts_free_id');
-
 
   // -- zend_strndup
   zend_strndup := GetProcAddress(PHPLib, 'zend_strndup');
@@ -1695,6 +1726,9 @@ begin
 
   // -- _estrndup
   _estrndup := GetProcAddress(PHPLib, '_estrndup');
+
+  // -- _estrndup  Unicode
+  _estrndupu := GetProcAddress(PHPLib, '_estrndup');
 
   // -- zend_set_memory_limit
   zend_set_memory_limit := GetProcAddress(PHPLib, 'zend_set_memory_limit');
@@ -1762,7 +1796,8 @@ begin
   zend_hash_del_key_or_index := GetProcAddress(PHPLib, 'zend_hash_del_key_or_index');
 
   // -- zend_get_hash_value
-  zend_get_hash_value := GetProcAddress(PHPLib, 'zend_get_hash_value');
+  zend_get_hash_value := GetProcAddress(PHPLib,
+  {$IFDEF PHP560}'zend_hash_func'{$ELSE}'zend_get_hash_value'{$ENDIF});
 
   // -- zend_hash_find
   zend_hash_find := GetProcAddress(PHPLib, 'zend_hash_find');
@@ -2117,7 +2152,7 @@ begin
 
   // -- zend_alter_ini_entry
   zend_alter_ini_entry := GetProcAddress(PHPLib, 'zend_alter_ini_entry');
-
+  zend_alter_ini_entry_ex:= GetProcAddress(PHPLib, 'zend_alter_ini_entry_ex');
   // -- zend_restore_ini_entry
   zend_restore_ini_entry := GetProcAddress(PHPLib, 'zend_restore_ini_entry');
 
@@ -2134,7 +2169,7 @@ begin
   compile_string := GetProcAddress(PHPLib, 'compile_string');
 
   // -- execute
-  execute := GetProcAddress(PHPLib, 'execute');
+  execute := GetProcAddress(PHPLib, {$IFDEF PHP550}'zend_execute'{$ELSE}'execute'{$ENDIF});
 
   // -- zend_wrong_param_count
   zend_wrong_param_count := GetProcAddress(PHPLib, 'zend_wrong_param_count');
@@ -2449,8 +2484,11 @@ procedure dispose_pzval_array(Params: pzval_array);
 var
   i : integer;
 begin
+  if Length(Params)>0 then
+
   for i := 0 to High(Params) do
     FreeMem(Params[i]);
+  Params := nil;
 end;
 
 { EPHP4DelphiException }
@@ -2475,9 +2513,11 @@ begin
   if @zend_register_resource = nil then raise EPHP4DelphiException.Create('zend_register_resource');
   if @zend_fetch_resource =    nil then raise EPHP4DelphiException.Create('zend_fetch_resource');
   if @zend_list_insert =       nil then raise EPHP4DelphiException.Create('zend_list_insert');
+  {$IFNDEF PHP700}
   if @_zend_list_addref =      nil then raise EPHP4DelphiException.Create('zend_list_addref');
   if @_zend_list_delete =      nil then raise EPHP4DelphiException.Create('zend_list_delete');
   if @_zend_list_find =        nil then raise EPHP4DelphiException.Create('_zend_list_find');
+  {$ENDIF}
   if @zend_rsrc_list_get_rsrc_type =  nil then raise EPHP4DelphiException.Create('zend_rsrc_list_get_rsrc_type');
   if @zend_fetch_list_dtor_id =       nil then raise EPHP4DelphiException.Create('zend_fetch_list_dtor_id');
   if @zend_get_compiled_filename = nil then raise EPHP4DelphiException.Create('zend_get_compiled_filename');
@@ -3002,6 +3042,27 @@ begin
     end;
 end;
 
+function Z_STRUVAL(z : pzval) : UTF8String;
+begin
+  if z = nil then
+  begin
+      Result := '';
+      exit;
+  end;
+
+  if z._type = IS_STRING then
+  begin
+     SetLength(Result, z.value.str.len);
+     Move(z.value.str.val^, Result[1], z.value.str.len);
+  end else
+    case z._type of
+       IS_LONG: Result := IntToStr(z.value.lval);
+       IS_DOUBLE: Result := FloatToStr(z.value.dval);
+       IS_BOOL: if z.value.lval = 0 then Result := '' else Result := '1';
+       else
+        Result := '';
+    end;
+end;
 
 function Z_STRVAL(z : pzval) : AnsiString;
 begin

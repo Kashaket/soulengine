@@ -46,8 +46,8 @@ type
 
   TPHPVariable = class(TCollectionItem)
   private
-    FName  : AnsiString;
-    FValue : AnsiString;
+    FName  : {$IFDEF PHP_UNICE}UTf8String{$ELSE}AnsiString{$ENDIF};
+    FValue : {$IFDEF PHP_UNICE}UTf8String{$ELSE}AnsiString{$ENDIF};
     function GetAsBoolean: boolean;
     function GetAsFloat: double;
     function GetAsInteger: integer;
@@ -59,11 +59,11 @@ type
   public
     property AsInteger : integer read GetAsInteger write SetAsInteger;
     property AsBoolean : boolean read GetAsBoolean write SetAsBoolean;
-    property AsString  : AnsiString  read FValue write FValue;
+    property AsString  : {$IFDEF PHP_UNICE}UTf8String{$ELSE}AnsiString{$ENDIF}  read FValue write FValue;
     property AsFloat   : double  read GetAsFloat write SetAsFloat;
   published
-    property Name  : AnsiString read FName write FName;
-    property Value : AnsiString read FValue write FValue;
+    property Name  : {$IFDEF PHP_UNICE}UTf8String{$ELSE}AnsiString{$ENDIF} read FName write FName;
+    property Value : {$IFDEF PHP_UNICE}UTf8String{$ELSE}AnsiString{$ENDIF} read FValue write FValue;
   end;
 
   TPHPVariables = class(TCollection)

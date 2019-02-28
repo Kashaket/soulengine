@@ -24,10 +24,10 @@ uses
  {Windows} SysUtils,
 
  {$IFDEF FPC}
-  dynlibs,
+  dynlibs
  {$ELSE}
-  Win_D_api,
- {$ENDIF}
+ Windows
+ {$ENDIF},
 
  ZendTypes, PHPTypes, zendAPI,
 
@@ -39,7 +39,17 @@ uses
 const
   varUString  = $0102; { Unicode string 258 } {not OLE compatible}
 {$ENDIF}
+{$IFDEF PHP540}
+  procedure php_start_implicit_flush(TSRMLS_D : pointer);
+  procedure php_end_implicit_flush(TSRMLS_D : pointer);
+const
+  PHP_OUTPUT_HANDLER_CLEANABLE = 16;
+  PHP_OUTPUT_HANDLER_FLUSHABLE = 32;
+  PHP_OUTPUT_HANDLER_REMOVABLE = 64;
 
+  PHP_IMPLICIT_FLUSH_START = 1;
+  PHP_IMPLICIT_FLUSH_END = 0;
+{$ENDIF}
 var
  php_request_startup: function(TSRMLS_D : pointer) : Integer; cdecl;
  php_request_shutdown: procedure(dummy : Pointer); cdecl;
@@ -66,11 +76,38 @@ var
   php_register_variable_ex: procedure(_var : PAnsiChar;   val : pzval;  track_vars_array : pointer; TSRMLS_DC : pointer); cdecl;
 
 //php_output.h
-
   php_output_startup: procedure(); cdecl;
+  php_output_shutdown: procedure(); cdecl;
   php_output_activate: procedure (TSRMLS_D : pointer); cdecl;
-  php_output_set_status: procedure(status: boolean; TSRMLS_DC : pointer); cdecl;
+  php_output_deactivate: procedure (TSRMLS_D : pointer); cdecl;
   php_output_register_constants: procedure (TSRMLS_D : pointer); cdecl;
+  {$IFDEF PHP540}
+  php_output_set_status: procedure(status: integer; TSRMLS_DC : pointer); cdecl;
+  php_output_get_status: function(TSRMLS_DC : pointer) : integer; cdecl;
+  php_output_get_start_filename: function  (TSRMLS_D : pointer) : PAnsiChar; cdecl;
+  php_output_get_start_lineno: function (TSRMLS_D : pointer) : integer; cdecl;
+  php_output_start_default:  function (TSRMLS_D : pointer) : integer; cdecl;
+
+  php_start_ob_buffer: function  (output_handler : pzval; chunk_size : uint; flags:uint; TSRMLS_DC : pointer) : integer; cdecl;
+  php_start_ob_buffer_named: function  (const output_handler_name : PAnsiChar;  chunk_size : uint; flags:uint; TSRMLS_DC : pointer) : integer; cdecl;
+
+  php_end_ob_buffer: function (TSRMLS_DC : pointer): integer; cdecl;
+  php_end_ob_buffers: procedure (TSRMLS_DC : pointer); cdecl;
+  php_ob_get_buffer: function  (p : pzval; TSRMLS_DC : pointer) : integer; cdecl;
+  php_ob_get_length: function  (p : pzval; TSRMLS_DC : pointer) : integer; cdecl;
+
+  php_output_set_implicit_flush: procedure(flush: uint; TSRMLS_DS: pointer); cdecl;
+  php_get_output_start_filename: function  (TSRMLS_D : pointer) : PAnsiChar; cdecl;
+  php_get_output_start_lineno: function (TSRMLS_D : pointer) : integer; cdecl;
+
+  php_output_handler_started: function (name: PAnsiChar; name_len: uint): integer; cdecl;
+
+  php_ob_init_conflict: function (handler_new : PAnsiChar;  handler_new_len: uint;
+  handler_set : PAnsiChar; handler_set_len: uint; TSRMLS_DC : pointer) : integer; cdecl;
+
+  {$ELSE}
+  php_output_set_status: procedure(status: boolean; TSRMLS_DC : pointer); cdecl;
+  php_output_get_status: function(TSRMLS_DC : pointer) : boolean; cdecl;
   php_start_ob_buffer: function  (output_handler : pzval; chunk_size : uint; erase : boolean; TSRMLS_DC : pointer) : integer; cdecl;
   php_start_ob_buffer_named: function  (const output_handler_name : PAnsiChar;  chunk_size : uint; erase : boolean; TSRMLS_DC : pointer) : integer; cdecl;
   php_end_ob_buffer: procedure (send_buffer : boolean; just_flush : boolean; TSRMLS_DC : pointer); cdecl;
@@ -83,7 +120,7 @@ var
   php_get_output_start_lineno: function (TSRMLS_D : pointer) : integer; cdecl;
   php_ob_handler_used: function (handler_name : PAnsiChar; TSRMLS_DC : pointer) : integer; cdecl;
   php_ob_init_conflict: function (handler_new : PAnsiChar; handler_set : PAnsiChar; TSRMLS_DC : pointer) : integer; cdecl;
-
+  {$ENDIF}
 
 //php_output.h
 
@@ -531,7 +568,18 @@ end;
 begin
   zend_error(E_PARSE, Error);
 end;    }
+{$IFDEF PHP540}
+//HERE
 
+procedure php_start_implicit_flush(TSRMLS_D : pointer);
+begin
+   php_output_set_implicit_flush(PHP_IMPLICIT_FLUSH_START, TSRMLS_D);
+end;
+procedure php_end_implicit_flush(TSRMLS_D : pointer);
+begin
+    php_output_set_implicit_flush(PHP_IMPLICIT_FLUSH_END, TSRMLS_D);
+end;
+{$ENDIF}
 
 
 function LoadPHP(const DllFileName: AnsiString = PHPWin) : boolean;
@@ -587,7 +635,27 @@ begin
   php_output_set_status            := GetProcAddress(PHPLib, 'php_output_set_status');
 
   php_output_register_constants    := GetProcAddress(PHPLib, 'php_output_register_constants');
+  {$IFDEF PHP540}
+  php_start_ob_buffer              := GetProcAddress(PHPLib, 'php_output_start_user');
 
+  php_start_ob_buffer_named        := GetProcAddress(PHPLib, 'php_output_start_internal');
+
+  php_end_ob_buffer                := GetProcAddress(PHPLib, 'php_output_end');
+
+  php_end_ob_buffers               := GetProcAddress(PHPLib, 'php_output_end_all');
+
+  php_ob_get_buffer                := GetProcAddress(PHPLib, 'php_output_get_contents');
+
+  php_ob_get_length                := GetProcAddress(PHPLib, 'php_output_get_length');
+
+  php_output_set_implicit_flush     :=GetProcAddress(PHPLib, 'php_output_set_implicit_flush');
+
+  php_get_output_start_filename    := GetProcAddress(PHPLib, 'php_output_get_start_filename');
+
+  php_get_output_start_lineno      := GetProcAddress(PHPLib, 'php_output_get_start_lineno');
+
+  php_output_handler_started       := GetProcAddress(PHPLib, 'php_output_handler_started');
+  {$ELSE}
   php_start_ob_buffer              := GetProcAddress(PHPLib, 'php_start_ob_buffer');
 
   php_start_ob_buffer_named        := GetProcAddress(PHPLib, 'php_start_ob_buffer_named');
@@ -609,6 +677,7 @@ begin
   php_get_output_start_lineno      := GetProcAddress(PHPLib, 'php_get_output_start_lineno');
 
   php_ob_handler_used              := GetProcAddress(PHPLib, 'php_ob_handler_used');
+{$ENDIF}
 
   php_ob_init_conflict             := GetProcAddress(PHPLib, 'php_ob_init_conflict');
 

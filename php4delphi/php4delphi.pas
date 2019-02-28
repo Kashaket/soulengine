@@ -157,7 +157,7 @@ type
     FTerminated : boolean;
     FVariables : TPHPVariables;
     FBuffer : TPHPMemoryStream;
-    FFileName : AnsiString;
+    FFileName : {$IFDEF PHP_UNICE}UTF8String{$ELSE}AnsiString{$ENDIF};
     {$IFDEF PHP4}
     FWriterHandle : THandle;
     FVirtualReadHandle : THandle;
@@ -185,7 +185,7 @@ type
     procedure PrepareVariables; virtual;
     function RunTime : boolean;
     function GetThreadSafeResourceManager : pointer;
-    function  CreateVirtualFile(ACode : AnsiString) : boolean;
+    function  CreateVirtualFile(ACode : {$IFDEF PHP_UNICE}UTF8String{$ELSE}AnsiString{$ENDIF}) : boolean;
     procedure CloseVirtualFile;
     {$IFDEF PHP4}
     property  VirtualCode : string read FVirtualCode;
@@ -202,14 +202,14 @@ type
     constructor Create(AOwner : TComponent); override;
     destructor Destroy; override;
     function  EngineActive : boolean;
-    function  Execute : AnsiString; overload;
-    function  Execute(AFileName : AnsiString) : AnsiString; overload;
-    function  RunCode(ACode : AnsiString) : AnsiString; overload;
+    function  Execute : {$IFDEF PHP_UNICE}UTF8String{$ELSE}AnsiString{$ENDIF}; overload;
+    function  Execute(AFileName : {$IFDEF PHP_UNICE}UTF8String{$ELSE}AnsiString{$ENDIF}) : {$IFDEF PHP_UNICE}UTF8String{$ELSE}AnsiString{$ENDIF}; overload;
+    function  RunCode(ACode : {$IFDEF PHP_UNICE}UTF8String{$ELSE}AnsiString{$ENDIF}) : {$IFDEF PHP_UNICE}UTF8String{$ELSE}AnsiString{$ENDIF}; overload;
     function  RunCode(ACode : TStrings) : string; overload;
     function  VariableByName(AName : AnsiString) : TPHPVariable;
     property  PostStream : TMemoryStream read FPostStream;
     property  ExecuteMethod : TPHPExecuteMethod read FExecuteMethod write FExecuteMethod default emServer;
-    property  FileName  : AnsiString read FFileName write FFileName;
+    property  FileName  : {$IFDEF PHP_UNICE}UTF8String{$ELSE}AnsiString{$ENDIF} read FFileName write FFileName;
     property  Variables : TPHPVariables read FVariables write SetVariables;
     property  VariableCount : integer read GetVariableCount;
     property  OnRequestStartup : TNotifyEvent read FOnRequestStartup write FOnRequestStartup;
@@ -609,7 +609,6 @@ end;
 
 function minit (_type : integer; module_number : integer; TSRMLS_DC : pointer) : integer; cdecl;
 begin
-  RegisterInternalClasses(TSRMLS_DC);
   RESULT := SUCCESS;
 end;
 
@@ -778,7 +777,7 @@ begin
 end;
 {$ENDIF}
 
-function TpsvCustomPHP.Execute : AnsiString;
+function TpsvCustomPHP.Execute : {$IFDEF PHP_UNICE}UTF8String{$ELSE}AnsiString{$ENDIF};
 var
   file_handle : zend_file_handle;
   {$IFDEF PHP4}
@@ -903,7 +902,7 @@ begin
   end;
 end;
 
-function TpsvCustomPHP.RunCode(ACode : AnsiString) : AnsiString;
+function TpsvCustomPHP.RunCode(ACode : {$IFDEF PHP_UNICE}UTF8String{$ELSE}AnsiString{$ENDIF}) : {$IFDEF PHP_UNICE}UTF8String{$ELSE}AnsiString{$ENDIF};
 begin
   if not EngineActive then
    begin
@@ -952,7 +951,7 @@ end;
 
 
 
-function TpsvCustomPHP.Execute(AFileName: AnsiString): AnsiString;
+function TpsvCustomPHP.Execute(AFileName: {$IFDEF PHP_UNICE}UTF8String{$ELSE}AnsiString{$ENDIF}): {$IFDEF PHP_UNICE}UTF8String{$ELSE}AnsiString{$ENDIF};
 begin
   FFileName := AFileName;
   Result := Execute;
@@ -1160,7 +1159,7 @@ begin
   {$ENDIF}
 end;
 
-function TpsvCustomPHP.CreateVirtualFile(ACode : AnsiString): boolean;
+function TpsvCustomPHP.CreateVirtualFile(ACode : {$IFDEF PHP_UNICE}UTF8String{$ELSE}AnsiString{$ENDIF}): boolean;
 {$IFDEF PHP4}
 var
  _handles : array[0..1] of THandle;
@@ -1550,76 +1549,28 @@ var
  cnt, offset : integer;
  HashName : AnsiString;
 begin
-  SetLength(FLibraryEntryTable, FHash.Count + MyFuncs.Count + 13);
+  SetLength(FLibraryEntryTable, FHash.Count + MyFuncs.Count + 2);
 
-  PHP_FUNCTION(FLibraryEntryTable[0], 'delphi_date', @delphi_date);
-  PHP_FUNCTION(FLibraryEntryTable[1], 'delphi_extract_file_dir', @delphi_extract_file_dir);
-  PHP_FUNCTION(FLibraryEntryTable[2], 'delphi_extract_file_drive', @delphi_extract_file_drive);
-  PHP_FUNCTION(FLibraryEntryTable[3], 'delphi_extract_file_name', @delphi_extract_file_name);
+  PHP_FUNCTION(FLibraryEntryTable[0], 'InputBox', @delphi_input_box);
 
-  FLibraryEntryTable[4].fname := 'delphi_extract_file_ext';
-  FLibraryEntryTable[4].handler := @delphi_extract_file_ext;
-  {$IFDEF PHP4}
-  FLibraryEntryTable[4].func_arg_types := nil;
-  {$ELSE}
-  FLibraryEntryTable[4].arg_info := nil;
-  {$ENDIF}
-
-  FLibraryEntryTable[5].fname := 'delphi_show_message';
-  FLibraryEntryTable[5].handler := @delphi_show_message;
-  {$IFDEF PHP4}
-  FLibraryEntryTable[5].func_arg_types := nil;
-  {$ELSE}
-  FLibraryEntryTable[5].arg_info := nil;
-  {$ENDIF}
-
-  FLibraryEntryTable[6].fname :=  'register_delphi_object';
-  FLibraryEntryTable[6].handler := @register_delphi_object;
-  {$IFDEF PHP4}
-  FLibraryEntryTable[6].func_arg_types := nil;
-  {$ELSE}
-  FLibraryEntryTable[6].arg_info := nil;
-  {$ENDIF}
-
-  FLibraryEntryTable[7].fname := 'delphi_get_author';
-  FLibraryEntryTable[7].handler := @delphi_get_author;
-  {$IFDEF PHP4}
-  FLibraryEntryTable[7].func_arg_types := nil;
-  {$ELSE}
-  FLibraryEntryTable[7].arg_info := nil;
-  {$ENDIF}
-
-  FLibraryEntryTable[8].fname := 'delphi_str_date';
-  FLibraryEntryTable[8].handler := @delphi_str_date;
-  {$IFDEF PHP4}
-  FLibraryEntryTable[8].func_arg_types := nil;
-  {$ELSE}
-  FLibraryEntryTable[8].arg_info := nil;
-  {$ENDIF}
-
-
-  PHP_FUNCTION(FLibraryEntryTable[9], 'delphi_get_system_directory', @delphi_get_system_directory);
-  PHP_FUNCTION(FLibraryEntryTable[10], 'delphi_input_box', @delphi_input_box);
-  PHP_FUNCTION(FLibraryEntryTable[11], 'register_delphi_component', @register_delphi_component);
-  
 
     for cnt := 0 to FHash.Count - 1 do
     begin
       HashName := FHash[cnt];
 
       {$IFNDEF COMPILER_VC9}
-      FLibraryEntryTable[cnt+12].fname := strdup(PAnsiChar(HashName));
+      FLibraryEntryTable[cnt+1].fname := strdup(PAnsiChar(HashName));
       {$ELSE}
-      FLibraryEntryTable[cnt+12].fname := DupStr(PAnsiChar(HashName));
+      FLibraryEntryTable[cnt+1].fname := DupStr(PAnsiChar(HashName));
       {$ENDIF}
 
-      FLibraryEntryTable[cnt+12].handler := @DispatchRequest;
+      FLibraryEntryTable[cnt+1].handler := @DispatchRequest;
       {$IFDEF PHP4}
-      FLibraryEntryTable[cnt+12].func_arg_types := nil;
+      FLibraryEntryTable[cnt+1].func_arg_types := nil;
       {$ENDIF}
     end;
 
-    offset := FHash.Count + 12;
+    offset := FHash.Count + 1;
     for cnt := 0 to MyFuncs.Count - 1 do
     begin
         HashName := MyFuncs[cnt];
@@ -1636,10 +1587,10 @@ begin
     end;
 
 
-    FLibraryEntryTable[FHash.Count+MyFuncs.Count+12].fname := nil;
-    FLibraryEntryTable[FHash.Count+MyFuncs.Count+12].handler := nil;
+    FLibraryEntryTable[FHash.Count+MyFuncs.Count+1].fname := nil;
+    FLibraryEntryTable[FHash.Count+MyFuncs.Count+1].handler := nil;
     {$IFDEF PHP4}
-    FLibraryEntryTable[FHash.Count+MyFuncs.Count+12].func_arg_types := nil;
+    FLibraryEntryTable[FHash.Count+MyFuncs.Count+1].func_arg_types := nil;
     {$ENDIF}
 
     FLibraryModule.functions := @FLibraryEntryTable[0];
@@ -1738,7 +1689,7 @@ begin
     if Assigned(FOnScriptError) then
 
 
-     //  FOnScriptError(Sender, AText, AType, AFileName, ALineNo);
+       FOnScriptError(Sender, AText, AType, AFileName, ALineNo);
       //ShowMessage( AText + #10#13 +  AType.ToString + #10#13 + AFileName + #10#13 + ALineNo.ToString );
      // FOnScriptError(Sender, AText, AType, AFileName, ALineNo);
   finally

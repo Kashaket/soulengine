@@ -99,7 +99,6 @@ begin
   RegisterComponents('PHP', [TpsvPHP]);
   RegisterComponents('PHP', [TPHPLibrary]);
   RegisterComponents('PHP', [TPHPClass]);
-  RegisterComponents('PHP', [TPHPSystemLibrary]);
   RegisterPropertyEditor(TypeInfo(String), TpsvPHP, 'FileName', TScriptFileProperty);
   RegisterPropertyEditor(TypeInfo(TPHPAboutInfo), TPHPComponent, 'About', TPHPVersionEditor);
   RegisterPropertyEditor(TypeInfo(TPHPAboutInfo), TCustomPHPExtension, 'About', TphpVersionEditor);
