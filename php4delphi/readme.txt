@@ -34,6 +34,14 @@ design-time and run-time packages for Delphi 5 through Delphi 2010.
 
 
 History:
+7.4 Jan 2019
+* Compatible with PHP 5.5.0
+* Compatible with PHP 5.6.0
+* Compatible with PHP 5.6
+* Compatible with Delphi 2011, XE 1-8, Seattle, Berlin
+
+7.3 Apr 2010
+* Compatible with PHP 5.4.0
 
 7.2 Oct 2009
 
