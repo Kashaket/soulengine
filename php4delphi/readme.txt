@@ -1,9 +1,9 @@
                      PHP4Delphi library                       
 PHP - Delphi interface and PHP extensions development framework                  
 
-{ $Id: readme.txt,v 7.2 10/2009 delphi32 Exp $ } 
+{ $Id: readme.txt,v 7.2 2/2019 delphi32 Exp $ } 
 
-PHP4Delphi is a Delphi interface to PHP for Delphi 5, 6, 7, Delphi 2005 - Delphi 2010
+PHP4Delphi is a Delphi interface to PHP for Delphi 5, 6, 7, Delphi 2005 - Delphi Berlin
 
 PHP4Delphi consists of 3 big subprojects:
 
@@ -29,7 +29,7 @@ More detail information available in php4Delphi manual php4Delphi.pdf
 
 
 This is a source-only release of php4Delphi. It includes
-design-time and run-time packages for Delphi 5 through Delphi 2010.
+design-time and run-time packages for Delphi 5 through Delphi Berlin
 
 
 
