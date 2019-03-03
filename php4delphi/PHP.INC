@@ -21,7 +21,16 @@ If you are using PHP version 5.1.2 or higher please add $DEFINE PHP512
 If you are using PHP version 5.2.0 or higher please add $DEFINE PHP520
 IF you are using PHP version 5.3.0 or highre please add $DEFINE PHP530
 IF you are using PHP version 5.4.0 or highre please add $DEFINE PHP540
-
+IF you are using PHP version 5.5.0 or highre please add $DEFINE PHP550
+IF you are using PHP version 5.6.0 or highre please add $DEFINE PHP560
+If you are using PHP compiled via:
+id,   define compiler_id
+VC9   COMPILER_VC9
+VC10  COMPILER_VC10
+VC11  COMPILER_VC11
+VC12  COMPILER_VC12
+VC13  COMPILER_VC13
+VC14  COMPILER_VC14
 Sorry for such complicated configuration, but PHP team does not keep
 backward compatibility between PHP versions.
 }

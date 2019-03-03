@@ -41,7 +41,23 @@ const ZEND_BUILD_SYSTEM  =
 {$IFDEF COMPILER_VC14}
 ',VC14'
 {$ELSE}
-{$IFDEF COMPILER_VC11}',VC11'{$ELSE}',VC9'{$ENDIF}
+  {$IFDEF COMPILER_VC13}
+    ',VC13'
+  {$ELSE}
+    {$IFDEF COMPILER_VC12}
+      ',VC12'
+      {$ELSE}
+        {$IFDEF COMPILER_VC11}
+          ',VC11'
+          {$ELSE}
+            {$IFDEF COMPILER_VC11}
+            ',VC10'
+            {$ELSE}
+            ',VC9'
+            {$ENDIF}
+          {$ENDIF}
+      {$ENDIF}
+  {$ENDIF}
 {$ENDIF};
 {$ELSE}
 {$IFDEF COMPILER_VC6}
