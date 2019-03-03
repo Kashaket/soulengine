@@ -34,7 +34,7 @@ design-time and run-time packages for Delphi 5 through Delphi Berlin
 
 
 History:
-7.4 Jan 2019
+7.4 Feb 2019
 * Compatible with PHP 5.5.0
 * Compatible with PHP 5.6.0
 * Compatible with PHP 5.6
@@ -43,7 +43,7 @@ History:
 * Added Partial Unicode Support 
 * Added Ukrainian Flag
 
-7.3 Apr 2010
+7.3 Jan 2019
 * Compatible with PHP 5.4.0
 
 7.2 Oct 2009
