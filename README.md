@@ -73,5 +73,5 @@ Decompiled by: Nyashik, Hunting Kashket
    ADD_SYN_OPT - добавлять набор подсветок SynEdit
 2) ADD_AC, ADD_SKINS - добавлять AlphaControls
 3) ADD_CHROMIUM - добавлять CEF
-4) PHP540 - добавлять поддержку PHP 5.4.0
+4) PHP560 - добавлять поддержку PHP 5.6 и выше
 5) ADD_RYM - добавлять стильные меню (Rays Menues)
