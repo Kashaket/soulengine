@@ -8,7 +8,7 @@
 { http://delphi32.blogspot.com                          }
 {*******************************************************}
 
-{ $Id: skeleton.dpr,v 7.2 10/2009 delphi32 Exp $ }
+{ $Id: skeleton.dpr,v 7.4 10/2009 delphi32 Exp $ }
 
 {$I php.inc}
 

@@ -9,7 +9,7 @@
 {*******************************************************}
 {$I PHP.INC}
 
-{ $Id: php4DelphiReg.pas,v 7.2 10/2009 delphi32 Exp $ }
+{ $Id: php4DelphiReg.pas,v 7.4 10/2009 delphi32 Exp $ }
 
 unit php4DelphiReg;
 
@@ -80,7 +80,7 @@ begin
   Bmp := TBitmap.Create;
   Bmp.LoadFromResourceName( HInstance, 'PHPDELPHIL' );
   try
-    SplashScreenServices.AddPluginBitmap('php4Delphi version 7.2',
+    SplashScreenServices.AddPluginBitmap('php4Delphi version 7.4',
                                           Bmp.Handle, False, 'Registered', '' );
   finally
     Bmp.Free;

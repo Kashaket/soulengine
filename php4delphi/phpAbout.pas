@@ -10,7 +10,7 @@
 {*******************************************************}
 {$I PHP.INC}
 
-{ $Id: phpAbout.pas,v 7.2 10/2009 delphi32 Exp $ } 
+{ $Id: phpAbout.pas,v 7.4 10/2009 delphi32 Exp $ } 
 
 unit phpAbout;
 
@@ -54,7 +54,7 @@ type
   end;
 
 
-const php4DelphiVersion = '7.2';
+const php4DelphiVersion = '7.4';
 
 implementation
 

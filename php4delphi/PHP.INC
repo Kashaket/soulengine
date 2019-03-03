@@ -9,7 +9,7 @@
 { http://delphi32.blogspot.com                          }
 {*******************************************************}
 
-{ $Id: PHP.INC,v 7.2 10/2009 delphi32 Exp $ }
+{ $Id: PHP.INC,v 7.4 10/2009 delphi32 Exp $ }
 
 {IMPORTANT:
 If you are using PHP version 4.2.x...4.3.0 please change $DEFINE PHP433 to $DEFINE PHP430

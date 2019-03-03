@@ -9,7 +9,7 @@
 
 {$I PHP.INC}
 
-{ $Id: php4AppUnit.pas,v 7.2 10/2009 delphi32 Exp $ }
+{ $Id: php4AppUnit.pas,v 7.4 10/2009 delphi32 Exp $ }
 
 unit php4AppUnit;
 
@@ -73,7 +73,7 @@ var
 procedure php_info_delphi(zend_module : Pointer; TSRMLS_DC : pointer); cdecl;
 begin
   php_info_print_table_start();
-  php_info_print_table_row(2, PAnsiChar('SAPI module version'), PAnsiChar('PHP4Delphi 7.2 Oct 2009'));
+  php_info_print_table_row(2, PAnsiChar('SAPI module version'), PAnsiChar('PHP4Delphi 7.4 Oct 2009'));
   php_info_print_table_row(2, PAnsiChar('Home page'), PAnsiChar('http://users.telenet.be/ws36637'));
   php_info_print_table_end();
 end;
@@ -189,7 +189,7 @@ begin
   php_delphi_module.module_startup_func := nil;
   php_delphi_module.module_shutdown_func := nil;
   php_delphi_module.info_func := @php_info_delphi;
-  php_delphi_module.version := '7.2';
+  php_delphi_module.version := '7.4';
   {$IFDEF PHP4}
   php_delphi_module.global_startup_func := nil;
   {$ENDIF}

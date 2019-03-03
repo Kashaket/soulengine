@@ -9,7 +9,7 @@
 {*******************************************************}
 {$I PHP.INC}
 
-{ $Id: zend_dynamic_array.pas,v 7.2 10/2009 delphi32 Exp $ } 
+{ $Id: zend_dynamic_array.pas,v 7.4 10/2009 delphi32 Exp $ } 
 
 unit zend_dynamic_array;
 

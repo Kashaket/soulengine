@@ -7,7 +7,7 @@
 { http://users.telenet.be/ws36637                       }
 {*******************************************************}
 
-{ $Id: Unit1.pas,v 7.2 10/2009 delphi32 Exp $ }
+{ $Id: Unit1.pas,v 7.4 10/2009 delphi32 Exp $ }
 
 unit Unit1;
 

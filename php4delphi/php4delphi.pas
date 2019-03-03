@@ -18,7 +18,7 @@
       {$mode delphi}
 {$endif}
 
-{ $Id: php4delphi.pas,v 7.2 10/2009 delphi32 Exp $ }
+{ $Id: php4delphi.pas,v 7.4 10/2009 delphi32 Exp $ }
 
 //  Important:
 //  Please check PHP version you are using and change php.inc file

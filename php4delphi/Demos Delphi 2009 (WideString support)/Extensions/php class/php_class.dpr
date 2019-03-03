@@ -7,7 +7,7 @@
 { http://users.telenet.be/ws36637                       }
 {*******************************************************}
 
-{ $Id: php_class.dpr,v 7.2 10/2009 delphi32 Exp $ }
+{ $Id: php_class.dpr,v 7.4 10/2009 delphi32 Exp $ }
 
 {$I PHP.INC}
 
