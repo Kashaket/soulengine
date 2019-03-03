@@ -11,7 +11,7 @@ This version of SoulEngine is partially compatible with DevelStudio 3.0.2Beta an
 
 1. Install php4delphi, synedit and CEF4Delphi Packages from the project's dir
 2. Open project file (SoulEngine.dpr or SoulEngine.dproj either)
-3. Compile project, the output binaries will be in `C:\DevelStudio 3.0Beta\`.
+3. Compile project, the output binaries will be in the `C:\DevelStudio 3.0Beta\`.
 
 If you see error when running binaries, rather components 
 installed uncorrectly or DevelStudio 3.0.4 
