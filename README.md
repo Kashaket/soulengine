@@ -2,7 +2,44 @@
 
 GUI Tool kit for PHP and DevelStudio.
 
-#### Инструкции
+## EN
+### Information
+This version of SoulEngine is partially compatible with DevelStudio 3.0.2Beta and fully compatible with <a href="https://github.com/KashaketCompany/DevelStudio-3.0-beta">DevelStudio (3.0.4)</a> - <a href="https://github.com/KashaketCompany/DevelStudio-3.0-beta">DevelStudio Ke</a> (3.4)
+P.s Sorry for bicycles and so unclean code, but, if you look at the code i started from, you'll want to beat up Dim-S, whose code worse than my.
+
+#### Compiling
+
+1. Install php4delphi, synedit and CEF4Delphi Packages from the project's dir
+2. Open project file (SoulEngine.dpr or SoulEngine.dproj either)
+3. Compile project, the output binaries will be in `C:\DevelStudio 3.0Beta\`.
+
+If you see error when running binaries, rather components 
+installed uncorrectly or DevelStudio 3.0.4 
+installation doesn't exist in 
+final(end-point) build directory `C:\DevelStudio 3.0Beta\`
+
+
+#### Additional extensions
+
+Extensions with all included info located at the `ext/` directory.
+Copyright on php_wincall, php_TWinTaskBar, php_skins points to Nyashik (Nyasik, http://github.com/Nyasik)
+
+#### Credits
+Rewrited by: Kashaket (Andrew Zenin, Artem Ukolov)
+Decompiled by: Nyashik, Hunting Kashket
+
+### Using conditionals
+(in sDef.inc)
+1) ADD_SYN - add Synedit to the build
+
+   ADD_SYN_OPT - add additional SynEdit Highlighters Set
+2) ADD_AC, ADD_SKINS - add AlphaControls Pack
+3) ADD_CHROMIUM - add CEF (Chromium Embedded Framework 69)
+4) PHP560 - add PHP 5.6 up support
+5) ADD_RYM - add styled menus (Rays Menues)
+
+## RU
+#### Информация
 
 Данная версия SoulEngine частично совместима с DevelStudio (3.0.2),
 Полная совместимость только с <a href="https://github.com/KashaketCompany/DevelStudio-3.0-beta">DevelStudio (3.0.4)</a> - <a href="https://github.com/KashaketCompany/DevelStudio-3.0-beta">DevelStudio Ke</a> (3.4).
@@ -22,10 +59,8 @@ GUI Tool kit for PHP and DevelStudio.
 
 #### Дополнительные расширения
 
-В папке `ext/` находятся исходники расширений, которые
-используются в DevelStudio. Чтобы их собрать, необходимо
-прописать путь к исходникам php4delphi в настройках
-среды или проекта.
+Расширения со всей сопутствующей информацией находятся в папке `ext/`
+Авторские права на php_wincall, php_TWinTaskBar, php_skins принадлежат Nyashik (Nyasik, http://github.com/Nyasik)
 
 #### Краткие требования лицензии
 1. Указать авторство(шучу, этот движок собран Dim-S Software из сплошного копипаста, какие нафиг лицензии?)
