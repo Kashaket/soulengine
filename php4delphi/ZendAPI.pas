@@ -511,6 +511,8 @@ var
 
   zend_get_executed_filename                      : function(TSRMLS_D: pointer): PAnsiChar; cdecl;
 
+  zend_get_executed_lineno                        : function(TSRMLS_DC: pointer): uint; cdecl;
+
   zend_set_timeout                                : procedure(seconds: Longint); cdecl;
 
   zend_unset_timeout                              : procedure(TSRMLS_D: pointer); cdecl;
@@ -534,7 +536,7 @@ var
   zend_indent                                     : procedure; cdecl;
 
   ZendGetParameters                               : function: integer; cdecl;
-
+  zend_get_params_ex : function(param_count : Integer; Args : ppzval) :integer; cdecl varargs;
 function zend_get_parameters_ex(number: integer; var Params: pzval_array): integer;
 function zend_get_parameters_my(number: integer; var Params: pzval_array; TSRMLS_DC: Pointer): integer;
 
@@ -568,7 +570,7 @@ var
   execute                                         : procedure(op_array: pointer; TSRMLS_DC: Pointer); cdecl;
 
   zend_wrong_param_count                          : procedure(TSRMLS_D: pointer); cdecl;
-
+  _zend_hash_quick_add_or_update:function(ht: PHashTable; arKey: PAnsiChar; nKeyLength: uint; h: uint; out pData: pzval; nDataSize: uint; pDest: PPointer; flag: Integer) : Integer; cdecl;
   {$IFDEF PHP4}
   add_property_long_ex                            : function(arg: pzval; key: PAnsiChar; key_len: uint; l: longint): integer; cdecl;
   {$ELSE}
@@ -682,7 +684,46 @@ procedure ZEND_PUTS(str: PAnsiChar);
 var
   zend_register_internal_class     : function(class_entry: pzend_class_entry; TSRMLS_DC: pointer): Pzend_class_entry; cdecl;
   zend_register_internal_class_ex  : function(class_entry: pzend_class_entry; parent_ce: pzend_class_entry; parent_name: PAnsiChar; TSRMLS_DC: pointer): Pzend_class_entry; cdecl;
+  function ZvalInt(z:zval):Integer;
+  function ZvalDouble(z:zval):Double;
+  function ZvalBool(z:zval):Boolean;
 
+  function ZvalStrS(z:zval) : string;
+  function ZvalStr(z:zval)  : AnsiString;
+  function ZvalStrW(z:zval) : WideString;
+
+  procedure ZvalVAL(z:pzval; v:Boolean) overload;
+  procedure ZvalVAL(z:pzval; v:Integer; const _type:Integer = IS_LONG) overload;
+  procedure ZvalVAL(z:pzval) overload;
+  procedure ZvalVAL(z:pzval; v:Double) overload;
+  procedure ZvalVAL(z: pzval; s: AnsiString; len: Integer = 0); overload;
+  procedure ZvalString(z:pzval) overload;
+  procedure ZvalString(z:pzval; s:PAnsiChar; len:Integer = 0) overload;
+  procedure ZvalString(z:pzval; s:PWideChar; len:Integer = 0) overload;
+  procedure ZvalString(z:pzval; s:string; len:Integer = 0) overload;
+
+function ZvalArrayAdd(z: pzval; Args: array of const): Integer; overload;
+function ZvalArrayAdd(z: pzval; idx: Integer; Args: array of const)
+  : Integer; overload;
+function ZvalArrayAdd(z: pzval; key: AnsiString; Args: array of const)
+  : Integer; overload;
+
+function ZValArrayKeyExists(v: pzval; key: AnsiString): Boolean; overload;
+function ZValArrayKeyExists(v: pzval; key: AnsiString; out pData: pzval)
+  : Boolean; overload;
+function ZValArrayKeyExists(v: pzval; idx: Integer): Boolean; overload;
+function ZValArrayKeyExists(v: pzval; idx: Integer; out pData: pzval)
+  : Boolean; overload;
+function ZValArrayKeyDel(v: pzval; key: AnsiString): Boolean; overload;
+function ZValArrayKeyDel(v: pzval; idx: Integer): Boolean; overload;
+
+function ZValArrayKeyFind(v: pzval; key: AnsiString; out pData: ppzval)
+  : Boolean; overload;
+function ZValArrayKeyFind(v: pzval; idx: Integer; out pData: ppzval)
+  : Boolean; overload;
+
+ function GetArgPZval(Args: TVarRec; const _type: Integer = IS_LONG;
+  Make: Boolean = false): pzval;
 procedure ZVAL_RESOURCE(value: pzval; l: longint);
 procedure ZVAL_BOOL(z: pzval; b: boolean);
 procedure ZVAL_NULL(z: pzval);
@@ -765,9 +806,11 @@ function  DupStr(strSource : PAnsiChar) : PAnsiChar; cdecl;
 {$ENDIF}
 
 function ZEND_FAST_ALLOC: pzval;
-function ALLOC_ZVAL: pzval;
+function ALLOC_ZVAL: pzval; overload;
+procedure ALLOC_ZVAL(out Result: pzval); overload;
 procedure INIT_PZVAL(p: pzval);
-function MAKE_STD_ZVAL: pzval;
+function MAKE_STD_ZVAL: pzval; overload;
+procedure MAKE_STD_ZVAL(out Result: pzval); overload;
 
 {$IFNDEF QUIET_LOAD}
 procedure CheckZendErrors;
@@ -923,6 +966,314 @@ begin
   z^._type := IS_DOUBLE;
   z^.value.dval := d;
 end;
+procedure ZvalString(z:pzval);
+begin
+  z^.value.str.len := 0;
+  z^.value.str.val := '';
+  z^._type := IS_STRING;
+end;
+
+procedure ZvalString(z:pzval; s:PAnsiChar; len:Integer = 0);
+var
+  lens:Integer;
+begin
+  if not assigned(s) then
+    ZvalString(z)
+  else begin
+    if len = 0 then
+      lens := Length(s)
+    else
+      lens := len;
+
+    z^.value.str.len := lens;
+    z^.value.str.val := estrndup(s, lens);
+    z^._type := IS_STRING;
+  end;
+end;
+
+procedure ZvalString(z:pzval; s:PWideChar; len:Integer = 0);
+begin
+  if not assigned(s) then
+    ZvalString(z)
+  else
+    ZvalString(z, PAnsiChar(AnsiString(WideString(s))), len);
+end;
+
+procedure ZvalString(z:pzval; s:string; len:Integer = 0);
+var
+  _s:PWideChar;
+begin
+  _s := PWideChar(s);
+
+  if not assigned(_s) then
+    ZvalString(z)
+  else
+    ZvalString(z, _s, len);
+end;
+function ZvalInt;
+begin
+  Result := z.value.lval;
+end;
+
+function ZvalDouble;
+begin
+  Result := z.value.dval;
+end;
+
+function ZvalBool;
+begin
+  Result := boolean(z.value.lval);
+end;
+
+function ZvalStrS;
+begin
+ Result := z.value.str.val;
+end;
+
+function ZvalStr;
+begin
+ Result := z.value.str.val;
+end;
+
+function ZvalStrW;
+begin
+ Result := WideString(z.value.str.val);
+end;
+
+procedure ZvalVAL(z:pzval; v:Boolean);
+Begin
+  z._type := IS_BOOL;
+  z.value.lval := integer(v);
+End;
+
+procedure ZvalVAL(z:pzval; v:Integer; const _type:Integer = IS_LONG);
+Begin
+  z._type := _type;
+  z.value.lval := v;
+End;
+
+procedure ZvalVAL(z:pzval);
+Begin
+  z._type := IS_NULL;
+End;
+
+procedure ZvalVAL(z:pzval; v:Double);
+Begin
+  z._type := IS_LONG;
+  z.value.dval := v;
+End;
+procedure ZvalVAL(z: pzval; s: AnsiString; len: Integer = 0);
+var
+  lens: Integer;
+  AChar: PAnsiChar;
+begin
+  AChar := PAnsiChar(s);
+
+  if not assigned(AChar) then
+    ZVAL_NULL(z)
+  else
+  begin
+    if len = 0 then
+      lens := Length(AChar)
+    else
+      lens := len;
+
+    z^.value.str.len := lens;
+    z^.value.str.val := _estrndup(AChar, lens, nil, 0, nil, 0);
+    z^._type := IS_STRING;
+  end;
+end;
+
+function AddElementZvalArray(z: pzval; Args: array of const; flag: Integer;
+  idx: uint = 0; len: uint = 0; const key: AnsiString = ''): Integer;
+var
+  tmp: pzval;
+  arKey: PAnsiChar;
+begin
+  Result := FAILURE;
+  if z._type <> IS_ARRAY then
+    exit;
+
+  if len <> 0 then
+  begin
+    inc(len);
+    arKey := PAnsiChar(key);
+    idx := zend_hash_func(arKey, len);
+  end;
+
+  tmp := GetArgPZval(Args[0], 1, true);
+  Result := _zend_hash_quick_add_or_update(z.value.ht, arKey, len, idx, tmp,
+    sizeof(pzval), nil, flag);
+end;
+// Add Next
+function ZvalArrayAdd(z: pzval; Args: array of const): Integer; overload;
+begin
+  Result := FAILURE;
+  if z._type <> IS_ARRAY then
+    exit;
+  Result := AddElementZvalArray(z, Args, HASH_NEXT_INSERT,
+    z.value.ht.nNextFreeElement);
+end;
+
+// Add Index
+function ZvalArrayAdd(z: pzval; idx: Integer; Args: array of const)
+  : Integer; overload;
+begin
+  Result := AddElementZvalArray(z, Args, HASH_UPDATE, idx);
+end;
+
+// Add Assoc
+function ZvalArrayAdd(z: pzval; key: AnsiString; Args: array of const)
+  : Integer; overload;
+begin
+  Result := AddElementZvalArray(z, Args, HASH_UPDATE, 0, Length(key), key);
+end;
+
+function IsArrayRetVal(v: pzval): Boolean;
+begin
+  Result := v._type = IS_ARRAY;
+end;
+
+function ZValArrayKeyExists(v: pzval; key: AnsiString): Boolean; overload;
+begin
+  Result := false;
+  if v._type <> IS_ARRAY then
+    exit;
+
+  if v.value.ht.nNumOfElements = 0  then
+    exit;
+
+  Result := zend_hash_exists(v.value.ht, PAnsiChar(key), Length(key) + 1) = 1;
+end;
+
+function ZValArrayKeyExists(v: pzval; idx: Integer): Boolean; overload;
+begin
+  Result := false;
+  if (v._type <> IS_ARRAY) then
+    exit;
+
+  if v.value.ht.nNumOfElements = 0  then
+    exit;
+
+  Result := zend_hash_index_exists(v.value.ht, idx) = 1;
+end;
+
+function ZValArrayKeyExists(v: pzval; key: AnsiString; out pData: pzval)
+  : Boolean; overload;
+var
+  tmp: ppzval;
+begin
+  Result := ZValArrayKeyExists(v, key);
+  if Result then
+  begin
+    pData := nil;
+    if ZValArrayKeyFind(v, key, tmp) then
+      pData := tmp^;
+  end;
+end;
+
+function ZValArrayKeyExists(v: pzval; idx: Integer; out pData: pzval)
+  : Boolean; overload;
+var
+  tmp: ppzval;
+begin
+  Result := ZValArrayKeyExists(v, idx);
+  if Result then
+  begin
+    pData := nil;
+    if ZValArrayKeyFind(v, idx, tmp) then
+      pData := tmp^;
+  end;
+end;
+
+function ZValArrayKeyDel(v: pzval; key: AnsiString): Boolean; overload;
+begin
+  Result := false;
+  if ZValArrayKeyExists(v, key) then
+    Result := zend_hash_del_key_or_index(v.value.ht, PAnsiChar(key),
+      Length(key) + 1, 0, HASH_DEL_KEY) = SUCCESS;
+end;
+
+function ZValArrayKeyDel(v: pzval; idx: Integer): Boolean; overload;
+begin
+  Result := false;
+  if ZValArrayKeyExists(v, idx) then
+    Result := zend_hash_del_key_or_index(v.value.ht, nil, 0, idx,
+      HASH_DEL_INDEX) = SUCCESS;
+end;
+
+function ZValArrayKeyFind(v: pzval; key: AnsiString; out pData: ppzval)
+  : Boolean; overload;
+var
+  keyStr: PAnsiChar;
+  KeyLength: uint;
+begin
+  keyStr := PAnsiChar(key);
+  KeyLength := Length(key) + 1;
+
+  Result := zend_hash_quick_find(v.value.ht, keyStr, KeyLength,
+    zend_hash_func(keyStr, KeyLength), pData) = SUCCESS;
+end;
+
+function ZValArrayKeyFind(v: pzval; idx: Integer; out pData: ppzval)
+  : Boolean; overload;
+begin
+  Result := zend_hash_quick_find(v.value.ht, nil, 0, idx, pData) = SUCCESS;
+end;
+procedure MAKE_STD_ZVAL(out Result: pzval);
+begin
+  ALLOC_ZVAL(Result);
+  INIT_PZVAL(Result);
+end;
+
+
+
+function GetArgPZval;
+begin
+  if Args._Reserved1 = 0 then // nil
+  begin
+    if Make then
+      MAKE_STD_ZVAL(Result);
+    Result._type := IS_NULL;
+  end
+  else if Args.VType = vtPointer then
+    Result := Args.VPointer
+  else
+  begin
+    if Make then
+      MAKE_STD_ZVAL(Result);
+    case Args.VType of
+      vtInteger:
+        ZvalVAL(Result, Args.VInteger, _type);
+      vtInt64:
+        ZvalVAL(Result, NativeInt(Args.VInt64^), _type);
+      vtBoolean:
+        ZvalVAL(Result, Args.VBoolean);
+      vtExtended:
+        ZvalVAL(Result, Args.VExtended^);
+      vtClass, vtObject:
+        ZvalVAL(Result, Args._Reserved1);
+      vtString:
+        ZvalVAL(Result, AnsiString(Args.VString^));
+      vtAnsiString:
+        ZvalVAL(Result, PAnsiChar(Args.VAnsiString));
+      vtUnicodeString:
+        ZvalVAL(Result, UnicodeString(Args._Reserved1));
+      vtWideChar:
+        ZvalVAL(Result, AnsiString(Args.VWideChar));
+      vtChar:
+        ZvalVAL(Result, Args.VChar);
+      vtPWideChar:
+        ZvalVAL(Result, Args.VPWideChar);
+      vtPChar:
+        ZvalVAL(Result, Args.VPChar);
+      vtWideString:
+        ZvalVAL(Result, PWideChar(Args.VWideString));
+    end;
+  end;
+end;
+
+
 procedure ZVAL_STRINGU(z: pzval; s: PUtf8Char; duplicate: boolean);
 var
   __s : PUTF8Char;
@@ -2114,6 +2465,9 @@ begin
   // -- zend_get_executed_filename
   zend_get_executed_filename := GetProcAddress(PHPLib, 'zend_get_executed_filename');
 
+  // -- zend_get_executed_lineno
+  zend_get_executed_lineno := GetProcAddress(PHPLib, 'zend_get_executed_lineno');
+
   // -- zend_set_timeout
   zend_set_timeout := GetProcAddress(PHPLib, 'zend_set_timeout');
 
@@ -2173,6 +2527,9 @@ begin
 
   // -- zend_wrong_param_count
   zend_wrong_param_count := GetProcAddress(PHPLib, 'zend_wrong_param_count');
+
+  // -- zend_hash_quick_add_or_update
+  _zend_hash_quick_add_or_update := GetProcAddress(PHPLib, '_zend_hash_quick_add_or_update');
 
   // -- add_property_long_ex
   add_property_long_ex := GetProcAddress(PHPLib, 'add_property_long_ex');
@@ -2327,6 +2684,8 @@ begin
   // -- zend_get_parameters
   ZendGetParameters := GetProcAddress(PHPLib, 'zend_get_parameters');
 
+  // - zend_get_parameters_ex (native call)
+  zend_get_params_ex := GetProcAddress(PHPLib, 'zend_get_params_ex');
   {$IFDEF PHP5}
   zend_destroy_file_handle := GetProcAddress(PHPLib, 'zend_destroy_file_handle');
   {$ENDIF}
@@ -2383,6 +2742,11 @@ begin
 end;
 
 function ALLOC_ZVAL: pzval;
+begin
+  Result := emalloc(sizeof(zval));
+end;
+
+procedure ALLOC_ZVAL(out Result: pzval);
 begin
   Result := emalloc(sizeof(zval));
 end;

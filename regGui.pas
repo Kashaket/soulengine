@@ -15,7 +15,11 @@ uses Forms, Dialogs, SysUtils, Windows, Classes, Controls, Buttons,
   {$IFDEF ADD_AC}, sDialogs  {$ENDIF}
 
 {$IFDEF ADD_CHROMIUM}
-    , ceflib, cefvcl, cefgui
+    , uCefChromium,  uCefChromiumOptions,
+   uCEFv8Handler, uCEFv8Value, uCEFTypes, uCEFWindowParent,
+  uCEFv8Accessor, uCEFInterfaces, uCEFCookieManager,
+  uCEFWinControl,
+  uCefApplication
 {$ENDIF}
 {$IFDEF ADD_SKINS}
   , acPNG,
@@ -443,7 +447,6 @@ var
   Registered: Boolean = false;
 
 procedure registerGui();
-//var s:TNextInspector;
 begin
 
   if Registered then
@@ -462,8 +465,9 @@ begin
 {$IFDEF ADD_SKINS}
   registerSkins;
 {$ENDIF}
+
 {$IFDEF ADD_CHROMIUM}
-  registerArr([TChromium, TChromiumOptions]);
+  registerArr([TChromium, TCefWindowParent, TChromiumOptions]);
 {$ENDIF}
   registerVSEditor;
   Registered := true;

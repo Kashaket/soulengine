@@ -515,10 +515,10 @@ begin
             S := '';
           end
           else
-          MessageBoxA(0, MSG, 'PHP4Soulengine', MB_OK)
+          MessageBoxA(0, MSG, 'PHP4Delphi', MB_OK)
        end
       else
-        MessageBoxA(0, msg, 'PHP4Soulengine', MB_OK);
+        MessageBoxA(0, msg, 'PHP4Delphi', MB_OK);
 end;
 
 function php_delphi_send_header(p1, TSRMLS_DC : pointer) : integer; cdecl;
@@ -1385,7 +1385,7 @@ end;
 procedure TPHPEngine.PrepareEngine;
 begin
   delphi_sapi_module.name := 'embed';  {to solve a problem with dl()}
-  delphi_sapi_module.pretty_name := 'PHP for Soulengine';
+  delphi_sapi_module.pretty_name := 'PHP for Delphi';
   delphi_sapi_module.startup := php_delphi_startup;
   delphi_sapi_module.shutdown := nil; //php_module_shutdown_wrapper;
   delphi_sapi_module.activate:= nil;

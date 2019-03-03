@@ -67,7 +67,7 @@ backward compatibility between PHP versions.
 {$ENDIF}
 //Warning! You must select one of the compilers
 //Look at the version of PHP you have installed
-//I DO recommend to use php-5.3.0-Win32-VC6-x86, specially if you are using
+//I DO recommend to use php-5.6.40-Win32-VC11-x86, specially if you are using
 //php4delphi component with php5ts.dll. If you are building PHP extensions,
 //you have to define the right compiler, otherwise you would have incompatibility
 //problems

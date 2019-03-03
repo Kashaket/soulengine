@@ -1,7 +1,9 @@
 program soulEngine;
-
+{$I PHP.inc}
+{$IFDEF PHP_UNICE}
+  {$DEFINE Unicode}
+{$ENDIF}
 {$I 'sDef.inc'}
-{$DEFINE UNICODE}
 uses
   Forms,
   Dialogs,
@@ -50,6 +52,5 @@ begin
     __mainForm.FormActivate(__mainForm);
 
   Application.Run;
-
 end.
 

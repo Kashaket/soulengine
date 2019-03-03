@@ -2427,12 +2427,6 @@ object phpMOD: TphpMOD
         OnExecute = OSApiFunctions6Execute
       end
       item
-        FunctionName = 'win_tempdir'
-        Tag = 0
-        Parameters = <>
-        OnExecute = OSApiFunctions7Execute
-      end
-      item
         FunctionName = 'param_str'
         Tag = 0
         Parameters = <
@@ -4705,6 +4699,20 @@ object phpMOD: TphpMOD
             ParamType = tpUnknown
           end>
         OnExecute = _ChromiumFunctions2Execute
+      end
+      item
+        FunctionName = 'chromium_acce'
+        Tag = 0
+        Parameters = <
+          item
+            Name = 'p1'
+            ParamType = tpUnknown
+          end
+          item
+            Name = 'p2'
+            ParamType = tpUnknown
+          end>
+        OnExecute = _ChromiumFunctions3Execute
       end>
     Left = 552
     Top = 368

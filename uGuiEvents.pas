@@ -10,7 +10,9 @@ interface
     Messages
 
       {$IFDEF ADD_CHROMIUM}
-       ,ceflib, cefvcl
+       , uCefApplication, uCefChromium,  uCefChromiumOptions,
+   uCEFv8Handler, uCEFv8Value, uCEFTypes,
+  uCEFv8Accessor, uCEFInterfaces, uCEFMiscFunctions
       {$ENDIF}
 
       {$IFDEF VS_EDITOR}
@@ -250,10 +252,9 @@ type
         {$ENDIF}
 
         {$IFDEF ADD_CHROMIUM}
-        procedure onChromiumBeforeBrowse(Sender: TCustomChromium;
-            const browser: ICefBrowser; const frame: ICefFrame;
-            const request: ICefRequest; navType: TCefHandlerNavtype; isRedirect: Boolean;
-            out Result: Boolean);
+        procedure onChromiumBeforeBrowse(Sender: TObject; const browser:
+        ICefBrowser; const frame: ICefFrame; const request: ICefRequest;
+        user_gesture, isRedirect: Boolean; out Result: Boolean);
         {$ENDIF}
 
      public
@@ -906,15 +907,14 @@ end;
 
 
 {$IFDEF ADD_CHROMIUM}
-procedure TEventItem.onChromiumBeforeBrowse(Sender: TCustomChromium;
-            const browser: ICefBrowser; const frame: ICefFrame;
-            const request: ICefRequest; navType: TCefHandlerNavtype; isRedirect: Boolean;
-            out Result: Boolean);
+procedure TEventItem.onChromiumBeforeBrowse(Sender: TObject; const browser:
+        ICefBrowser; const frame: ICefFrame; const request: ICefRequest;
+        user_gesture, isRedirect: Boolean; out Result: Boolean);
 begin
   __varEx := Result;
   doEvent( Sender,'OnChromiumBeforeBrowse',
               [Integer(Sender), Integer(browser), Integer(frame),
-                 navType, isRedirect, Result],'');
+                 user_gesture, isRedirect, Result],'');
   Result := __varEx;
 end;
 {$ENDIF}

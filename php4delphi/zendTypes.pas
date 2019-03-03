@@ -1120,9 +1120,46 @@ type
   end;
   Tzend_function_entry = zend_function_entry;
   TZendFunctionEntry = zend_function_entry;
-
-
+    P_zend_arg_info = ^_zend_arg_info;
+  zend_object_value = record
+    handle:Integer;
+    handlers:Pointer;
+  end;
+  _zend_function_entry = record
+    fname     : PAnsiChar;
+    handler   : pointer;
+    arg_info  : P_zend_arg_info;
+    num_args  : uint;
+    flags     : uint;
+  end;
   Pzend_module_entry = ^Tzend_module_entry;
+  p_zend_module_entry = ^_zend_module_entry;
+  _zend_module_entry = record
+    size                  : word;
+    zend_api              : dword;
+    zend_debug            : byte;
+    zts                   : byte;
+    ini_entry             : pointer;
+    deps                  : pointer;
+    name                  : PAnsiChar;
+    functions             : Pointer;
+    module_startup_func   : pointer;
+    module_shutdown_func  : pointer;
+    request_startup_func  : pointer;
+    request_shutdown_func : pointer;
+    info_func             : pointer;
+    version               : PAnsiChar;
+    globals_size          : size_t;
+    globals_id_ptr        : pointer;
+    globals_ctor          : pointer;
+    globals_dtor          : pointer;
+    post_deactivate_func  : pointer;
+    module_started        : integer;
+    _type                 : byte;
+    handle                : pointer;
+    module_number         : Integer;
+    build_id              : PAnsiChar;
+  end;
   Tzend_module_entry = record
     size: word;
     zend_api: dword;

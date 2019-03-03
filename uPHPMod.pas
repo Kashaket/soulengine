@@ -32,7 +32,11 @@ uses
 {$ENDIF}
   regGui, uApplication, Registry
 {$IFDEF ADD_CHROMIUM}
-    , ceflib, cefvcl
+    , uCefChromium,  uCefChromiumOptions,
+   uCEFv8Handler, uCEFv8Value, uCEFTypes,
+  uCEFv8Accessor, uCEFInterfaces, uCEFRequest, uCEFStringMap, uCEFCookieManager,
+  uCEFWinControl, uCEFWindowParent,
+  uCefApplication
 {$ENDIF}
 {$IFDEF VS_EDITOR}
     , NxPropertyItems, NxPropertyItemClasses, NxScrollControl,
@@ -673,6 +677,9 @@ type
     procedure _CanvasFunctions9Execute(Sender: TObject;
       Parameters: TFunctionParams; var ReturnValue: variant;
       ZendVar: TZendVariable; TSRMLS_DC: Pointer);
+    {$IFDEF ADD_CHROMIUM}
+    procedure chromtextevent(Sender: TObject; const aText : ustring);
+    {$ENDIF}
     procedure _CanvasFunctions10Execute(Sender: TObject;
       Parameters: TFunctionParams; var ReturnValue: variant;
       ZendVar: TZendVariable; TSRMLS_DC: Pointer);
@@ -1156,8 +1163,14 @@ type
     procedure _ExeModFunctions11Execute(Sender: TObject;
       Parameters: TFunctionParams; var ReturnValue: Variant;
       ZendVar: TZendVariable; TSRMLS_DC: Pointer);
+    procedure _ChromiumFunctions3Execute(Sender: TObject;
+      Parameters: TFunctionParams; var ReturnValue: Variant;
+      ZendVar: TZendVariable; TSRMLS_DC: Pointer);
   private
     { Private declarations }
+    {$IFDEF ADD_CHROMIUM}
+    cefgettedstring: ustring;
+    {$ENDIF}
   public
     { Public declarations }
     varsStr: string;
@@ -2107,11 +2120,10 @@ begin
 
 
   // Application.Free;
-
-{$IFDEF ADD_CHROMIUM}
-  cefvcl.CefFinalization;
-  CeflibFinalization;
-{$ENDIF}
+  {$IFDEF ADD_CHROMIUM}
+    GlobalCEFApp.Free;
+    GlobalCEFApp := nil;
+  {$ENDIF}
   TrayIconFinal;
   Exitprocess(0);
 end;
@@ -2976,7 +2988,8 @@ begin
       end
       else
         Result := False;
-      strr := {$IFDEF PHP_UNICE}UTF8Encode(PChar(@str[1])){$ELSE}PAnsiChar(@str[1]){$ENDIF};
+      {$IFDEF PHP_UNICE}strr{$ELSE}str{$ENDIF}
+       := {$IFDEF PHP_UNICE}UTF8Encode(PChar(@str[1])){$ELSE}PAnsiChar(@str[1]){$ENDIF};
     finally
       CloseClipboard;
     end;
@@ -2988,7 +3001,7 @@ end;
 procedure TphpMOD.OSApiFunctions30Execute(Sender: TObject;
   Parameters: TFunctionParams; var ReturnValue: variant; ZendVar: TZendVariable;
   TSRMLS_DC: Pointer);
-var str: UTF8String;
+var str: {$IFDEF PHP_UNICE}UTF8String{$ELSE}AnsiString{$ENDIF};
 begin
   GetClipboardText(Application.Handle, str);
   ZVAL_STRINGU(ZendVar.AsZendVariable, PUtf8Char(str), false);
@@ -4798,7 +4811,12 @@ begin
   TCanvas(ToObj(Parameters, 0)).TextOut(Parameters[1].Value,
     Parameters[2].Value, Parameters[3].Value);
 end;
-
+{$IFDEF ADD_CHROMIUM}
+procedure TphpMOD.chromtextevent(Sender: TObject; const aText : ustring);
+begin
+    cefGettedString := aText;
+end;
+{$ENDIF}
 procedure TphpMOD._ChromiumFunctions0Execute(Sender: TObject;
   Parameters: TFunctionParams; var ReturnValue: variant; ZendVar: TZendVariable;
   TSRMLS_DC: Pointer);
@@ -4806,6 +4824,8 @@ var
   arr: TArrayVariant;
 {$IFDEF ADD_CHROMIUM}
   Req: ICefRequest;
+  kevent: TCefKeyEvent;
+  mevent: TCefMouseEvent;
   Header: ICefStringMap;
 {$ENDIF}
 begin
@@ -4825,18 +4845,29 @@ begin
         Browser.GoForward;
       5:
         ZendVar.AsBoolean := Browser.CanGoForward;
-      6:
-        Browser.ShowDevTools;
+      6: begin
+        if length(arr) = 3 then
+          ShowDevTools(TPoint.Create(arr[0], arr[1]), TObject(Integer(arr[2])) as TWinControl)
+        else if Length(arr) = 1 then
+          ShowDevTools(TPoint.Create(0, 0), TObject(Integer(arr[0])) as TWinControl)
+        else if Length(arr) = 2 then
+          ShowDevTools(TPoint.Create(arr[0], arr[1]), nil)
+        else
+          ShowDevTools(TPoint.Create(0, 0), nil);
+        end;
       7:
-        Browser.CloseDevTools;
+        if length(arr) = 1 then
+          CloseDevTools(TObject(Integer(arr[0])) as TWinControl)
+        else
+          CloseDevTools();
       8:
-        Browser.HidePopup;
+        ShowWindow(CefWindowInfo.menu, SW_HIDE);
       9:
         begin
           if Length(arr) > 0 then
-            Browser.SetFocus(arr[0])
+            SetFocus(arr[0])
           else
-            Browser.SetFocus(True);
+            SetFocus(True);
         end;
       10:
         Browser.ReloadIgnoreCache;
@@ -4844,23 +4875,39 @@ begin
         Browser.StopLoad;
       12:
         if Length(arr) > 0 then
-          Browser.SendFocusEvent(arr[0]);
+          SendFocusEvent(arr[0]);
       13:
-        if Length(arr) > 4 then
-          Browser.SendKeyEvent(TCefKeyType(arr[0]), arr[1], arr[2],
-            arr[3], arr[4]);
+        if Length(arr) > 4 then begin
+          kevent.kind := TCefKeyEventType(arr[0]);
+          if Boolean(arr[4]) then
+            kevent.native_key_code := arr[1]
+          else if Boolean(arr[3]) then
+            kevent.windows_key_code := arr[1]
+          else
+            kevent.native_key_code := arr[1];
+          kevent.modifiers :=  TCefEventFlags(arr[2]);
+          SendKeyEvent(@kevent);
+          end;
       14:
         if Length(arr) > 4 then
-          Browser.SendMouseClickEvent(arr[0], arr[1],
+        begin
+        {(const event      : PCefMouseEvent;
+                                              kind       : TCefMouseButtonType;
+                                              mouseUp    : Boolean;
+                                              clickCount : Integer);}
+        mevent.X := arr[0];
+        mevent.Y := arr[1];
+          SendMouseClickEvent(@mevent,
             TCefMouseButtonType(arr[2]), arr[3], arr[4]);
+        end;
       15:
         if Length(arr) > 0 then
-          Load(arr[0]);
+          LoadUrl(arr[0]);
       16:
         if Length(arr) > 1 then
-          ScrollBy(arr[0], arr[1]);
+          ExecuteJavaScript('window.scrollto(' + arr[0] + ',' + arr[1] + ');', '');
       17:
-        Browser.ClearHistory;
+        GlobalCefApp.ClearCache;
       18:
         ;
       19:
@@ -4884,7 +4931,7 @@ begin
       28:
         Browser.MainFrame.SelectAll;
       29:
-        Browser.MainFrame.Print;
+        Print;
       30:
         Browser.MainFrame.ViewSource;
       31:
@@ -4895,7 +4942,7 @@ begin
           Browser.MainFrame.LoadString(arr[0], arr[1]);
       33:
         if Length(arr) > 1 then
-          Browser.MainFrame.LoadFile(arr[0], arr[1]);
+          Browser.MainFrame.LoadUrl('file:///' + arr[0]);
       34:
         if Length(arr) > 2 then
           Browser.MainFrame.ExecuteJavaScript(arr[0], arr[1], arr[2]);
@@ -4912,21 +4959,25 @@ begin
       36:
         begin
           if Length(arr) > 0 then
-            UserStyleSheetLocation := arr[0]
+            GlobalCefApp.UserDataPath := arr[0]
           else
-            ZendVar.AsString := UserStyleSheetLocation;
+            ZendVar.AsString := GlobalCefApp.UserDataPath;
         end;
       37:
         begin
           if Length(arr) > 0 then
             DefaultEncoding := arr[0]
           else
-            ZendVar.AsString := UserStyleSheetLocation;
+            ZendVar.AsString := DefaultEncoding;
         end;
       38:
         begin
           if Browser.MainFrame <> nil then
-            ZendVar.AsString := Browser.MainFrame.Source;
+          begin
+            OnTextResultAvailable := chromtextevent;
+            RetrieveHTML;
+            ZendVar.AsString := cefgettedstring;
+          end;
         end;
       39:
         begin
@@ -4952,9 +5003,9 @@ begin
     case Parameters[1].ZendVariable.AsInteger of
       1:
         if isGet then
-          ReturnValue := Browser.ZoomLevel
+          ZoomLevel
         else
-          Browser.ZoomLevel := Parameters[2].ZendVariable.AsFloat;
+          ZoomLevel := Parameters[2].ZendVariable.AsFloat;
 
       2:
         if isGet then
@@ -4963,11 +5014,18 @@ begin
 
       3:
         if isGet then
-          ZendVar.AsString := Browser.MainFrame.Source;
-
+        begin
+          OnTextResultAvailable := chromtextevent;
+          RetrieveHTML;
+          ZendVar.AsString := cefgettedstring;
+        end;
       4:
         if isGet then
-          ZendVar.AsString := Browser.MainFrame.Text
+          begin
+          OnTextResultAvailable := chromtextevent;
+          RetrieveText;
+          ZendVar.AsString := cefgettedstring;
+        end;
     end;
   end;
 {$ENDIF}
@@ -4978,6 +5036,16 @@ procedure TphpMOD._ChromiumFunctions2Execute(Sender: TObject;
   TSRMLS_DC: Pointer);
 begin
 _ChromiumFunctions0Execute(Sender, Parameters, ReturnValue, ZendVar, TSRMLS_DC);
+end;
+
+procedure TphpMOD._ChromiumFunctions3Execute(Sender: TObject;
+  Parameters: TFunctionParams; var ReturnValue: Variant; ZendVar: TZendVariable;
+  TSRMLS_DC: Pointer);
+begin
+{$IFDEF ADD_CHROMIUM}
+  ReturnValue := (TChromium(TObject( integer(Parameters[0].Value) )))
+  .CreateBrowser( TCEFWinControl(TObject( integer(Parameters[1].Value) )), 'TestName' );
+{$ENDIF}
 end;
 
 procedure TphpMOD._DockingFunctions0Execute(Sender: TObject;

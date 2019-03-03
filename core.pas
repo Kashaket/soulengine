@@ -33,6 +33,9 @@ end;
 
 procedure core_Init(aPHPEngine: TPHPEngine = nil; aPsvPHP: TpsvPHP = nil);
 begin
+{$IFDEF ADD_CHROMIUM}
+    LoadChromium;
+  {$ENDIF}
   regGui.registerGui();
 
   if aPHPEngine = nil then

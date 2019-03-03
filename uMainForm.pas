@@ -7,7 +7,9 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ExeMod, EncdDecd, mdsUtils,
-  ZENDTypes, zendAPI{$IFDEF ADD_SKINS}
+  ZENDTypes, zendAPI
+  {$IFDEF ADD_CHROMIUM},uCefApplication{$ENDIF}
+  {$IFDEF ADD_SKINS}
   ,sSkinProvider, sSkinManager,
     sSpeedButton, sBitBtn, acProgressBar, sTrackBar, sBevel, sLabel
 {$ENDIF};
@@ -32,6 +34,7 @@ var
   __mainForm: T__mainForm;
   selfScript: string = '';
   selfConfig: string = '';
+  selfFinalize: boolean = False;
   selfEnabled: boolean = False;
   dllPHPPath: string = '';
 

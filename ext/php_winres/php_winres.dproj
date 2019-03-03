@@ -36,6 +36,7 @@
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base)'!=''">
         <DCC_ExeOutput>C:\DS Se\ext</DCC_ExeOutput>
+        <DCC_UnitSearchPath>..\..\php4delphi;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
         <DCC_N>false</DCC_N>
         <DCC_ImageBase>00400000</DCC_ImageBase>
         <DCC_F>false</DCC_F>

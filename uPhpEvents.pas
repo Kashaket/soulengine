@@ -14,7 +14,9 @@ uses
   dwsHashtables, zendAPI, phpApi, ZENDTypes, php4delphi
 
 {$IFDEF ADD_CHROMIUM}
-    , ceflib, cefvcl
+    , uCefApplication, uCefChromium,  uCefChromiumOptions,
+   uCEFv8Handler, uCEFv8Value, uCEFTypes,
+  uCEFv8Accessor, uCEFInterfaces, uCEFMiscFunctions
 {$ENDIF}
 {$IFDEF VS_EDITOR}
     , NxPropertyItems, NxPropertyItemClasses, NxScrollControl,
@@ -128,18 +130,22 @@ type
 
 {$ENDIF}
 {$IFDEF ADD_CHROMIUM}
-    procedure OnChromiumBeforePopup(Sender: TObject;
-      const parentBrowser: ICefBrowser; var popupFeatures: TCefPopupFeatures;
-      var windowInfo: TCefWindowInfo; var url: ustring; var Client: ICefBase;
-      out Result: boolean);
+    procedure OnChromiumBeforePopup
+      (Sender: TObject; const browser: ICefBrowser;
+      const frame: ICefFrame; const targetUrl, targetFrameName: ustring;
+      targetDisposition: TCefWindowOpenDisposition; userGesture: Boolean;
+      const popupFeatures: TCefPopupFeatures; var windowInfo: TCefWindowInfo;
+      var client: ICefClient; var settings: TCefBrowserSettings;
+      var noJavascriptAccess: Boolean; var Result: Boolean);
 
     procedure OnChromiumBeforeMenu(Sender: TObject; const browser: ICefBrowser;
-      const menuInfo: PCefHandlerMenuInfo; out Result: boolean);
+     const frame: ICefFrame; const params: ICefContextMenuParams;
+     const model: ICefMenuModel);
 
-    procedure onChromiumBeforeBrowse(Sender: TCustomChromium;
-      const browser: ICefBrowser; const frame: ICefFrame;
-      const request: ICefRequest; navType: TCefHandlerNavtype;
-      isRedirect: boolean; out Result: boolean);
+
+    procedure onChromiumBeforeBrowse(Sender: TObject; const browser: ICefBrowser;
+     const frame: ICefFrame; const request: ICefRequest; user_gesture, isRedirect: Boolean;
+     out Result: Boolean);
 
     procedure OnAuthCredentials(Sender: TObject; const browser: ICefBrowser;
       isProxy: boolean; Port: integer; const host, realm, scheme: ustring;
@@ -153,16 +159,15 @@ type
       message, Source: ustring; line: integer; out Result: boolean);
 
     procedure OnLoadStart(Sender: TObject; const browser: ICefBrowser;
-      const frame: ICefFrame);
+ const frame: ICefFrame; transitionType: TCefTransitionType);
     procedure OnLoadEnd(Sender: TObject; const browser: ICefBrowser;
-      const frame: ICefFrame; httpStatusCode: integer; out Result: boolean);
+const frame: ICefFrame; httpStatusCode: Integer);
     procedure OnLoadError(Sender: TObject; const browser: ICefBrowser;
-      const frame: ICefFrame; errorCode: TCefHandlerErrorcode;
-      const failedUrl: ustring; var errorText: ustring; out Result: boolean);
-
-    procedure OnStatusMessage(Sender: TObject; const browser: ICefBrowser;
-      const Value: ustring; StatusType: TCefHandlerStatusType;
-      out Result: boolean);
+    const frame: ICefFrame;
+    errorCode: TCefErrorCode; const errorText, failedUrl: ustring);
+    procedure OnStatusMessage
+    (Sender: TObject; const browser: ICefBrowser; const value: ustring);
+   // procedure(Sender: TObject; const browser: ICefBrowser; isLoading, canGoBack, canGoForward: Boolean) of object;
 
     procedure OnAddressChange(Sender: TObject; const browser: ICefBrowser;
       const frame: ICefFrame; const url: ustring);
@@ -2027,15 +2032,17 @@ end;
 
 {$IFDEF ADD_CHROMIUM}
 
-procedure THandlerFuncs.OnChromiumBeforePopup(Sender: TObject;
-  const parentBrowser: ICefBrowser; var popupFeatures: TCefPopupFeatures;
-  var windowInfo: TCefWindowInfo; var url: ustring; var Client: ICefBase;
-  out Result: boolean);
+procedure THandlerFuncs.OnChromiumBeforePopup(Sender: TObject; const browser: ICefBrowser;
+      const frame: ICefFrame; const targetUrl, targetFrameName: ustring;
+      targetDisposition: TCefWindowOpenDisposition; userGesture: Boolean;
+      const popupFeatures: TCefPopupFeatures; var windowInfo: TCefWindowInfo;
+      var client: ICefClient; var settings: TCefBrowserSettings;
+      var noJavascriptAccess: Boolean; var Result: Boolean);
 var
   H: TPHPScriptEventHandler;
 begin
   Result := True;
-  H := EventRun(Sender, 'OnBeforePopup', [url, Result], False);
+  H := EventRun(Sender, 'OnBeforePopup', [targeturl, Result], False);
   if H <> nil then
   begin
     Result := not H.ParamBool(2);
@@ -2043,36 +2050,41 @@ begin
   end;
 end;
 
-procedure THandlerFuncs.OnChromiumBeforeMenu(Sender: TObject;
-  const browser: ICefBrowser; const menuInfo: PCefHandlerMenuInfo;
-  out Result: boolean);
+procedure THandlerFuncs.OnChromiumBeforeMenu(Sender: TObject; const browser: ICefBrowser;
+     const frame: ICefFrame; const params: ICefContextMenuParams;
+     const model: ICefMenuModel);
 var
   H: TPHPScriptEventHandler;
+  Result: boolean;
+
 begin
+
   Result := True;
 
-  H := EventRun(Sender, 'OnBeforeMenu', [menuInfo.X, menuInfo.Y,
+  H := EventRun(Sender, 'OnBeforeMenu', [params.GetXCoord, params.GetYCoord,
     // CefStringClearAndGet вот в ней херня.!!!
-    CefString(@menuInfo.linkUrl), CefString(@menuInfo.imageUrl),
-    CefString(@menuInfo.pageUrl), CefString(@menuInfo.frameUrl),
-    CefString(@menuInfo.selectionText), Result], False);
+    params.LinkUrl, params.SourceUrl,
+    params.PageUrl, params.frameUrl,
+    params.selectionText, params.HasImageContents, Result], False);
   if H <> nil then
   begin
     Result := not H.ParamBool(8);
+    if Result then
+      model.SetVisible(1, False);
     H.ClearArgs;
   end;
 end;
 
-procedure THandlerFuncs.onChromiumBeforeBrowse(Sender: TCustomChromium;
-  const browser: ICefBrowser; const frame: ICefFrame;
-  const request: ICefRequest; navType: TCefHandlerNavtype; isRedirect: boolean;
-  out Result: boolean);
+procedure THandlerFuncs.onChromiumBeforeBrowse(Sender: TObject; const browser: ICefBrowser;
+     const frame: ICefFrame; const request: ICefRequest; user_gesture, isRedirect: Boolean;
+     out Result: Boolean);
 var
   H: TPHPScriptEventHandler;
 begin
   Result := True;
+
   H := EventRun(Sender, 'OnBeforeBrowse', [request.url, request.Method,
-    integer(navType), isRedirect, Result], False);
+    integer(request.TransitionType), isRedirect, Result], False);
   if H <> nil then
   begin
     Result := not H.ParamBool(5);
@@ -2132,59 +2144,35 @@ begin
 end;
 
 procedure THandlerFuncs.OnLoadStart(Sender: TObject; const browser: ICefBrowser;
-  const frame: ICefFrame);
+ const frame: ICefFrame; transitionType: TCefTransitionType);
 begin
   EventRun(Sender, 'OnLoadStart');
 end;
 
 procedure THandlerFuncs.OnLoadEnd(Sender: TObject; const browser: ICefBrowser;
-  const frame: ICefFrame; httpStatusCode: integer; out Result: boolean);
+const frame: ICefFrame; httpStatusCode: Integer);
 var
   H: TPHPScriptEventHandler;
 begin
-  Result := True;
-
-  H := EventRun(Sender, 'OnLoadEnd', [httpStatusCode, Result], False);
-  if H <> nil then
-  begin
-    Result := not H.ParamBool(2);
-    H.ClearArgs;
-  end;
+  H := EventRun(Sender, 'OnLoadEnd', [httpStatusCode], True);
 end;
 
 procedure THandlerFuncs.OnLoadError(Sender: TObject; const browser: ICefBrowser;
-  const frame: ICefFrame; errorCode: TCefHandlerErrorcode;
-  const failedUrl: ustring; var errorText: ustring; out Result: boolean);
+    const frame: ICefFrame;
+    errorCode: TCefErrorCode; const errorText, failedUrl: ustring);
 var
   H: TPHPScriptEventHandler;
 begin
-  Result := True;
-
   H := EventRun(Sender, 'OnLoadError', [integer(errorCode), failedUrl,
-    errorText, Result], False);
-  if H <> nil then
-  begin
-    errorText := H.ParamString(3);
-    Result := not H.ParamBool(4);
-    H.ClearArgs;
-  end;
+    errorText], True);
 end;
 
 procedure THandlerFuncs.OnStatusMessage(Sender: TObject;
-  const browser: ICefBrowser; const Value: ustring;
-  StatusType: TCefHandlerStatusType; out Result: boolean);
+const browser: ICefBrowser; const value: ustring);
 var
   H: TPHPScriptEventHandler;
 begin
-  Result := True;
-
-  H := EventRun(Sender, 'OnStatusMessage', [Value, integer(StatusType),
-    Result], False);
-  if H <> nil then
-  begin
-    Result := not H.ParamBool(3);
-    H.ClearArgs;
-  end;
+  H := EventRun(Sender, 'OnStatusMessage', [Value], True);
 end;
 
 procedure THandlerFuncs.OnAddressChange(Sender: TObject;

@@ -17,7 +17,9 @@ uses
   uPhpEvents,
   uPHPMod,
   Graphics, Dialogs, dwsHashtables,
-  ceflib, cefvcl;
+  uCefApplication, uCefChromium,  uCefChromiumOptions,
+   uCEFv8Handler, uCEFv8Value, uCEFTypes,
+  uCEFv8Accessor, uCEFInterfaces, uCEFMiscFunctions;
 
 procedure InitializeGuiChromium(PHPEngine: TPHPEngine);
 
@@ -28,10 +30,7 @@ procedure chromium_allowedcall(ht: integer; return_value: pzval;
 procedure chromium_settings(ht: integer; return_value: pzval;
   return_value_ptr: pzval; this_ptr: pzval; return_value_used: integer;
   TSRMLS_DC: pointer); cdecl;
-procedure chromium_load(ht: integer; return_value: pzval; return_value_ptr: pzval;
-  this_ptr: pzval; return_value_used: integer; TSRMLS_DC: pointer); cdecl;
-
-
+procedure LoadChromium;
 
 type
   TExtension = class(TCefv8HandlerOwn)
@@ -47,6 +46,7 @@ implementation
 
 var
   AllowedCall: TStringHashTable;
+  SelfStarted: boolean = false;
 
 procedure chromium_settings;
 var
@@ -59,19 +59,16 @@ begin
   end;
   zend_get_parameters_my(ht, p, TSRMLS_DC);
 
-
-  CefCache := {$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[0]^);
-  CefUserAgent := {$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[1]^);
-  CefProductVersion := {$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[2]^);
-  CefLocale := {$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[3]^);
-  CefLogFile := {$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[4]^);
-  CefExtraPluginPaths := {$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[5]^);
-  CefLocalStorageQuota := Z_LVAL(p[6]^);
-  CefSessionStorageQuota := Z_LVAL(p[7]^);
-
-  CefJavaScriptFlags := {$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[8]^);
-  CefAutoDetectProxySettings := Z_BVAL(p[9]^);
-
+  GlobalCEFApp.Cache := {$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[0]^);
+  GlobalCEFApp.UserAgent := {$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[1]^);
+  GlobalCEFApp.ProductVersion := {$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[2]^);
+  GlobalCEFApp.Locale := {$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[3]^);
+  GlobalCEFApp.LogFile := {$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[4]^);
+  GlobalCEFApp.FrameworkDirPath := {$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[5]^);
+  GlobalCEFApp.FlashEnabled := Z_BVAL(p[6]^);
+  GlobalCEFApp.NoSandbox := Z_BVAL(p[7]^);
+  GLobalCEFAPP.JavaScriptFlags := {$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[8]^);
+  GlobalCEfApp.RemoteDebuggingPort := Z_LVAL(p[9]^);
   dispose_pzval_array(p);
 end;
 
@@ -110,11 +107,6 @@ begin
   dispose_pzval_array(p);
 end;
 
-procedure chromium_load;
-begin
-  CefLoadLibDefault;
-end;
-
 procedure V8_ZVAL(Value: ICefv8Value; arg: pzval);
 var
   S: ansistring;
@@ -144,12 +136,12 @@ end;
 function ZVAL_V8(arg: pzval): ICefv8Value;
 begin
   case arg._type of
-    IS_LONG: Result := TCefv8ValueRef.CreateInt(arg.Value.lval);
-    IS_DOUBLE: Result := TCefv8ValueRef.CreateDouble(arg.Value.dval);
-    IS_BOOL: Result := TCefv8ValueRef.CreateBool(boolean(arg.Value.lval));
-    IS_STRING: Result := TCefv8ValueRef.CreateString(String({$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(arg)));
+    IS_LONG: Result := TCefv8ValueRef.NewInt(arg.Value.lval);
+    IS_DOUBLE: Result := TCefv8ValueRef.NewDouble(arg.Value.dval);
+    IS_BOOL: Result := TCefv8ValueRef.NewBool(boolean(arg.Value.lval));
+    IS_STRING: Result := TCefv8ValueRef.NewString(String({$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(arg)));
     else
-      Result := TCefv8ValueRef.CreateNull;
+      Result := TCefv8ValueRef.NewNull;
   end;
 end;
 
@@ -243,15 +235,22 @@ end;
 procedure InitializeGuiChromium(PHPEngine: TPHPEngine);
 begin
   PHPEngine.AddFunction('chromium_settings', @chromium_settings);
-  PHPEngine.AddFunction('chromium_load', @chromium_load);
   {$MESSAGE 'Check wether else method exist'}
   //PHPEngine.AddFunction('chromium_allowedcall', @chromium_allowedcall);
-
+   //GlobalCEFApp.StartMainProcess;
   //CefLoadLibAfter := callback_CefLoadLib;
 end;
-
+procedure LoadChromium;
+begin
+if FileExists('cef.pak') and not SelfStarted then begin
+      GlobalCEFApp := TCefApplication.Create;
+      GlobalCEFApp.SingleProcess := True;
+      GlobalCEFApp.NoSandbox := True;
+      GlobalCEFApp.StartMainProcess;
+      SelfStarted := True;
+  end;
+end;
 
 initialization
   //AllowedCall := TStringHashTable.Create(256);
-
 end.
