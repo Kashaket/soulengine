@@ -5,7 +5,7 @@ GUI Tool kit for PHP and DevelStudio.
 ## EN
 ### Information
 This version of SoulEngine is partially compatible with DevelStudio 3.0.2Beta and fully compatible with <a href="https://github.com/KashaketCompany/DevelStudio-3.0-beta">DevelStudio (3.0.4)</a> - <a href="https://github.com/KashaketCompany/DevelStudio-3.0-beta">DevelStudio Ke</a> (3.4)
-P.s Sorry for bicycles and so unclean code, but, if you look at the code i started from, you'll want to beat up Dim-S, whose code worse than my.
+<br>P.s Sorry for bicycles and so unclean code, but, if you look at the code i started from, you'll want to beat up Dim-S, whose code is worse than my.
 
 #### Compiling
 
