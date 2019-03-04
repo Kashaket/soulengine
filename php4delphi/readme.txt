@@ -1,7 +1,7 @@
                      PHP4Delphi library                       
 PHP - Delphi interface and PHP extensions development framework                  
 
-{ $Id: readme.txt,v 7.2 2/2019 delphi32 Exp $ } 
+{ $Id: readme.txt,v 7.4 2/2019 delphi32 Exp $ } 
 
 PHP4Delphi is a Delphi interface to PHP for Delphi 5, 6, 7, Delphi 2005 - Delphi Berlin
 
@@ -38,10 +38,9 @@ History:
 * Compatible with PHP 5.5.0
 * Compatible with PHP 5.6.0
 * Compatible with PHP 5.6
-* Compatible with Delphi 2011, XE 1-8, Seattle, Berlin
+* Compatible with Delphi 2011, XE8, Seattle, Berlin
 * Deleted Sample Class
 * Added Partial Unicode Support 
-* Added Ukrainian Flag
 
 7.3 Jan 2019
 * Compatible with PHP 5.4.0
@@ -426,11 +425,14 @@ please see <http://www.php.net>.
 PHP4Delphi forum
 http://sourceforge.net/forum/forum.php?forum_id=324242
 
-Author:                                              
+Authors:                                              
 Serhiy Perevoznyk                                     
 Belgium
 serge_perevoznyk@hotmail.com
 http://users.telenet.be/ws36637
 http://delphi32.blogspot.com
 
+Andrew Zenin
+Ukraine
+kashaket@protonmail.com
 
