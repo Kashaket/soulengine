@@ -30,6 +30,15 @@ Rewrited by: Kashaket (Andrew Zenin, Artem Ukolov)
 1) Add license for base packages: PHP4Delphi, tb2k, CEF
 
 2) Add license for the engine code (optional)
+Updated component packages:
+1) PHP4Delphi php 5.6 update by Anrew Zenin
+2) TB2k fatal error fix by Artem Ukolov
+3) DCEF load fix and panel update by Andrew Zenin
+4) Captioned Dock Tree fix-update by Andrew Zenin
+5) GIFImage Delphi 2010+ port by Andrew Zenin
+6) EXEMod rewrited by Andrew Zenin
+7) uNonVisual fix by Andrew Zenin, Artem Ukolov
+8) CategoryButtons update by Andrew Zenin
 
 ### Using conditionals
 (in sDef.inc)
@@ -38,7 +47,7 @@ Rewrited by: Kashaket (Andrew Zenin, Artem Ukolov)
    ADD_SYN_OPT - add additional SynEdit Highlighters Set
 2) ADD_CHROMIUM - add CEF (Chromium Embedded Framework 69)
 3) PHP560 - add PHP 5.6 up support
-4) ADD_RYM - add styled menus (Rays Menues)
+4) PHP_Unice - add partial unicode support
 
 ## RU
 #### Информация
@@ -64,13 +73,22 @@ Rewrited by: Kashaket (Andrew Zenin, Artem Ukolov)
 Расширения со всей сопутствующей информацией находятся в папке `ext/`
 Авторские права на php_wincall, php_TWinTaskBar, php_skins принадлежат Nyashik (Nyasik, http://github.com/Nyasik)
 
-#### Краткие требования лицензии
+#### Лицензия и авторство
 Переписали движок: Kashaket (Andrew Zenin, Artem Ukolov)
 <br>Декомпилировали движок: Nyashik(Nyasik), Hunting Kashket(Andrew Zenin)
 
 1) Указать лицензию на все сопутствующие компоненты - PHP4Delphi, tb2k, CEF
 
 2) Указать лицензию на данный пакет (опционально)
+Обновлённые пакеты компонентов:
+1) PHP4Delphi обновление до php 5.6 - Anrew Zenin
+2) TB2k исправление фатальной ошибки - Artem Ukolov
+3) DCEF исправление загрузки и панелей - Andrew Zenin
+4) Captioned Dock Tree накопительное обновление - Andrew Zenin
+5) GIFImage адаптация под Delphi 2010+ - Andrew Zenin
+6) EXEMod переписан Andrew Zenin
+7) uNonVisual исправление прорисовки - Andrew Zenin, Artem Ukolov
+8) CategoryButtons накопительное обновление - Andrew Zenin
 
 ### Использование значение (в sDef.inc)
 1) ADD_SYN - добавлять SynEdit
@@ -78,4 +96,4 @@ Rewrited by: Kashaket (Andrew Zenin, Artem Ukolov)
    ADD_SYN_OPT - добавлять набор подсветок SynEdit
 3) ADD_CHROMIUM - добавлять CEF
 3) PHP560 - добавлять поддержку PHP 5.6 и выше
-4) ADD_RYM - добавлять стильные меню (Rays Menues)
+4) PHP_Unice - add partial unicode support
