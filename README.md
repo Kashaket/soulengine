@@ -1,7 +1,7 @@
 ### SoulEngine
 
 GUI Tool kit for PHP and DevelStudio.
-
+<br><a href="https://github.com/KashaketCompany/php4delphi"> PHP4Delphi License-appropriately version </a><br>
 ## EN
 ### Information
 This version of SoulEngine is partially compatible with DevelStudio 3.0.2Beta and fully compatible with <a href="https://github.com/KashaketCompany/DevelStudio-3.0-beta">DevelStudio (3.0.4)</a> - <a href="https://github.com/KashaketCompany/DevelStudio-3.0-beta">DevelStudio Ke</a> (3.4)
