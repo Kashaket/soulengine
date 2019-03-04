@@ -24,19 +24,21 @@ final(end-point) build directory `C:\DevelStudio 3.0Beta\`
 Extensions with all included info located at the `ext/` directory.
 Copyright on php_wincall, php_TWinTaskBar, php_skins points to Nyashik (Nyasik, http://github.com/Nyasik)
 
-#### Credits
+#### Credits and copyright
 Rewrited by: Kashaket (Andrew Zenin, Artem Ukolov)
-Decompiled by: Nyashik, Hunting Kashket
+<br>Decompiled by: Nyashik, Hunting Kashket (Andrew Zenin)
+1) Add license for base packages: PHP4Delphi, tb2k, CEF
+
+2) Add license for the engine code (optional)
 
 ### Using conditionals
 (in sDef.inc)
 1) ADD_SYN - add Synedit to the build
 
    ADD_SYN_OPT - add additional SynEdit Highlighters Set
-2) ADD_AC, ADD_SKINS - add AlphaControls Pack
-3) ADD_CHROMIUM - add CEF (Chromium Embedded Framework 69)
-4) PHP560 - add PHP 5.6 up support
-5) ADD_RYM - add styled menus (Rays Menues)
+2) ADD_CHROMIUM - add CEF (Chromium Embedded Framework 69)
+3) PHP560 - add PHP 5.6 up support
+4) ADD_RYM - add styled menus (Rays Menues)
 
 ## RU
 #### Информация
@@ -63,15 +65,17 @@ Decompiled by: Nyashik, Hunting Kashket
 Авторские права на php_wincall, php_TWinTaskBar, php_skins принадлежат Nyashik (Nyasik, http://github.com/Nyasik)
 
 #### Краткие требования лицензии
-1. Указать авторство(шучу, этот движок собран Dim-S Software из сплошного копипаста, какие нафиг лицензии?)
+Переписали движок: Kashaket (Andrew Zenin, Artem Ukolov)
+<br>Декомпилировали движок: Nyashik(Nyasik), Hunting Kashket(Andrew Zenin)
 
-Создатели декомпила -  Nyashik, Hunting Kashket
+1) Указать лицензию на все сопутствующие компоненты - PHP4Delphi, tb2k, CEF
+
+2) Указать лицензию на данный пакет (опционально)
 
 ### Использование значение (в sDef.inc)
 1) ADD_SYN - добавлять SynEdit
 
    ADD_SYN_OPT - добавлять набор подсветок SynEdit
-2) ADD_AC, ADD_SKINS - добавлять AlphaControls
 3) ADD_CHROMIUM - добавлять CEF
-4) PHP560 - добавлять поддержку PHP 5.6 и выше
-5) ADD_RYM - добавлять стильные меню (Rays Menues)
+3) PHP560 - добавлять поддержку PHP 5.6 и выше
+4) ADD_RYM - добавлять стильные меню (Rays Menues)
