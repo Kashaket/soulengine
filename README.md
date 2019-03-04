@@ -30,6 +30,7 @@ Rewrited by: Kashaket (Andrew Zenin, Artem Ukolov)
 1) Add license for base packages: PHP4Delphi, tb2k, CEF
 
 2) Add license for the engine code (optional)
+
 Updated component packages:
 1) PHP4Delphi php 5.6 update by Anrew Zenin
 2) TB2k fatal error fix by Artem Ukolov
@@ -80,6 +81,7 @@ Updated component packages:
 1) Указать лицензию на все сопутствующие компоненты - PHP4Delphi, tb2k, CEF
 
 2) Указать лицензию на данный пакет (опционально)
+
 Обновлённые пакеты компонентов:
 1) PHP4Delphi обновление до php 5.6 - Anrew Zenin
 2) TB2k исправление фатальной ошибки - Artem Ukolov
