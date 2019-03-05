@@ -1,7 +1,7 @@
 ### SoulEngine
 
-GUI Tool kit for PHP, fully based on PHP4Delphi.
-<br><a href="https://github.com/KashaketCompany/php4delphi"> PHP4Delphi License-appropriately version </a>
+GUI Tool kit for PHP, fully based on PHP4Delphi:
+<br><a href="https://github.com/KashaketCompany/php4delphi"> PHP4Delphi License-appropriately version (clean) </a>
 <br><a href="readme/statinfo.md"> PHP4Delphi tests result </a><br>
 <br>Child Project(s):<br><a href="https://github.com/KashaketCompany/DevelStudio-3.0-beta">DevelStudio</a>
 
