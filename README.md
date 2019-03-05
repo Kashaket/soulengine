@@ -12,7 +12,7 @@ GUI Tool kit for PHP, fully based on PHP4Delphi:
 
 #### Credits and copyright
 Rewrited by: Kashaket (Andrew Zenin, Artem Ukolov)
-<br>Decompiled by: Nyashik, Hunting Kashket (Andrew Zenin)
+<br>Decompiled by: Kashaket (Andrew Zenin)
 <br>Copyright on php_wincall, php_TWinTaskBar, php_skins points to Nyashik (Nyasik, http://github.com/Nyasik)
 
 License requirements:
