@@ -5,7 +5,7 @@ GUI Tool kit for PHP, fully based on PHP4Delphi.
 
 ## EN
 ### Information
-This version of SoulEngine is fully compatible with <a href="https://github.com/KashaketCompany/DevelStudio-3.0-beta">DevelStudio (3.0.4)</a> - <a href="https://github.com/KashaketCompany/DevelStudio-3.0-beta">DevelStudio Ke</a> (3.4)
+This version of SoulEngine is fully compatible with <a href="https://github.com/KashaketCompany/DevelStudio-3.0-beta">DevelStudio</a> (3.0.4)
 <br>P.s Sorry for bicycles and so unclean code, but, if you look at the code i started from, you'll want to beat up Dim-S, whose code is worse than my.
 
 #### Compiling
@@ -51,7 +51,7 @@ Updated component packages:
 
 ## RU
 #### Информация
-Данная версия SoulEngine полностью совместима с <a href="https://github.com/KashaketCompany/DevelStudio-3.0-beta">DevelStudio (3.0.4)</a> - <a href="https://github.com/KashaketCompany/DevelStudio-3.0-beta">DevelStudio Ke</a> (3.4).
+Данная версия SoulEngine полностью совместима с <a href="https://github.com/KashaketCompany/DevelStudio-3.0-beta">DevelStudio</a> (3.0.4).
 
 #### Сборка
 1. Установить пакеты php4delphi, synedit и AlphaControls из папки проекта
