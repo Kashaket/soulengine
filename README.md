@@ -1,4 +1,4 @@
-### :electric_plug:SoulEngine
+### SoulEngine
 
 GUI Tool kit for PHP, fully based on PHP4Delphi:
 <br><a href="https://github.com/KashaketCompany/php4delphi"> PHP4Delphi License-appropriately version (clean) </a>
