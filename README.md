@@ -1,14 +1,14 @@
 ### SoulEngine
 
-GUI Tool kit for PHP and DevelStudio.
+GUI Tool kit for PHP, fully based on PHP4Delphi.
 <br><a href="https://github.com/KashaketCompany/php4delphi"> PHP4Delphi License-appropriately version </a><br>
+
 ## EN
 ### Information
-This version of SoulEngine is partially compatible with DevelStudio 3.0.2Beta and fully compatible with <a href="https://github.com/KashaketCompany/DevelStudio-3.0-beta">DevelStudio (3.0.4)</a> - <a href="https://github.com/KashaketCompany/DevelStudio-3.0-beta">DevelStudio Ke</a> (3.4)
+This version of SoulEngine is fully compatible with <a href="https://github.com/KashaketCompany/DevelStudio-3.0-beta">DevelStudio (3.0.4)</a> - <a href="https://github.com/KashaketCompany/DevelStudio-3.0-beta">DevelStudio Ke</a> (3.4)
 <br>P.s Sorry for bicycles and so unclean code, but, if you look at the code i started from, you'll want to beat up Dim-S, whose code is worse than my.
 
 #### Compiling
-
 1. Install php4delphi, synedit and CEF4Delphi Packages from the project's dir
 2. Open project file (SoulEngine.dpr or SoulEngine.dproj either)
 3. Compile project, the output binaries will be in the `C:\DevelStudio 3.0Beta\`.
@@ -20,9 +20,8 @@ final(end-point) build directory `C:\DevelStudio 3.0Beta\`
 
 
 #### Additional extensions
-
 Extensions with all included info located at the `ext/` directory.
-Copyright on php_wincall, php_TWinTaskBar, php_skins points to Nyashik (Nyasik, http://github.com/Nyasik)
+<br>Copyright on php_wincall, php_TWinTaskBar, php_skins points to Nyashik (Nyasik, http://github.com/Nyasik)
 
 #### Credits and copyright
 Rewrited by: Kashaket (Andrew Zenin, Artem Ukolov)
@@ -52,14 +51,9 @@ Updated component packages:
 
 ## RU
 #### Информация
-
-Данная версия SoulEngine частично совместима с DevelStudio (3.0.2),
-Полная совместимость только с <a href="https://github.com/KashaketCompany/DevelStudio-3.0-beta">DevelStudio (3.0.4)</a> - <a href="https://github.com/KashaketCompany/DevelStudio-3.0-beta">DevelStudio Ke</a> (3.4).
-
-Процент совместимости составляет 92 балла (движок совместим на 92%).
+Данная версия SoulEngine полностью совместима с <a href="https://github.com/KashaketCompany/DevelStudio-3.0-beta">DevelStudio (3.0.4)</a> - <a href="https://github.com/KashaketCompany/DevelStudio-3.0-beta">DevelStudio Ke</a> (3.4).
 
 #### Сборка
-
 1. Установить пакеты php4delphi, synedit и AlphaControls из папки проекта
 2. Открыть файл проекта soulEngine.dpr в Delphi XE6+
 3. Собрать проект, бинарники попадут в папку `C:\DevelStudio 3.0Beta\`.
@@ -68,11 +62,9 @@ Updated component packages:
 всего компоненты были некорректно установлены, или же в папке `C:\DevelStudio 3.0Beta\`
 отсутствует инсталляция DevelStudio 3.0.3.
 
-
 #### Дополнительные расширения
-
 Расширения со всей сопутствующей информацией находятся в папке `ext/`
-Авторские права на php_wincall, php_TWinTaskBar, php_skins принадлежат Nyashik (Nyasik, http://github.com/Nyasik)
+<br>Авторские права на php_wincall, php_TWinTaskBar, php_skins принадлежат Nyashik (Nyasik, http://github.com/Nyasik)
 
 #### Лицензия и авторство
 Переписали движок: Kashaket (Andrew Zenin, Artem Ukolov)
