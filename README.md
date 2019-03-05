@@ -40,7 +40,7 @@ Updated component packages:
 7) uNonVisual fix by Andrew Zenin, Artem Ukolov
 8) CategoryButtons update by Andrew Zenin
 
-### Using conditionals
+#### Using conditionals
 (in sDef.inc)
 1) ADD_SYN - add Synedit to the build
 
@@ -84,7 +84,7 @@ Updated component packages:
 7) uNonVisual исправление прорисовки - Andrew Zenin, Artem Ukolov
 8) CategoryButtons накопительное обновление - Andrew Zenin
 
-### Использование значение (в sDef.inc)
+#### Использование значение (в sDef.inc)
 1) ADD_SYN - добавлять SynEdit
 
    ADD_SYN_OPT - добавлять набор подсветок SynEdit
