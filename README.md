@@ -6,9 +6,9 @@ GUI Tool kit for PHP, fully based on PHP4Delphi:
 <br>Child Project(s):<br><a href="https://github.com/KashaketCompany/DevelStudio-3.0-beta">DevelStudio</a>
 
 #### Readme
-<a href="readme/en_us.md"> English </a><br>
-<a href="readme/rus.md"> Русский </a><br>
-<a href="readme/ukr.md"> Українська </a><br>
+<a href="readme/en_us.md"> :us: English </a><br>
+<a href="readme/rus.md"> :ru: Русский </a><br>
+<a href="readme/ukr.md"> 🇺🇦 Українська </a><br>
 
 #### Credits and copyright
 Rewrited by: Kashaket (Andrew Zenin, Artem Ukolov)
