@@ -340,7 +340,7 @@ const
 
   //zend_modules.h
 const
-{$IFDEF PHP700}
+{$IFDEF PHP7}
    ZEND_MODULE_API_NO = 20151012;
 {$ELSE}
   {$IFDEF PHP530}
@@ -489,8 +489,10 @@ type
   uint = longword;
   PINT = ^Integer;
   size_t = cardinal;
+  {$IFNDEF PHP700}
   ppointer = ^pointer;
   pppointer = ^ppointer;
+  {$ENDIF}
 
   PStat = ^TStat;
   TStat = record
@@ -921,10 +923,10 @@ type
       4 : (obj :  _zend_object_value);
       {$ENDIF}
   end;
-
+  {$IFNDEF PHP700}
   pppzval = ^ppzval;
   ppzval = ^pzval;
-
+  {$ENDIF}
 
  {$IFDEF PHP4}
   Pzval = ^zval;
@@ -946,7 +948,7 @@ type
  {$ENDIF}
 
   ppzval_array = ^pzval_array;
-  pzval_array = array of ppzval;
+  pzval_array = array of {$IFNDEF PHP700} ppzval{$ELSE} pzval{$ENDIF};
   pzval_array_ex = array of pzval;
 
 
@@ -1429,7 +1431,7 @@ type
 
   Pzend_executor_globals = ^zend_executor_globals;
   zend_executor_globals  = record
-    return_value_ptr_ptr : ppzval;
+    return_value_ptr_ptr : {$IFNDEF PHP700} ppzval{$ELSE} pzval{$ENDIF};
 
      uninitialized_zval : zval;
      uninitialized_zval_ptr : pzval;

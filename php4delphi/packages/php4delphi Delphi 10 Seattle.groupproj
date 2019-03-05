@@ -3,10 +3,10 @@
         <ProjectGuid>{D3946CCE-C89C-4195-8C9B-ACC8FEE61B03}</ProjectGuid>
     </PropertyGroup>
     <ItemGroup>
-        <Projects Include="php4DelphiR2010.dproj">
+        <Projects Include="..\php4DelphiR2010.dproj">
             <Dependencies/>
         </Projects>
-        <Projects Include="php4DelphiD2010.dproj">
+        <Projects Include="..\php4DelphiD2010.dproj">
             <Dependencies/>
         </Projects>
     </ItemGroup>
@@ -18,22 +18,22 @@
         </BorlandProject>
     </ProjectExtensions>
     <Target Name="php4DelphiR2010">
-        <MSBuild Projects="php4DelphiR2010.dproj"/>
+        <MSBuild Projects="..\php4DelphiR2010.dproj"/>
     </Target>
     <Target Name="php4DelphiR2010:Clean">
-        <MSBuild Projects="php4DelphiR2010.dproj" Targets="Clean"/>
+        <MSBuild Projects="..\php4DelphiR2010.dproj" Targets="Clean"/>
     </Target>
     <Target Name="php4DelphiR2010:Make">
-        <MSBuild Projects="php4DelphiR2010.dproj" Targets="Make"/>
+        <MSBuild Projects="..\php4DelphiR2010.dproj" Targets="Make"/>
     </Target>
     <Target Name="php4DelphiD2010">
-        <MSBuild Projects="php4DelphiD2010.dproj"/>
+        <MSBuild Projects="..\php4DelphiD2010.dproj"/>
     </Target>
     <Target Name="php4DelphiD2010:Clean">
-        <MSBuild Projects="php4DelphiD2010.dproj" Targets="Clean"/>
+        <MSBuild Projects="..\php4DelphiD2010.dproj" Targets="Clean"/>
     </Target>
     <Target Name="php4DelphiD2010:Make">
-        <MSBuild Projects="php4DelphiD2010.dproj" Targets="Make"/>
+        <MSBuild Projects="..\php4DelphiD2010.dproj" Targets="Make"/>
     </Target>
     <Target Name="Build">
         <CallTarget Targets="php4DelphiR2010;php4DelphiD2010"/>

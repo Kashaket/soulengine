@@ -13,12 +13,10 @@
 { http://delphi32.blogspot.com                          }
 {*******************************************************}
 {$I PHP.INC}
-
 {$ifdef fpc}
       {$mode delphi}
 {$endif}
-
-{ $Id: php4delphi.pas,v 7.4 10/2009 delphi32 Exp $ }
+{ $Id: php4delphi.pas,v 7.4  02/2019 delphi32 Exp $ }
 
 //  Important:
 //  Please check PHP version you are using and change php.inc file
@@ -33,37 +31,168 @@ It is not included in the package.
 For more information on the PHP Group and the PHP project,
 please see <http://www.php.net>.
 }
-
 unit php4delphi;
 
 interface
 
-
-
 uses
-  Windows, Messages, SysUtils, Classes, VCL.Graphics,  WinSock,
-  PHPCommon,
-  ZendTypes,
-  PHPTypes,
-  zendAPI,
-  PHPAPI,
-  DelphiFunctions,
-  PHPCustomLibrary, vcl.dialogs, strUtils, varUtils,
+  Windows, Messages, SysUtils, System.Types, Classes, VCL.Graphics,
+  PHPCommon, WinApi.WinSock,
+  ZendTypes, PHPTypes, PHPAPI, ZENDAPI,
+  DelphiFunctions, phpFunctions, strUtils, varUtils,
+  {$IFDEF soulengine_build} VCL.Dialogs, {$ENDIF}
   System.UITypes;
 
 type
 
+  IPHPEngine = interface (IUnknown)
+  ['{484AE2CA-755A-437C-9B60-E3735973D0A9}']
+    procedure HandleRequest(ht : integer; return_value : pzval; return_value_ptr : ppzval; this_ptr : pzval;
+      return_value_used : integer; TSRMLS_DC : pointer);
+    function GetEngineActive : boolean;
+   end;
+     TPHPMemoryStream = class(TMemoryStream)
+  public
+    constructor Create;
+    procedure SetInitialSize(ASize : integer);
+  end;
+  {-- PHP Events --}
   TPHPLogMessage = procedure (Sender : TObject; AText : AnsiString) of object;
   TPHPErrorEvent = procedure (Sender: TObject; AText: AnsiString;
   AType: integer; AFileName: AnsiString; ALineNo: integer) of object;
   TPHPReadPostEvent = procedure(Sender : TObject; Stream : TStream) of object;
   TPHPReadResultEvent = procedure(Sender : TObject; Stream : TStream) of object;
 
-  TPHPMemoryStream = class(TMemoryStream)
+  { TpsvCustomPHP }
+  TpsvCustomPHP = class(TPHPComponent)
+  private
+    FHeaders : TPHPHeaders;
+    FMaxExecutionTime : integer;
+    FExecuteMethod : TPHPExecuteMethod;
+    FSessionActive : boolean;
+    FOnRequestStartup : TNotifyEvent;
+    FOnRequestShutdown : TNotifyEvent;
+    FAfterExecute : TNotifyEvent;
+    FBeforeExecute : TNotifyEvent;
+    FTerminated : boolean;
+    FVariables : TPHPVariables;
+    FBuffer : TPHPMemoryStream;
+    FOnLogMessage : TPHPLogMessage;
+    FOnScriptError : TPHPErrorEvent;
+    FFileName : {$IFDEF PHP_UNICE}UTF8String{$ELSE}AnsiString{$ENDIF};
+    {$IFDEF PHP4}
+    FWriterHandle : THandle;
+    FVirtualReadHandle : THandle;
+    FVirtualWriteHandle : THandle;
+    FVirtualCode : AnsiString;
+    {$ENDIF}
+    FUseDelimiters : boolean;
+    FUseMapping : boolean;
+    FPostStream : TMemoryStream;
+    FOnReadPost : TPHPReadPostEvent;
+    FRequestType : TPHPRequestType;
+    FOnReadResult : TPHPReadResultEvent;
+    FContentType: AnsiString;
+    {$IFDEF PHP5}
+    FVirtualStream : TMemoryStream;
+    {$ENDIF}
+    procedure SetVariables(Value : TPHPVariables);
+    procedure SetHeaders(Value : TPHPHeaders);
+    function GetVariableCount: integer;
+  protected
+
+    procedure ClearBuffer;
+    procedure ClearHeaders;
+    procedure PrepareResult; virtual;
+    procedure PrepareVariables; virtual;
+    function RunTime : boolean;
+    function GetThreadSafeResourceManager : pointer;
+    function  CreateVirtualFile(ACode : {$IFDEF PHP_UNICE}UTF8String{$ELSE}AnsiString{$ENDIF}) : boolean;
+    procedure CloseVirtualFile;
+    {$IFDEF PHP4}
+    property  VirtualCode : string read FVirtualCode;
+    {$ENDIF}
+    function GetEngine : IPHPEngine;
   public
-    constructor Create;
-    procedure SetInitialSize(ASize : integer);
+     TSRMLS_D : pointer;
+     Thread: TThread;
+    {fixed}
+    procedure StartupRequest; virtual;
+    procedure ShutdownRequest; virtual;
+    {/fixed}
+
+    constructor Create(AOwner : TComponent); override;
+    destructor Destroy; override;
+    function  EngineActive : boolean;
+    function  Execute : {$IFDEF PHP_UNICE}UTF8String{$ELSE}AnsiString{$ENDIF}; overload;
+    function  Execute(AFileName : {$IFDEF PHP_UNICE}UTF8String{$ELSE}AnsiString{$ENDIF}) : {$IFDEF PHP_UNICE}UTF8String{$ELSE}AnsiString{$ENDIF}; overload;
+    function  RunCode(ACode : {$IFDEF PHP_UNICE}UTF8String{$ELSE}AnsiString{$ENDIF}) : {$IFDEF PHP_UNICE}UTF8String{$ELSE}AnsiString{$ENDIF}; overload;
+    function  RunCode(ACode : TStrings) : string; overload;
+    function  VariableByName(AName : AnsiString) : TPHPVariable;
+    property  PostStream : TMemoryStream read FPostStream;
+    property  ExecuteMethod : TPHPExecuteMethod read FExecuteMethod write FExecuteMethod default emServer;
+    property  FileName  : {$IFDEF PHP_UNICE}UTF8String{$ELSE}AnsiString{$ENDIF} read FFileName write FFileName;
+    property  Variables : TPHPVariables read FVariables write SetVariables;
+    property  VariableCount : integer read GetVariableCount;
+    property  OnLogMessage : TPHPLogMessage read FOnLogMessage write FOnLogMessage;
+    property  OnScriptError : TPHPErrorEvent read FOnScriptError write FOnScriptError;
+    property  OnRequestStartup : TNotifyEvent read FOnRequestStartup write FOnRequestStartup;
+    property  OnRequestShutdown : TNotifyEvent read FOnRequestShutdown write FOnRequestShutdown;
+    property  BeforeExecute : TNotifyEvent read FBeforeExecute write FBeforeExecute;
+    property  AfterExecute : TNotifyEvent read FAfterExecute write FAfterExecute;
+    property  ThreadSafeResourceManager : pointer read GetThreadSafeResourceManager;
+    property  SessionActive : boolean read FSessionActive;
+    property  UseDelimiters : boolean read FUseDelimiters write FUseDelimiters default true;
+    property  MaxExecutionTime : integer read FMaxExecutionTime write FMaxExecutionTime default 0;
+    property  Headers : TPHPHeaders read FHeaders write SetHeaders;
+    property  OnReadPost : TPHPReadPostEvent read FOnReadPost write FOnReadPost;
+    property  RequestType : TPHPRequestType read FRequestType write FRequestType default prtGet;
+    property  ResultBuffer : TPHPMemoryStream read FBuffer;
+    property  OnReadResult : TPHPReadResultEvent read FOnReadResult write FOnReadResult;
+    property  ContentType : AnsiString read FContentType write FContentType;
   end;
+
+  TpsvPHP = class(TpsvCustomPHP)
+  published
+    property About;
+    property FileName;
+    property Variables;
+    property OnLogMessage;
+    property OnScriptError;
+    property OnRequestStartup;
+    property OnRequestShutdown;
+    property OnReadPost;
+    property BeforeExecute;
+    property AfterExecute;
+    property UseDelimiters;
+    property MaxExecutionTime;
+    property RequestType;
+    property OnReadResult;
+    property ContentType;
+  end;
+
+  TCustomPHPLibrary = class(TPHPComponent)
+  private
+    FExecutor : TpsvCustomPHP;
+    FLibraryName : AnsiString;
+    FFunctions  : TPHPFunctions;
+    FLocked: boolean;
+    procedure SetFunctions(const Value : TPHPFunctions);
+    procedure SetExecutor(AValue : TpsvCustomPHP);
+    procedure SetLibraryName(AValue : AnsiString);
+  protected
+    procedure RegisterLibrary; virtual;
+    procedure UnregisterLibrary; virtual;
+  public
+    constructor Create(AOwner : TComponent); override;
+    destructor  Destroy; override;
+    procedure Refresh; virtual;
+    property Executor : TpsvCustomPHP read FExecutor write SetExecutor;
+    property LibraryName : AnsiString read FLibraryName write SetLibraryName;
+    property Functions  : TPHPFunctions read FFunctions write SetFunctions;
+    property Locked : boolean read FLocked write FLocked;
+  end;
+  { TPHPEngine }
 
   TPHPEngine = class(TPHPComponent, IUnknown, IPHPEngine)
   private
@@ -144,126 +273,18 @@ type
     property  ReportDLLError : boolean read FReportDLLError write FReportDLLError;
   end;
 
-  TpsvCustomPHP = class(TPHPComponent)
+  TPHPLibrarian = class
   private
-    FHeaders : TPHPHeaders;
-    FMaxExecutionTime : integer;
-    FExecuteMethod : TPHPExecuteMethod;
-    FSessionActive : boolean;
-    FOnRequestStartup : TNotifyEvent;
-    FOnRequestShutdown : TNotifyEvent;
-    FAfterExecute : TNotifyEvent;
-    FBeforeExecute : TNotifyEvent;
-    FTerminated : boolean;
-    FVariables : TPHPVariables;
-    FBuffer : TPHPMemoryStream;
-    FFileName : {$IFDEF PHP_UNICE}UTF8String{$ELSE}AnsiString{$ENDIF};
-    {$IFDEF PHP4}
-    FWriterHandle : THandle;
-    FVirtualReadHandle : THandle;
-    FVirtualWriteHandle : THandle;
-    FVirtualCode : AnsiString;
-    {$ENDIF}
-    FUseDelimiters : boolean;
-    FUseMapping : boolean;
-    FPostStream : TMemoryStream;
-    FOnReadPost : TPHPReadPostEvent;
-    FRequestType : TPHPRequestType;
-    FOnReadResult : TPHPReadResultEvent;
-    FContentType: AnsiString;
-    {$IFDEF PHP5}
-    FVirtualStream : TMemoryStream;
-    {$ENDIF}
-    procedure SetVariables(Value : TPHPVariables);
-    procedure SetHeaders(Value : TPHPHeaders);
-    function GetVariableCount: integer;
-  protected
-
-    procedure ClearBuffer;
-    procedure ClearHeaders;
-    procedure PrepareResult; virtual;
-    procedure PrepareVariables; virtual;
-    function RunTime : boolean;
-    function GetThreadSafeResourceManager : pointer;
-    function  CreateVirtualFile(ACode : {$IFDEF PHP_UNICE}UTF8String{$ELSE}AnsiString{$ENDIF}) : boolean;
-    procedure CloseVirtualFile;
-    {$IFDEF PHP4}
-    property  VirtualCode : string read FVirtualCode;
-    {$ENDIF}
-    function GetEngine : IPHPEngine;
+    FLibraries : TList;
   public
-     TSRMLS_D : pointer;
-     Thread: TThread;
-    {fixed}
-    procedure StartupRequest; virtual;
-    procedure ShutdownRequest; virtual;
-    {/fixed}
-
-    constructor Create(AOwner : TComponent); override;
+    constructor Create; virtual;
     destructor Destroy; override;
-    function  EngineActive : boolean;
-    function  Execute : {$IFDEF PHP_UNICE}UTF8String{$ELSE}AnsiString{$ENDIF}; overload;
-    function  Execute(AFileName : {$IFDEF PHP_UNICE}UTF8String{$ELSE}AnsiString{$ENDIF}) : {$IFDEF PHP_UNICE}UTF8String{$ELSE}AnsiString{$ENDIF}; overload;
-    function  RunCode(ACode : {$IFDEF PHP_UNICE}UTF8String{$ELSE}AnsiString{$ENDIF}) : {$IFDEF PHP_UNICE}UTF8String{$ELSE}AnsiString{$ENDIF}; overload;
-    function  RunCode(ACode : TStrings) : string; overload;
-    function  VariableByName(AName : AnsiString) : TPHPVariable;
-    property  PostStream : TMemoryStream read FPostStream;
-    property  ExecuteMethod : TPHPExecuteMethod read FExecuteMethod write FExecuteMethod default emServer;
-    property  FileName  : {$IFDEF PHP_UNICE}UTF8String{$ELSE}AnsiString{$ENDIF} read FFileName write FFileName;
-    property  Variables : TPHPVariables read FVariables write SetVariables;
-    property  VariableCount : integer read GetVariableCount;
-    property  OnRequestStartup : TNotifyEvent read FOnRequestStartup write FOnRequestStartup;
-    property  OnRequestShutdown : TNotifyEvent read FOnRequestShutdown write FOnRequestShutdown;
-    property  BeforeExecute : TNotifyEvent read FBeforeExecute write FBeforeExecute;
-    property  AfterExecute : TNotifyEvent read FAfterExecute write FAfterExecute;
-    property  ThreadSafeResourceManager : pointer read GetThreadSafeResourceManager;
-    property  SessionActive : boolean read FSessionActive;
-    property  UseDelimiters : boolean read FUseDelimiters write FUseDelimiters default true;
-    property  MaxExecutionTime : integer read FMaxExecutionTime write FMaxExecutionTime default 0;
-    property  Headers : TPHPHeaders read FHeaders write SetHeaders;
-    property  OnReadPost : TPHPReadPostEvent read FOnReadPost write FOnReadPost;
-    property  RequestType : TPHPRequestType read FRequestType write FRequestType default prtGet;
-    property  ResultBuffer : TPHPMemoryStream read FBuffer;
-    property  OnReadResult : TPHPReadResultEvent read FOnReadResult write FOnReadResult;
-    property  ContentType : AnsiString read FContentType write FContentType;
+    procedure AddLibrary(ALibrary : TCustomPHPLibrary);
+    procedure RemoveLibrary(ALibrary : TCustomPHPLibrary);
+    function Count : integer;
+    function GetLibrary(Index : integer) : TCustomPHPLibrary;
+    property Libraries : TList read FLibraries write FLibraries;
   end;
-
-
-   TpsvPHP = class(TpsvCustomPHP)
-  published
-    property About;
-    property FileName;
-    property Variables;
-    property OnRequestStartup;
-    property OnRequestShutdown;
-    property OnReadPost;
-    property BeforeExecute;
-    property AfterExecute;
-    property UseDelimiters;
-    property MaxExecutionTime;
-    property RequestType;
-    property OnReadResult;
-    property ContentType;
-  end;
-
-
-var
-  PHPEngine : TPHPEngine = nil;
-
-  var
-  delphi_sapi_module : sapi_module_struct;
-  fatal_handler_php: string;
-  log_handler_php: string;
-  phpmd: TpsvPHP;
-
-implementation
-
-uses
-  PHPFunctions;
-
-
-
-
 {$IFDEF REGISTER_COLORS}
 const
   Colors: array[0..41] of TIdentMapEntry = (
@@ -310,172 +331,16 @@ const
     (Value: clInfoBk; Name: 'clInfoBk'),
     (Value: clNone; Name: 'clNone'));
 {$ENDIF}
-
-
-{$IFDEF PHP510}
-procedure DispatchRequest(ht : integer; return_value : pzval; return_value_ptr : ppzval; this_ptr : pzval;
-      return_value_used : integer; TSRMLS_DC : pointer); cdecl;
-{$ELSE}
-procedure DispatchRequest(ht : integer; return_value : pzval; this_ptr : pzval;
-      return_value_used : integer; TSRMLS_DC : pointer); cdecl;
-{$ENDIF}
 var
- php : TpsvPHP;
- gl : psapi_globals_struct;
- Lib : IPHPEngine;
-{$IFNDEF PHP510}
- return_value_ptr : ppzval;
-{$ENDIF}
-begin
-  {$IFNDEF PHP510}
-  return_value_ptr := nil;
-  {$ENDIF}
-  ZVAL_NULL(return_value);
-  gl := GetSAPIGlobals;
-  if gl = nil then
-   Exit;
-  php := TpsvPHP(gl^.server_context);
-  if Assigned(php) then
-   begin
-     try
-       Lib := php.GetEngine;
-       if lib <> nil then
-       Lib.HandleRequest(ht, return_value, return_value_ptr, this_ptr, return_value_used, TSRMLS_DC);
-     except
-      ZVAL_NULL(return_value);
-     end;
-   end;
-end;
-
-
-procedure php_info_library(zend_module : Pointer; TSRMLS_DC : pointer); cdecl;
-begin
-end;
-
-function php_delphi_startup(sapi_module : Psapi_module_struct) : integer; cdecl;
-begin
-  Result := SUCCESS;
-end;
-
-function php_delphi_deactivate(p : pointer) : integer; cdecl;
-begin
-  result := SUCCESS;
-end;
-
-
-procedure php_delphi_flush(p : pointer); cdecl;
-begin
-end;
-
-function php_delphi_ub_write(str : pointer; len : uint; p : pointer) : integer; cdecl;
-var
- php : TpsvPHP;
- gl : psapi_globals_struct;
-begin
-  Result := 0;
-  gl := GetSAPIGlobals;
-  if Assigned(gl) then
-   begin
-     php := TpsvPHP(gl^.server_context);
-     if Assigned(php) then
-      begin
-        try
-         result := php.FBuffer.Write(str^, len);
-        except
-        end;
-      end;
-   end;
-end;
-
-
-function GetLocalIP: String;
-const WSVer = $101;
-var
-  wsaData: TWSAData;
-  P: PHostEnt;
-  Buf: array [0..127] of Char;
-begin
-  Result := '';
-  if WSAStartup(WSVer, wsaData) = 0 then begin
-    if GetHostName(@Buf, 128) = 0 then begin
-      P := GetHostByName(@Buf);
-      if P <> nil then Result := iNet_ntoa(PInAddr(p^.h_addr_list^)^);
-    end;
-    WSACleanup;
-  end;
-end;
-
-procedure php_delphi_register_variables(val : pzval; p : pointer); cdecl;
-var
- php : TpsvPHP;
- gl : psapi_globals_struct;
- cnt : integer;
- varcnt : integer;
-begin
-  gl := GetSAPIGlobals;
-  if gl = nil then
-   Exit;
-
-  php := TpsvPHP(gl^.server_context);
-
-  if PHP = nil then
-   begin
-     Exit;
-   end;
-
-  php_register_variable('PHP_SELF', '_', nil, p);
-  php_register_variable('REMOTE_ADDR', PAnsiChar(GetLocalIP()), val, p);
-  php_register_variable('IP_ADDRESS', PAnsiChar(GetLocalIP()), val, p);
-  {if php.RequestType = prtPost then
-   php_register_variable('REQUEST_METHOD', 'POST', val, p)
-     else
-       php_register_variable('REQUEST_METHOD', 'GET', val, p);}
-
-  varcnt := PHP.Variables.Count;
-  if varcnt > 0 then
-   begin
-      for cnt := 0 to varcnt - 1 do
-       begin
-         php_register_variable(PAnsiChar(php.Variables[cnt].Name),
-                PAnsiChar(php.Variables[cnt].Value), val, p);
-       end;
-   end;
-end;
-
-function php_delphi_read_post(buf : PAnsiChar; len : uint; TSRMLS_DC : pointer) : integer; cdecl;
-var
- gl : psapi_globals_struct;
- php : TpsvPHP;
-begin
-  gl := GetSAPIGlobals;
-  if gl = nil then
-   begin
-     Result := 0;
-     Exit;
-   end;
-
-  php := TpsvPHP(gl^.server_context);
-
-  if PHP = nil then
-   begin
-     Result := 0;
-     Exit;
-   end;
-
-  if php.PostStream = nil then
-   begin
-     Result := 0;
-     Exit;
-   end;
-
-  if php.PostStream.Size = 0 then
-   begin
-     Result := 0;
-     Exit;
-   end;
-
-  Result := php.PostStream.Read(buf^, len);
-end;
+ Librarian : TPHPLibrarian = nil;
+ delphi_sapi_module : sapi_module_struct;
+ PHPEngine : TPHPEngine = nil;
+ {$IFDEF soulengine_build}
+  log_handler_php: string;
+  fatal_handler_php: string;
+  phpmd: TpsvPHP;
+ {$ENDIF}
+implementation
 
 function AddSlashes(const S: ansistring): ansistring;
 begin
@@ -486,127 +351,130 @@ begin
     ').''', [rfReplaceAll]);
 end;
 
-function php_delphi_log_message(msg : PAnsiChar) : integer; cdecl;
-var
- php : TpsvPHP;
- gl : psapi_globals_struct;
- S: ansistring;
+{ TCustomPHPLibrary }
+
+constructor TCustomPHPLibrary.Create(AOwner: TComponent);
 begin
-  Result := 0;
-  gl := GetSAPIGlobals;
-  if gl = nil then
-   Exit;
-
-  php := TpsvPHP(gl^.server_context);
-  if Assigned(PHPEngine) then
-   begin
-     if Assigned(PHPEngine.OnLogMessage) then
-       phpEngine.HandleLogMessage(php, msg)
-        else
-        if log_handler_php <> '' then
-        begin
-          S :=  AnsiString(fatal_handler_php + '(' + '''' +  AddSlashes(msg) + '''' +
-               ');' + ' ?>');
-
-            if not phpmd.UseDelimiters then
-             S := '<? ' + S;
-
-            phpmd.RunCode(S);
-            S := '';
-          end
-          else
-          MessageBoxA(0, MSG, 'PHP4Delphi', MB_OK)
-       end
-      else
-        MessageBoxA(0, msg, 'PHP4Delphi', MB_OK);
+  inherited;
+  FFunctions := TPHPFunctions.Create(Self, TPHPFunction);
+  RegisterLibrary;
 end;
 
-function php_delphi_send_header(p1, TSRMLS_DC : pointer) : integer; cdecl;
-var
- php : TpsvPHP;
- gl  : psapi_globals_struct;
+destructor TCustomPHPLibrary.Destroy;
 begin
-  gl := GetSAPIGlobals;
-  php := TpsvPHP(gl^.server_context);
-  if Assigned(p1) and Assigned(php) then
+  UnregisterLibrary;
+  FFunctions.Free;
+  FFunctions := nil;
+  inherited;
+end;
+
+procedure TCustomPHPLibrary.Refresh;
+begin
+end;
+
+
+procedure TCustomPHPLibrary.RegisterLibrary;
+begin
+   if Assigned(Librarian) then
+    Librarian.AddLibrary(Self);
+end;
+
+procedure TCustomPHPLibrary.SetExecutor(AValue: TpsvCustomPHP);
+begin
+  if FExecutor <> AValue then
+  begin
+    if Assigned(FExecutor) then
+     UnregisterLibrary;
+    FExecutor := AValue; //Peter Enz
+    if AValue <> nil then
+     begin
+       Avalue.FreeNotification(Self);
+       RegisterLibrary;
+     end;
+  end;
+end;
+
+procedure TCustomPHPLibrary.SetFunctions(const Value: TPHPFunctions);
+begin
+  FFunctions.Assign(Value);
+end;
+
+procedure TCustomPHPLibrary.SetLibraryName(AValue: AnsiString);
+begin
+  if FLibraryName <> AValue then
    begin
-    with php.Headers.Add do
-     Header := String(Psapi_header_struct(p1)^.header);
+     FLibraryName := AValue;
+   end;  
+end;
+
+procedure TCustomPHPLibrary.UnregisterLibrary;
+begin
+  if Assigned(Librarian) then
+   Librarian.RemoveLibrary(Self);
+end;
+
+
+procedure InitLibrarian;
+begin
+  Librarian := TPHPLibrarian.Create;
+end;
+
+procedure UninitLibrarian;
+begin
+  if Assigned(Librarian) then
+   try
+     Librarian.Free;
+   finally
+     Librarian := nil;
    end;
-  Result := SAPI_HEADER_SENT_SUCCESSFULLY;
 end;
 
-function php_delphi_header_handler(sapi_header : psapi_header_struct;  sapi_headers : psapi_headers_struct; TSRMLS_DC : pointer) : integer; cdecl;
+{ TPHPLibrarian }
+
+procedure TPHPLibrarian.AddLibrary(ALibrary: TCustomPHPLibrary);
 begin
-  Result := SAPI_HEADER_ADD;
+  if FLibraries.IndexOf(ALibrary) = -1 then
+   FLibraries.Add(ALibrary);
 end;
 
-function php_delphi_read_cookies(p1 : pointer) : pointer; cdecl;
+function TPHPLibrarian.Count: integer;
 begin
-  result := nil;
+  Result := FLibraries.Count;
 end;
 
-
-
-function wvsprintfA(Output: PAnsiChar; Format: PAnsiChar; arglist: PAnsiChar): Integer; stdcall; external 'user32.dll';
-
-procedure delphi_error_cb(AType: Integer; const AFname: PAnsiChar; const ALineNo: UINT;
-  const AFormat: PAnsiChar; args: PAnsiChar) cdecl;
-var
-  LText: string;
-  LBuffer: array[0..4096] of AnsiChar;
-  S: AnsiString;
+constructor TPHPLibrarian.Create;
 begin
-  case AType of
-    E_ERROR:              LText := 'FATAL Error in ';
-    E_WARNING:            LText := 'Warning in ';
-    E_CORE_ERROR:         LText := 'Core Error in ';
-    E_CORE_WARNING:       LText := 'Core Warning in ';
-    E_COMPILE_ERROR:      LText := 'Compile Error in ';
-    E_COMPILE_WARNING:    LText := 'Compile Warning in ';
-    E_USER_ERROR:         LText := 'User Error in ';
-    E_USER_WARNING:       LText := 'User Warning in ';
-    E_RECOVERABLE_ERROR:  LText := 'Recoverable Error in ';
-    E_PARSE:              LText := 'Parse Error in ';
-    E_NOTICE:             LText := 'Notice in ';
-    E_USER_NOTICE:        LText := 'User Notice in ';
-    E_STRICT:             LText := 'Strict Error in ';
-    E_CORE:               LText := 'Core Error in ';
-    else
-      LText := 'Unknown Error(' + inttostr(AType) + '): ' ;
-  end;
-
-  wvsprintfA(LBuffer, AFormat, args);
-
-  LText := LText + AFname + '(' + inttostr(ALineNo) + '): ' + LBuffer;
-  if (fatal_handler_php <> '') and not(Atype in [E_CORE_ERROR, E_CORE, E_CORE_WARNING]) then
-  begin
-  S := AnsiString(fatal_handler_php + '(' + IntToStr(integer(AType)) + ',' + '''' +
-      AddSlashes(LBuffer) + ''', ''' + AddSlashes(AFName) + ''', ' +
-      IntToStr(ALineNo) + ');' + ' ?>');
-
-  if not phpmd.UseDelimiters then
-       S := '<? ' + S;
-
-   phpmd.RunCode(S);
-   S := '';
-  end
-  else
-  begin
-  case AType of
-    E_WARNING, E_CORE_WARNING, E_COMPILE_WARNING, E_USER_WARNING:
-      MessageDlg(LText, mtWarning, [mbOk], 0)
-    ;
-    E_NOTICE, E_USER_NOTICE:
-      MessageDlg(LText, mtInformation, [mbOk], 0)
-    ;
-
-    else
-      MessageDlg(LText, mtError, [mbOk], 0)
-  end;
-  end;
+  inherited;
+  FLibraries := TList.Create;
 end;
 
+destructor TPHPLibrarian.Destroy;
+begin
+  FLibraries.Free;
+  inherited;
+end;
+
+function TPHPLibrarian.GetLibrary(Index: integer): TCustomPHPLibrary;
+begin
+  Result := TCustomPHPLibrary(FLibraries[Index]);
+end;
+
+procedure TPHPLibrarian.RemoveLibrary(ALibrary: TCustomPHPLibrary);
+begin
+  FLibraries.Remove(ALibrary);
+end;
+{ TPHPMemoryStream }
+
+constructor TPHPMemoryStream.Create;
+begin
+  inherited;
+end;
+
+procedure TPHPMemoryStream.SetInitialSize(ASize: integer);
+begin
+  Capacity := ASize;
+end;
+{ Startup functions }
 function minit (_type : integer; module_number : integer; TSRMLS_DC : pointer) : integer; cdecl;
 begin
   RESULT := SUCCESS;
@@ -616,7 +484,6 @@ function mshutdown (_type : integer; module_number : integer; TSRMLS_DC : pointe
 begin
   RESULT := SUCCESS;
 end;
-
 
 {Request initialization}
 function rinit (_type : integer; module_number : integer; TSRMLS_DC : pointer) : integer; cdecl;
@@ -697,6 +564,404 @@ end;
 {$ENDIF}
 {$ENDIF}
 {$ENDIF}
+{ PHP Info functions }
+procedure php_info_library(zend_module : Pointer; TSRMLS_DC : pointer); cdecl;
+begin
+end;
+
+function php_delphi_startup(sapi_module : Psapi_module_struct) : integer; cdecl;
+begin
+  Result := SUCCESS;
+end;
+
+function php_delphi_deactivate(p : pointer) : integer; cdecl;
+begin
+  result := SUCCESS;
+end;
+
+procedure php_delphi_flush(p : pointer); cdecl;
+begin
+end;
+
+function php_delphi_ub_write(str : pointer; len : uint; p : pointer) : integer; cdecl;
+var
+ php : TpsvPHP;
+ gl : psapi_globals_struct;
+begin
+  Result := 0;
+  gl := GetSAPIGlobals;
+  if Assigned(gl) then
+   begin
+     php := TpsvPHP(gl^.server_context);
+     if Assigned(php) then
+      begin
+        try
+         result := php.FBuffer.Write(str^, len);
+        except
+        end;
+      end;
+   end;
+end;
+function php_delphi_header_handler(sapi_header : psapi_header_struct;  sapi_headers : psapi_headers_struct; TSRMLS_DC : pointer) : integer; cdecl;
+begin
+  Result := SAPI_HEADER_ADD;
+end;
+function php_delphi_send_header(p1, TSRMLS_DC : pointer) : integer; cdecl;
+var
+ php : TpsvPHP;
+ gl  : psapi_globals_struct;
+begin
+  gl := GetSAPIGlobals;
+  php := TpsvPHP(gl^.server_context);
+  if Assigned(p1) and Assigned(php) then
+   begin
+    with php.Headers.Add do
+     Header := String(Psapi_header_struct(p1)^.header);
+   end;
+  Result := SAPI_HEADER_SENT_SUCCESSFULLY;
+end;
+
+function php_delphi_read_cookies(p1 : pointer) : pointer; cdecl;
+begin
+  result := nil;
+end;
+function php_delphi_read_post(buf : PAnsiChar; len : uint; TSRMLS_DC : pointer) : integer; cdecl;
+var
+ gl : psapi_globals_struct;
+ php : TpsvPHP;
+begin
+  gl := GetSAPIGlobals;
+  if gl = nil then
+   begin
+     Result := 0;
+     Exit;
+   end;
+
+  php := TpsvPHP(gl^.server_context);
+
+  if PHP = nil then
+   begin
+     Result := 0;
+     Exit;
+   end;
+
+  if php.PostStream = nil then
+   begin
+     Result := 0;
+     Exit;
+   end;
+
+  if php.PostStream.Size = 0 then
+   begin
+     Result := 0;
+     Exit;
+   end;
+
+  Result := php.PostStream.Read(buf^, len);
+end;
+function GetLocalIP: String;
+const WSVer = $101;
+var
+  wsaData: TWSAData;
+  P: PHostEnt;
+  Buf: array [0..127] of Char;
+begin
+  Result := '';
+  if WSAStartup(WSVer, wsaData) = 0 then begin
+    if GetHostName(@Buf, 128) = 0 then begin
+      P := GetHostByName(@Buf);
+      if P <> nil then Result := iNet_ntoa(PInAddr(p^.h_addr_list^)^);
+    end;
+    WSACleanup;
+  end;
+end;
+
+procedure php_delphi_register_variables(val : pzval; p : pointer); cdecl;
+var
+ php : TpsvPHP;
+ gl : psapi_globals_struct;
+ cnt : integer;
+ varcnt : integer;
+begin
+  gl := GetSAPIGlobals;
+  if gl = nil then
+   Exit;
+
+  php := TpsvPHP(gl^.server_context);
+
+  if PHP = nil then
+   begin
+     Exit;
+   end;
+
+  php_register_variable('PHP_SELF', '_', nil, p);
+  php_register_variable('REMOTE_ADDR', PAnsiChar(GetLocalIP()), val, p);
+  php_register_variable('IP_ADDRESS', PAnsiChar(GetLocalIP()), val, p);
+  {if php.RequestType = prtPost then
+   php_register_variable('REQUEST_METHOD', 'POST', val, p)
+     else
+       php_register_variable('REQUEST_METHOD', 'GET', val, p);}
+
+  varcnt := PHP.Variables.Count;
+  if varcnt > 0 then
+   begin
+      for cnt := 0 to varcnt - 1 do
+       begin
+         php_register_variable(PAnsiChar(php.Variables[cnt].Name),
+                PAnsiChar(php.Variables[cnt].Value), val, p);
+       end;
+   end;
+end;
+function wvsprintfA(Output: PAnsiChar; Format: PAnsiChar; arglist: PAnsiChar): Integer; stdcall; external 'user32.dll';
+{$IFDEF PHP4}
+function WriterProc(Parameter : Pointer) : integer;
+var
+ n : integer;
+ php : TpsvCustomPHP;
+ buf : PAnsiChar;
+ k : cardinal;
+begin
+  try
+    php := TPsvCustomPHP(Parameter);
+    Buf := PAnsiChar(php.FVirtualCode);
+    k := length(php.FVirtualCode);
+    repeat
+      n := _write(php.FVirtualWriteHandle, Buf, k);
+      if (n <= 0) then
+       break
+        else
+          begin
+            inc(Buf, n);
+            dec(K, n);
+          end;
+    until (n <= 0);
+    Close(php.FVirtualWriteHandle);
+    php.FVirtualWriteHandle := 0;
+  finally
+    Result := 0;
+    ExitThread(0);
+  end;
+end;
+{$ENDIF}
+{$IFDEF soulengine_build}
+procedure delphi_error_cb(AType: Integer; const AFname: PAnsiChar; const ALineNo: UINT;
+  const AFormat: PAnsiChar; args: PAnsiChar) cdecl;
+var
+  LText: string;
+  LBuffer: array[0..4096] of AnsiChar;
+  S: AnsiString;
+begin
+  case AType of
+    E_ERROR:              LText := 'FATAL Error in ';
+    E_WARNING:            LText := 'Warning in ';
+    E_CORE_ERROR:         LText := 'Core Error in ';
+    E_CORE_WARNING:       LText := 'Core Warning in ';
+    E_COMPILE_ERROR:      LText := 'Compile Error in ';
+    E_COMPILE_WARNING:    LText := 'Compile Warning in ';
+    E_USER_ERROR:         LText := 'User Error in ';
+    E_USER_WARNING:       LText := 'User Warning in ';
+    E_RECOVERABLE_ERROR:  LText := 'Recoverable Error in ';
+    E_PARSE:              LText := 'Parse Error in ';
+    E_NOTICE:             LText := 'Notice in ';
+    E_USER_NOTICE:        LText := 'User Notice in ';
+    E_STRICT:             LText := 'Strict Error in ';
+    E_CORE:               LText := 'Core Error in ';
+    else
+      LText := 'Unknown Error(' + inttostr(AType) + '): ' ;
+  end;
+
+  wvsprintfA(LBuffer, AFormat, args);
+
+  LText := LText + AFname + '(' + inttostr(ALineNo) + '): ' + LBuffer;
+  if (fatal_handler_php <> '') and not(Atype in [E_CORE_ERROR, E_CORE, E_CORE_WARNING]) then
+  begin
+  S := AnsiString(fatal_handler_php + '(' + IntToStr(integer(AType)) + ',' + '''' +
+      AddSlashes(LBuffer) + ''', ''' + AddSlashes(AFName) + ''', ' +
+      IntToStr(ALineNo) + ');' + ' ?>');
+
+  if not phpmd.UseDelimiters then
+       S := '<? ' + S;
+
+   phpmd.RunCode(S);
+   S := '';
+  end
+  else
+  begin
+  case AType of
+    E_WARNING, E_CORE_WARNING, E_COMPILE_WARNING, E_USER_WARNING:
+      MessageDlg(LText, mtWarning, [mbOk], 0)
+    ;
+    E_NOTICE, E_USER_NOTICE:
+      MessageDlg(LText, mtInformation, [mbOk], 0)
+    ;
+
+    else
+      MessageDlg(LText, mtError, [mbOk], 0)
+  end;
+  end;
+end;
+{$ELSE}
+procedure delphi_error_cb(_type : integer; const error_filename : PAnsiChar;
+   const error_lineno : uint; const _format : PAnsiChar; args : PAnsiChar); cdecl;
+var
+ buffer  : array[0..1023] of ansichar;
+ err_msg : PAnsiChar;
+ php : TpsvPHP;
+ gl : psapi_globals_struct;
+ p : pointer;
+ error_type_str : ansistring;
+ err : TPHPErrorType;
+begin
+  wvsprintfa(buffer, _format, args);
+  err_msg := buffer;
+  p := ts_resource_ex(0, nil);
+  gl := GetSAPIGlobals(p);
+  php := TpsvPHP(gl^.server_context);
+
+  case _type of
+   E_ERROR              : err := etError;
+   E_WARNING            : err := etWarning;
+   E_PARSE              : err := etParse;
+   E_NOTICE             : err := etNotice;
+   E_CORE_ERROR         : err := etCoreError;
+   E_CORE_WARNING       : err := etCoreWarning;
+   E_COMPILE_ERROR      : err := etCompileError;
+   E_COMPILE_WARNING    : err := etCompileWarning;
+   E_USER_ERROR         : err := etUserError;
+   E_USER_WARNING       : err := etUserWarning;
+   E_USER_NOTICE        : err := etUserNotice;
+    else
+      err := etUnknown;
+  end;
+
+  if assigned(php) then
+   begin
+     if Assigned(php.OnScriptError) then
+        begin
+           php.OnScriptError(php, Err_Msg, integer(err), error_filename, error_lineno);
+        end
+          else
+             begin
+               case _type of
+                E_ERROR,
+                E_CORE_ERROR,
+                E_COMPILE_ERROR,
+                E_USER_ERROR:
+                   error_type_str := 'Fatal error';
+                E_WARNING,
+                E_CORE_WARNING,
+                E_COMPILE_WARNING,
+                E_USER_WARNING :
+                   error_type_str := 'Warning';
+                E_PARSE:
+                   error_type_str := 'Parse error';
+                E_NOTICE,
+                E_USER_NOTICE:
+                    error_type_str := 'Notice';
+                else
+                    error_type_str := 'Unknown error';
+               end;
+
+                php_log_err(PAnsiChar(AnsiFormat('PHP4DELPHI %s:  %s in %s on line %d', [error_type_str, buffer, error_filename, error_lineno])), p);
+             end;
+ end;
+   if PHPLoaded then
+    _zend_bailout(error_filename, error_lineno);
+end;
+{$ENDIF}
+{$IFDEF soulengine_build}
+function php_delphi_log_message(msg : PAnsiChar) : integer; cdecl;
+var
+ php : TpsvPHP;
+ gl : psapi_globals_struct;
+ S: ansistring;
+begin
+  Result := 0;
+  gl := GetSAPIGlobals;
+  if gl = nil then
+   Exit;
+
+  php := TpsvPHP(gl^.server_context);
+  if Assigned(PHPEngine) then
+   begin
+     if Assigned(PHPEngine.OnLogMessage) then
+       phpEngine.HandleLogMessage(php, msg)
+        else
+        if log_handler_php <> '' then
+        begin
+          S :=  AnsiString(fatal_handler_php + '(' + '''' +  AddSlashes(msg) + '''' +
+               ');' + ' ?>');
+
+            if not phpmd.UseDelimiters then
+             S := '<? ' + S;
+
+            phpmd.RunCode(S);
+            S := '';
+          end
+          else
+          MessageBoxA(0, MSG, 'PHP4Delphi', MB_OK)
+       end
+      else
+        MessageBoxA(0, msg, 'PHP4Delphi', MB_OK);
+end;
+{$ELSE}
+function php_delphi_log_message(msg : Pchar) : integer; cdecl;
+var
+ php : TpsvPHP;
+ gl : psapi_globals_struct;
+ p : pointer;
+begin
+  p := ts_resource_ex(0, nil);
+  gl := GetSAPIGlobals(p);
+  php := TpsvPHP(gl^.server_context);
+  if Assigned(php) then
+   begin
+     if Assigned(php.OnLogMessage) then
+       php.FOnLogMessage(php, msg)
+        else
+          MessageBox(0, MSG, 'PHP4Delphi', MB_OK)
+    end
+      else
+        MessageBox(0, msg, 'PHP4Delphi', MB_OK);
+  result := 0;
+end;
+{$ENDIF}
+{ Request sender/dispatcher }
+
+{$IFDEF PHP510}
+procedure DispatchRequest(ht : integer; return_value : pzval; return_value_ptr : ppzval; this_ptr : pzval;
+      return_value_used : integer; TSRMLS_DC : pointer); cdecl;
+{$ELSE}
+procedure DispatchRequest(ht : integer; return_value : pzval; this_ptr : pzval;
+      return_value_used : integer; TSRMLS_DC : pointer); cdecl;
+{$ENDIF}
+var
+ php : TpsvPHP;
+ gl : psapi_globals_struct;
+ Lib : IPHPEngine;
+{$IFNDEF PHP510}
+ return_value_ptr : ppzval;
+{$ENDIF}
+begin
+  {$IFNDEF PHP510}
+  return_value_ptr := nil;
+  {$ENDIF}
+  ZVAL_NULL(return_value);
+  gl := GetSAPIGlobals;
+  if gl = nil then
+   Exit;
+  php := TpsvPHP(gl^.server_context);
+  if Assigned(php) then
+   begin
+     try
+       Lib := php.GetEngine;
+       if lib <> nil then
+       Lib.HandleRequest(ht, return_value, return_value_ptr, this_ptr, return_value_used, TSRMLS_DC);
+     except
+      ZVAL_NULL(return_value);
+     end;
+   end;
+end;
 
 { TpsvCustomPHP }
 
@@ -745,37 +1010,6 @@ begin
   FHeaders.Clear;
 end;
 
-
-{$IFDEF PHP4}
-function WriterProc(Parameter : Pointer) : integer;
-var
- n : integer;
- php : TpsvCustomPHP;
- buf : PAnsiChar;
- k : cardinal;
-begin
-  try
-    php := TPsvCustomPHP(Parameter);
-    Buf := PAnsiChar(php.FVirtualCode);
-    k := length(php.FVirtualCode);
-    repeat
-      n := _write(php.FVirtualWriteHandle, Buf, k);
-      if (n <= 0) then
-       break
-        else
-          begin
-            inc(Buf, n);
-            dec(K, n);
-          end;
-    until (n <= 0);
-    Close(php.FVirtualWriteHandle);
-    php.FVirtualWriteHandle := 0;
-  finally
-    Result := 0;
-    ExitThread(0);
-  end;
-end;
-{$ENDIF}
 
 function TpsvCustomPHP.Execute : {$IFDEF PHP_UNICE}UTF8String{$ELSE}AnsiString{$ENDIF};
 var
@@ -1082,7 +1316,7 @@ begin
        try
         php_request_shutdown(nil);
        except
-       end; 
+       end;
        gl := GetSAPIGlobals;
        gl^.server_context := nil;
      end;
@@ -1497,7 +1731,7 @@ begin
      {Shutdown PHP thread safe resource manager}
      if Assigned(FOnEngineShutdown) then
        FOnEngineShutdown(Self);
-       
+
     try
     tsrm_shutdown();
     except
@@ -1540,7 +1774,7 @@ begin
          FN := AnsiLowercase(ALib.Functions[cnt].FunctionName);
          FHash.AddObject(FN, ALib.Functions[cnt]);
        end;
-      ALib.Locked := true; 
+      ALib.Locked := true;
    end;
 end;
 
@@ -1646,7 +1880,7 @@ begin
 
       if Assigned(FOnEngineStartup) then
        FOnEngineStartup(Self);
-      
+
       FEngineActive := true;
       except
        FEngineActive := false;
@@ -1724,7 +1958,7 @@ var
  AllClear : boolean;
 begin
   PrepareForShutdown;
-  
+
   AllClear := false;
   while not AllClear do
    begin
@@ -1769,18 +2003,10 @@ begin
   InterlockedIncrement(FRequestCount);
 end;
 
-{ TPHPMemoryStream }
+initialization
+  InitLibrarian;
 
-constructor TPHPMemoryStream.Create;
-begin
-  inherited;
-end;
-
-procedure TPHPMemoryStream.SetInitialSize(ASize: integer);
-begin
-  Capacity := ASize;
-end;
+finalization
+  UnInitLibrarian;
 
 end.
-
-

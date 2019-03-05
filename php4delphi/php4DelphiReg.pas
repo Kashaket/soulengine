@@ -28,8 +28,7 @@ uses
   ShlObj,
   ZendAPI, PHPAPI,
   PHP4Delphi, phpAbout, phpModules, phpLibrary, ShellAPI,
-  phpClass,
-  phpCustomLibrary;
+  phpClass;
 
 type
   TScriptFileProperty = class(TStringProperty)
@@ -99,6 +98,7 @@ begin
   RegisterComponents('PHP', [TpsvPHP]);
   RegisterComponents('PHP', [TPHPLibrary]);
   RegisterComponents('PHP', [TPHPClass]);
+   RegisterComponents('PHP', [TPHPSystemLibrary]);
   RegisterPropertyEditor(TypeInfo(String), TpsvPHP, 'FileName', TScriptFileProperty);
   RegisterPropertyEditor(TypeInfo(TPHPAboutInfo), TPHPComponent, 'About', TPHPVersionEditor);
   RegisterPropertyEditor(TypeInfo(TPHPAboutInfo), TCustomPHPExtension, 'About', TphpVersionEditor);

@@ -87,6 +87,19 @@
         <DCCReference Include="vclactnband.dcp"/>
         <DCCReference Include="vclx.dcp"/>
         <DCCReference Include="PHPProjectWizard.pas"/>
+        <DCCReference Include="DelphiFunctions.pas"/>
+        <DCCReference Include="phpLibrary.pas"/>
+        <DCCReference Include="phpCommon.pas"/>
+        <DCCReference Include="phpFunctions.pas"/>
+        <DCCReference Include="ZENDTypes.pas"/>
+        <DCCReference Include="phpClass.pas"/>
+        <DCCReference Include="php4delphi.pas"/>
+        <DCCReference Include="phpModules.pas"/>
+        <DCCReference Include="phpAPI.pas"/>
+        <DCCReference Include="ZENDAPI.pas"/>
+        <DCCReference Include="PHPTypes.pas">
+            <Form>Components Requirements</Form>
+        </DCCReference>
         <DCCReference Include="php4DelphiReg.pas"/>
         <DCCReference Include="php4DelphiWeb.pas"/>
         <DCCReference Include="phpWeb.pas"/>
@@ -123,16 +136,7 @@
                 <Platform value="Win32">True</Platform>
             </Platforms>
             <Deployment Version="3">
-                <DeployClass Name="DependencyModule">
-                    <Platform Name="Win32">
-                        <Operation>0</Operation>
-                        <Extensions>.dll;.bpl</Extensions>
-                    </Platform>
-                    <Platform Name="OSX32">
-                        <Operation>1</Operation>
-                        <Extensions>.dylib</Extensions>
-                    </Platform>
-                </DeployClass>
+                <DeployClass Name="ProjectiOSDeviceResourceRules"/>
                 <DeployClass Name="ProjectOSXResource">
                     <Platform Name="OSX32">
                         <RemoteDir>Contents\Resources</RemoteDir>
@@ -471,7 +475,16 @@
                         <Operation>1</Operation>
                     </Platform>
                 </DeployClass>
-                <DeployClass Name="ProjectiOSDeviceResourceRules"/>
+                <DeployClass Name="DependencyModule">
+                    <Platform Name="Win32">
+                        <Operation>0</Operation>
+                        <Extensions>.dll;.bpl</Extensions>
+                    </Platform>
+                    <Platform Name="OSX32">
+                        <Operation>1</Operation>
+                        <Extensions>.dylib</Extensions>
+                    </Platform>
+                </DeployClass>
                 <ProjectRoot Platform="iOSDevice64" Name="$(PROJECTNAME).app"/>
                 <ProjectRoot Platform="Win64" Name="$(PROJECTNAME)"/>
                 <ProjectRoot Platform="iOSDevice32" Name="$(PROJECTNAME).app"/>

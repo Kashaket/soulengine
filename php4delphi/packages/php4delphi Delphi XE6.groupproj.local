@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<BorlandProject>
+	<Transactions>
+    <Transaction>1899.12.30 00:00:00.000.717,C:\Users\Andrew\Documents\GitHub\php4delphi\ProjectGroup1.groupproj=C:\Users\Andrew\Documents\GitHub\php4delphi\php4delphi2010.groupproj</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.086,C:\Users\Andrew\Documents\GitHub\php4delphi\php4delphi2010.groupproj=C:\Users\Andrew\Documents\GitHub\php4delphi\php4delphi 10 Seattle.groupproj</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.047,C:\Users\Andrew\Documents\GitHub\php4delphi\php4delphi 10 Seattle.groupproj=C:\Users\Andrew\Documents\GitHub\php4delphi\php4delphi Delphi 10 Seattle.groupproj</Transaction>
+    <Transaction>2019.03.04 22:31:53.120,C:\Users\Andrew\Documents\GitHub\php4delphi\packages\php4delphi Delphi 10.1 Berlin.groupproj=C:\Users\Andrew\Documents\GitHub\php4delphi\php4delphi Delphi 10.1 Berlin.groupproj</Transaction>
+    <Transaction>2019.03.04 22:32:03.207,C:\Users\Andrew\Documents\GitHub\php4delphi\packages\php4delphi Delphi 10 Seattle.groupproj=C:\Users\Andrew\Documents\GitHub\php4delphi\packages\php4delphi Delphi 10.1 Berlin.groupproj</Transaction>
+    <Transaction>2019.03.04 22:32:09.673,C:\Users\Andrew\Documents\GitHub\php4delphi\packages\php4delphi Delphi 10.2 Tokyo.groupproj=C:\Users\Andrew\Documents\GitHub\php4delphi\packages\php4delphi Delphi 10 Seattle.groupproj</Transaction>
+    <Transaction>2019.03.04 22:32:17.131,C:\Users\Andrew\Documents\GitHub\php4delphi\packages\php4delphi Delphi XE1.groupproj=C:\Users\Andrew\Documents\GitHub\php4delphi\packages\php4delphi Delphi 10.2 Tokyo.groupproj</Transaction>
+    <Transaction>2019.03.04 22:32:22.720,C:\Users\Andrew\Documents\GitHub\php4delphi\packages\php4delphi Delphi XE2.groupproj=C:\Users\Andrew\Documents\GitHub\php4delphi\packages\php4delphi Delphi XE1.groupproj</Transaction>
+    <Transaction>2019.03.04 22:32:29.457,C:\Users\Andrew\Documents\GitHub\php4delphi\packages\php4delphi Delphi XE3.groupproj=C:\Users\Andrew\Documents\GitHub\php4delphi\packages\php4delphi Delphi XE2.groupproj</Transaction>
+    <Transaction>2019.03.04 22:32:34.993,C:\Users\Andrew\Documents\GitHub\php4delphi\packages\php4delphi Delphi XE4.groupproj=C:\Users\Andrew\Documents\GitHub\php4delphi\packages\php4delphi Delphi XE3.groupproj</Transaction>
+    <Transaction>2019.03.04 22:32:41.465,C:\Users\Andrew\Documents\GitHub\php4delphi\packages\php4delphi Delphi XE5.groupproj=C:\Users\Andrew\Documents\GitHub\php4delphi\packages\php4delphi Delphi XE4.groupproj</Transaction>
+  </Transactions>
+	<Default.Personality>
+		<Projects ActiveProject="C:\Users\Andrew\Documents\GitHub\php4delphi\php4DelphiD2010.dproj"/>
+	</Default.Personality>
+</BorlandProject>

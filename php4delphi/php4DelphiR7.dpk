@@ -30,11 +30,11 @@ package php4DelphiR7;
 {$RUNONLY}
 {$IMPLICITBUILD OFF}
 
-rrequires
+requires
   rtl,
   vcl;
 
-ocontains
+contains
   ZENDAPI in 'ZENDAPI.pas',
   DelphiFunctions in 'DelphiFunctions.pas',
   php4delphi in 'php4delphi.pas',
@@ -48,4 +48,4 @@ ocontains
   phpClass in 'phpClass.pas',
   PHPCommon in 'PHPCommon.pas';
 
-d.
+end.

@@ -128,7 +128,8 @@ var
 
 function GetSymbolsTable : PHashTable;
 function GetTrackHash(Name : AnsiString) : PHashTable;
-function GetSAPIGlobals : Psapi_globals_struct;
+function GetSAPIGlobals : Psapi_globals_struct; overload;
+function GetSAPIGlobals(TSRMLS_DC : pointer) : Psapi_globals_struct; overload;
 //procedure phperror(Error : PAnsiChar);
 
 var
@@ -401,7 +402,28 @@ begin
      Result := sapi_globals;
    end;
 end;
+function GetSAPIGlobals(TSRMLS_DC : pointer) : Psapi_globals_struct;
+var
+ sapi_global_id : pointer;
+ sapi_globals_value : integer;
+ sapi_globals : Psapi_globals_struct;
 
+begin
+  Result := nil;
+  sapi_global_id := GetProcAddress(PHPLib, 'sapi_globals_id');
+  if Assigned(sapi_global_id) then
+   begin
+     sapi_globals_value := integer(sapi_global_id^);
+     asm
+       mov ecx, sapi_globals_value
+       mov edx, dword ptr tsrmls_dc
+       mov eax, dword ptr [edx]
+       mov ecx, dword ptr [eax+ecx*4-4]
+       mov sapi_globals, ecx
+     end;
+     Result := sapi_globals;
+   end;
+end;
 
 function zval2variant(value : zval) : variant;
 begin

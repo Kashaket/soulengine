@@ -41,7 +41,6 @@ contains
   PHPAPI in 'PHPAPI.pas',
   phpModules in 'phpModules.pas',
   PHPLibrary in 'PHPLibrary.pas',
-  phpCustomLibrary in 'phpCustomLibrary.pas',
   PHPFunctions in 'PHPFunctions.pas',
   PHPTypes in 'PHPTypes.pas',
   ZENDTypes in 'ZENDTypes.pas',

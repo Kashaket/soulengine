@@ -32,7 +32,7 @@ TArrayVariant = array of variant;
 const
 PHPWin =
 {$IFDEF PHP_DEBUG}
-{$IFDEF PHP700}
+{$IFDEF PHP7}
   'php7phpdbg.dll'
 {$ELSE}
  {$IFDEF PHP5}
@@ -43,7 +43,7 @@ PHPWin =
  {$ENDIF}
 {$ELSE}
  {$IFDEF PHP5}
-    {$IFDEF PHP700}
+    {$IFDEF PHP7}
     {$IFDEF LINUX}
          'php7ts.so'
    {$ENDIF}
@@ -86,10 +86,10 @@ function  ZENDLoaded: boolean;
 
 {Memory management functions}
 var
-  {$IFDEF PHP700}
-  zend_strndup   : function(const s: PChar; length: integer): PChar; cdecl;
-  {$ELSE}
+  {$IFNDEF PHP7}
   zend_strndup   : function(s: PAnsiChar; length: Integer): PAnsiChar; cdecl;
+  {$ELSE}
+  zend_strndup   : function(s:PAnsiChar; length:size_t):PAnsiChar; cdecl;
   {$ENDIF}
   _emalloc       : function(size: size_t; __zend_filename: PAnsiChar; __zend_lineno: uint; __zend_orig_filename: PAnsiChar; __zend_orig_line_no: uint): pointer; cdecl;
   _efree         : procedure(ptr: pointer; __zend_filename: PAnsiChar; __zend_lineno: uint; __zend_orig_filename: PAnsiChar; __zend_orig_line_no: uint); cdecl;
@@ -119,9 +119,9 @@ var
 var
 
   zend_register_resource       : function (rsrc_result : pzval;  rsrc_pointer : pointer;  rsrc_type : integer) : integer; cdecl;
-  zend_fetch_resource          : function (passed_id  : ppzval; TSRMLS_DC : pointer; default_id : integer;  resource_type_name : PAnsiChar;  found_resource_type : pointer; num_resource_types: integer; resource_type: integer) : pointer; cdecl;
+  zend_fetch_resource          : function (passed_id  :{$IFNDEF PHP700} ppzval {$ELSE} pzval{$ENDIF}; TSRMLS_DC : pointer; default_id : integer;  resource_type_name : PAnsiChar;  found_resource_type : pointer; num_resource_types: integer; resource_type: integer) : pointer; cdecl;
   zend_list_insert             : function (ptr : pointer; _type: integer) : integer; cdecl;
-  {$IFNDEF PHP700}
+  {$IFNDEF PHP7}
   _zend_list_addref            : function (id  : integer; TSRMLS_DC : pointer) : integer; cdecl;
   _zend_list_delete            : function (id : integer; TSRMLS_DC : pointer) : integer; cdecl;
   _zend_list_find              : function (id : integer; _type : pointer; TSRMLS_DC : pointer) : pointer; cdecl;
@@ -536,14 +536,16 @@ var
   zend_indent                                     : procedure; cdecl;
 
   ZendGetParameters                               : function: integer; cdecl;
-  zend_get_params_ex : function(param_count : Integer; Args : ppzval) :integer; cdecl varargs;
+  zend_get_params_ex : function(param_count : Integer; Args : {$IFNDEF PHP700} ppzval {$ELSE} pzval{$ENDIF}) :integer; cdecl varargs;
 function zend_get_parameters_ex(number: integer; var Params: pzval_array): integer;
 function zend_get_parameters_my(number: integer; var Params: pzval_array; TSRMLS_DC: Pointer): integer;
 
-function zend_get_parameters(ht: integer; param_count: integer; Params: array of ppzval): integer;
+function zend_get_parameters(ht: integer; param_count: integer; Params: array of
+{$IFNDEF PHP700} ppzval {$ELSE} pzval{$ENDIF}): integer;
 
 var
-  _zend_get_parameters_array_ex : function(param_count: integer; argument_array: pppzval; TSRMLS_CC: pointer): integer; cdecl;
+  _zend_get_parameters_array_ex : function(param_count: integer; argument_array:
+  {$IFNDEF PHP700} pppzval {$ELSE} pzval{$ENDIF}; TSRMLS_CC: pointer): integer; cdecl;
 
 procedure dispose_pzval_array(Params: pzval_array);
 
@@ -601,7 +603,7 @@ var
                           TSRMLS_DC: Pointer): integer; cdecl;
 
   call_user_function_ex : function(function_table: PHashTable; object_pp: pzval;
-                         function_name: pzval; return_ptr_ptr: ppzval; param_count: zend_uint;
+                         function_name: pzval; return_ptr_ptr: {$IFNDEF PHP700} ppzval {$ELSE} pzval{$ENDIF}; param_count: zend_uint;
                          params: pzval_array;
                          no_separation: zend_uint; symbol_table: PHashTable;
                           TSRMLS_DC: Pointer): integer; cdecl;
@@ -752,8 +754,8 @@ procedure ArrayToHash(Keys,AR: Array of Variant; var HT: pzval); overload;
 function ToStrA(V: Variant): AnsiString;
 function ToStr(V: Variant): String;
 function toWChar(s: PAnsiChar): PWideChar;
-function ZendToVariant(const Value: pppzval): Variant; overload;
-function ZendToVariant(const Value: ppzval): Variant; overload;
+function ZendToVariant(const Value: {$IFNDEF PHP700} pppzval {$ELSE} pzval{$ENDIF}): Variant; overload;
+function ZendToVariant(const Value: {$IFNDEF PHP700} ppzval {$ELSE} pzval{$ENDIF}): Variant; overload;
 
 procedure ZVAL_STRING(z: pzval; s: PAnsiChar; duplicate: boolean);
 procedure ZVAL_STRINGU(z: pzval; s: PUtf8Char; duplicate: boolean);
@@ -804,14 +806,14 @@ function  strdup(strSource : PAnsiChar) : PAnsiChar; cdecl; external MSCRT name 
 {$ELSE}
 function  DupStr(strSource : PAnsiChar) : PAnsiChar; cdecl;
 {$ENDIF}
-
+{$IFNDEF PHP7}
 function ZEND_FAST_ALLOC: pzval;
 function ALLOC_ZVAL: pzval; overload;
 procedure ALLOC_ZVAL(out Result: pzval); overload;
+{$ENDIF}
 procedure INIT_PZVAL(p: pzval);
 function MAKE_STD_ZVAL: pzval; overload;
 procedure MAKE_STD_ZVAL(out Result: pzval); overload;
-
 {$IFNDEF QUIET_LOAD}
 procedure CheckZendErrors;
 {$ENDIF}
@@ -1161,7 +1163,7 @@ end;
 function ZValArrayKeyExists(v: pzval; key: AnsiString; out pData: pzval)
   : Boolean; overload;
 var
-  tmp: ppzval;
+  tmp: {$IFNDEF PHP700} ppzval {$ELSE} pzval{$ENDIF};
 begin
   Result := ZValArrayKeyExists(v, key);
   if Result then
@@ -1175,7 +1177,7 @@ end;
 function ZValArrayKeyExists(v: pzval; idx: Integer; out pData: pzval)
   : Boolean; overload;
 var
-  tmp: ppzval;
+  tmp: {$IFNDEF PHP700} ppzval {$ELSE} pzval{$ENDIF};
 begin
   Result := ZValArrayKeyExists(v, idx);
   if Result then
@@ -1202,7 +1204,7 @@ begin
       HASH_DEL_INDEX) = SUCCESS;
 end;
 
-function ZValArrayKeyFind(v: pzval; key: AnsiString; out pData: ppzval)
+function ZValArrayKeyFind(v: pzval; key: AnsiString; out pData: {$IFNDEF PHP700} ppzval {$ELSE} pzval{$ENDIF})
   : Boolean; overload;
 var
   keyStr: PAnsiChar;
@@ -1215,14 +1217,16 @@ begin
     zend_hash_func(keyStr, KeyLength), pData) = SUCCESS;
 end;
 
-function ZValArrayKeyFind(v: pzval; idx: Integer; out pData: ppzval)
+function ZValArrayKeyFind(v: pzval; idx: Integer; out pData: {$IFNDEF PHP700} ppzval {$ELSE} pzval{$ENDIF})
   : Boolean; overload;
 begin
   Result := zend_hash_quick_find(v.value.ht, nil, 0, idx, pData) = SUCCESS;
 end;
 procedure MAKE_STD_ZVAL(out Result: pzval);
 begin
-  ALLOC_ZVAL(Result);
+  {$IFNDEF PHP7}
+    ALLOC_ZVAL(Result);
+  {$ENDIF}
   INIT_PZVAL(Result);
 end;
 
@@ -1424,7 +1428,7 @@ begin
   Result := PWideChar(ss);
 end;
 
-function ZendToVariant(const Value: pppzval): Variant; overload;
+function ZendToVariant(const Value: {$IFNDEF PHP700} pppzval {$ELSE} pzval{$ENDIF}): Variant; overload;
   Var
   S: String;
 begin
@@ -1436,7 +1440,7 @@ begin
  end;
 end;
 
-function ZendToVariant(const Value: ppzval): Variant; overload;
+function ZendToVariant(const Value: {$IFNDEF PHP700} ppzval {$ELSE} pzval{$ENDIF}): Variant; overload;
   Var
   S: String;
 begin
@@ -1452,7 +1456,7 @@ end;
 procedure HashToArray(HT: PHashTable; var AR: TArrayVariant); overload;
   Var
   Len,I: Integer;
-  tmp : pppzval;
+  tmp : {$IFNDEF PHP700} pppzval {$ELSE} pzval{$ENDIF};
 begin
  len := zend_hash_num_elements(HT);
  SetLength(AR,len);
@@ -2029,7 +2033,7 @@ begin
   zend_register_resource :=           GetProcAddress(PHPLib, 'zend_register_resource');
   zend_fetch_resource :=              GetProcAddress(PHPLib, 'zend_fetch_resource');
   zend_list_insert :=                 GetProcAddress(PHPLib, 'zend_list_insert');
-  {$IFNDEF PHP700}
+  {$IFNDEF PHP7}
   _zend_list_addref :=                GetProcAddress(PHPLib, '_zend_list_addref');
   _zend_list_delete :=                GetProcAddress(PHPLib, '_zend_list_delete');
   _zend_list_find :=                  GetProcAddress(PHPLib, '_zend_list_find');
@@ -2053,33 +2057,72 @@ begin
   ts_free_id := GetProcAddress(PHPLib, 'ts_free_id');
 
   // -- zend_strndup
-  zend_strndup := GetProcAddress(PHPLib, 'zend_strndup');
-
+  zend_strndup := GetProcAddress(PHPLib,
+  {$IFNDEF PHP7}
+  'zend_strndup'
+  {$ELSE}
+  'zend_strndup@@8'
+  {$ENDIF});
 
   // -- _emalloc
-  _emalloc := GetProcAddress(PHPLib, '_emalloc');
+  _emalloc := GetProcAddress(PHPLib,
+  {$IFNDEF PHP7}
+  '_emalloc'
+  {$ELSE}
+  '_emalloc@@4'
+  {$ENDIF});
 
 
   // -- _efree
-  _efree := GetProcAddress(PHPLib, '_efree');
+  _efree := GetProcAddress(PHPLib,
+  {$IFNDEF PHP7}
+  '_efree'
+  {$ELSE}
+  '_efree@@4'
+  {$ENDIF});
 
 
   // -- _ecalloc
-  _ecalloc := GetProcAddress(PHPLib, '_ecalloc');
+  _ecalloc := GetProcAddress(PHPLib,
+  {$IFNDEF PHP7}
+  '_ecalloc'
+  {$ELSE}
+  '_ecalloc@@8'
+  {$ENDIF});
 
 
   // -- _erealloc
-  _erealloc := GetProcAddress(PHPLib, '_erealloc');
+  _erealloc := GetProcAddress(PHPLib,
+  {$IFNDEF PHP7}
+  '_erealloc'
+  {$else}
+  '_erealloc@@8'
+  {$ENDIF});
 
 
   // -- _estrdup
-  _estrdup := GetProcAddress(PHPLib, '_estrdup');
+  _estrdup := GetProcAddress(PHPLib,
+  {$IFNDEF PHP7}
+  '_estrdup'
+  {$ELSE}
+  '_estrdup@@4'
+  {$ENDIF});
 
   // -- _estrndup
-  _estrndup := GetProcAddress(PHPLib, '_estrndup');
+  _estrndup := GetProcAddress(PHPLib,
+  {$IFNDEF PHP7}
+  '_estrndup'
+  {$ELSE}
+  '_estrndup@@8'
+  {$ENDIF});
 
   // -- _estrndup  Unicode
-  _estrndupu := GetProcAddress(PHPLib, '_estrndup');
+  _estrndupu := GetProcAddress(PHPLib,
+  {$IFNDEF PHP7}
+  '_estrndup'
+  {$ELSE}
+  '_estrndup@@8'
+  {$ENDIF});
 
   // -- zend_set_memory_limit
   zend_set_memory_limit := GetProcAddress(PHPLib, 'zend_set_memory_limit');
@@ -2735,7 +2778,7 @@ begin
   class_container.handle_property_set := nil;
   {$ENDIF}
 end;
-
+{$IFNDEF PHP7}
 function ZEND_FAST_ALLOC: pzval;
 begin
   Result := emalloc(sizeof(zval));
@@ -2750,7 +2793,7 @@ procedure ALLOC_ZVAL(out Result: pzval);
 begin
   Result := emalloc(sizeof(zval));
 end;
-
+{$ENDIF}
 procedure INIT_PZVAL(p: pzval);
 begin
   p^.refcount := 1;
@@ -2770,7 +2813,9 @@ end;
 
 function MAKE_STD_ZVAL: pzval;
 begin
-  Result := ALLOC_ZVAL;
+  {$IFNDEF PHP7}
+    Result := ALLOC_ZVAL;
+  {$ENDIF}
   INIT_PZVAL(Result);
 end;
 
@@ -2793,7 +2838,7 @@ end;
 function zend_get_parameters_my(number: integer; var Params: pzval_array; TSRMLS_DC: Pointer): integer;
 var
   i  : integer;
-  p: pppzval;
+  p: {$IFNDEF PHP700} pppzval {$ELSE} pzval{$ENDIF};
 begin
   SetLength(Params, number);
   if number = 0 then
@@ -2803,15 +2848,16 @@ begin
   end;
   for i := 0 to number - 1 do
     New(Params[i]);
-
+  {$IFNDEF PHP700}
   p := emalloc(number * sizeOf(ppzval));
+  {$ENDIF}
   Result := _zend_get_parameters_array_ex(number, p, TSRMLS_DC);
 
   for i := 0 to number - 1 do
   begin
-     Params[i]^ := p^^;
+     {$IFNDEF PHP700}Params[i]^ :=  p^^ {$ELSE}Params[i] := p{$ENDIF};
      if i <> number then
-         inc(integer(p^), sizeof(ppzval));
+         inc(integer({$IFNDEF PHP700}p^{$ELSE}p{$ENDIF}), sizeof({$IFNDEF PHP700} ppzval {$ELSE} pzval{$ENDIF}));
   end;
 
   efree(p);
@@ -2877,7 +2923,7 @@ begin
   if @zend_register_resource = nil then raise EPHP4DelphiException.Create('zend_register_resource');
   if @zend_fetch_resource =    nil then raise EPHP4DelphiException.Create('zend_fetch_resource');
   if @zend_list_insert =       nil then raise EPHP4DelphiException.Create('zend_list_insert');
-  {$IFNDEF PHP700}
+  {$IFNDEF PHP7}
   if @_zend_list_addref =      nil then raise EPHP4DelphiException.Create('zend_list_addref');
   if @_zend_list_delete =      nil then raise EPHP4DelphiException.Create('zend_list_delete');
   if @_zend_list_find =        nil then raise EPHP4DelphiException.Create('_zend_list_find');
@@ -2890,6 +2936,7 @@ begin
   if @ts_allocate_id = nil then raise EPHP4DelphiException.Create('ts_allocate_id');
   if @ts_free_id = nil then raise EPHP4DelphiException.Create('ts_free_id');
   if @zend_strndup = nil then raise EPHP4DelphiException.Create('zend_strndup');
+
   if @_emalloc = nil then raise EPHP4DelphiException.Create('_emalloc');
   if @_efree = nil then raise EPHP4DelphiException.Create('_efree');
   if @_ecalloc = nil then raise EPHP4DelphiException.Create('_ecalloc');
