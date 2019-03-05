@@ -2,6 +2,7 @@
 
 GUI Tool kit for PHP, fully based on PHP4Delphi.
 <br><a href="https://github.com/KashaketCompany/php4delphi"> PHP4Delphi License-appropriately version </a><br>
+<br><a href="readme/statinfo.md"> PHP4Delphi tests result </a>
 <br><a href="https://github.com/KashaketCompany/DevelStudio-3.0-beta">DevelStudio</a>
 
 #### Readme
