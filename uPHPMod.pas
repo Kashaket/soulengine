@@ -6,7 +6,6 @@ interface
 
 uses
   SysUtils, Classes, TypInfo,
-  PHPCustomLibrary,
   phpLibrary,
   PHPCommon,
   php4delphi,
@@ -1230,7 +1229,7 @@ var
   moduleDir: string;
   engineDir: string;
   iniDir: string;
-
+  CEFStarted: boolean = false;
   MyHotKey: integer = 0;
 
   //ApplicationEx: TApplicationEx;
@@ -2119,11 +2118,16 @@ begin
   end;
 
 
-  // Application.Free;
   {$IFDEF ADD_CHROMIUM}
-    GlobalCEFApp.Free;
-    GlobalCEFApp := nil;
-  {$ENDIF}
+  if CEFStarted then
+  begin
+      GlobalCefApp.Free;
+      GlobalCEFApp  := Nil;
+      CEFStarted    := False;
+  end;
+  {$ENDIF}// Application.Free;  {$IFDEF ADD_CHROMIUM}
+  //  UnLoadChromium;
+  //  {$ENDIF}
   TrayIconFinal;
   Exitprocess(0);
 end;
@@ -2450,8 +2454,7 @@ begin
 end;
 
 // --------------------------------------------------------------------------- //
-{var
-  fatal_handler_php: String;}
+{var fatal_handler_php: String;}
 
 procedure zenderror(Error : PAnsiChar);
 begin

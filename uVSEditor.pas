@@ -6,7 +6,7 @@ interface
 
 uses
   SysUtils, Classes, Variants, Dialogs,
-  PHPCommon, PHPCustomLibrary, phpLibrary, phpFunctions
+  PHPCommon, phpLibrary, phpFunctions, php4delphi
 
       {$IFDEF VS_EDITOR}
   , NxPropertyItems, NxPropertyItemClasses, NxScrollControl,
