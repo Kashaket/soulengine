@@ -1,4 +1,11 @@
 ## RU
+#### Исправления
+Если вы используете:
+<br>@Windows Vista, XP:
+<br>1) Подлатайте исполняемый файлы PHP, которые вы пытаетесь использовать с помощью: https://github.com/d93921012/php-5.6-xp-2003
+<br>@Windows XP:<br>
+2) Замените CEF4Delphi на OldCef4DELPHI: https://github.com/salvadordf/OldCEF4Delphi
+
 #### Сборка
 1. Установить пакеты php4delphi, synedit и AlphaControls из папки проекта
 2. Открыть файл проекта soulEngine.dpr в Delphi XE6+
