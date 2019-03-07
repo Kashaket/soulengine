@@ -1,4 +1,11 @@
 ## UA
+#### Виправлення
+Якщо ви використовуєте:
+<br>@Windows Vista, XP:
+<br>1) Підлатайте виконуючі файли PHP, які ви намагаєтеся використати, за допомогою: https://github.com/d93921012/php-5.6-xp-2003
+<br>@Windows XP:<br>
+2) Замініть CEF4Delphi на OldCef4DELPHI: https://github.com/salvadordf/OldCEF4Delphi
+
 #### Компілювання
 1. Встановити пакети php4delphi, synedit та CEF4Delphi з каталогу проекту
 2. Відкрити файл проекту (SoulEngine.dpr або SoulEngine.dproj краще)
