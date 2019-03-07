@@ -1,4 +1,11 @@
 ## EN
+#### TroubleShooting
+If you're using:
+<br>@Windows Vista, XP:
+<br>1) Patch PHP executables you're trying to use with: https://github.com/d93921012/php-5.6-xp-2003
+<br>@Windows XP:<br>
+2) Replace CEF4Delphi with OldCef4DELPHI: https://github.com/salvadordf/OldCEF4Delphi
+
 #### Compiling
 1. Install php4delphi, synedit and CEF4Delphi Packages from the project's dir
 2. Open project file (SoulEngine.dpr or SoulEngine.dproj either)
