@@ -11,7 +11,7 @@ GUI Tool kit for PHP, fully based on PHP4Delphi:
 <a href="readme/ukr.md"> 🇺🇦 Українська </a><br>
 
 #### Credits and copyright
-Rewrited and Decompiled by: Kashaket
+Rewrited and Decompiled by Kashaket Corporation
 <br>Copyright on php_wincall, php_TWinTaskBar, php_skins points to Nyashik (Nyasik, http://github.com/Nyasik)
 
 📜 License requirements:
