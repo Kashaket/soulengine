@@ -110,16 +110,16 @@ begin
           Continue;
 
         if i = 0 then
-            FileList := FileList + ({$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(tmp^^))
+            FileList := FileList + (Z_STRVAL(tmp^^))
         else
-            FileList := FileList + #0 + ({$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(tmp^^));
+            FileList := FileList + #0 + (Z_STRVAL(tmp^^));
      end;
      Dispose(tmp);
 
 
      CopyFilesToClipboard( FileList );
   end else
-     CopyFilesToClipboard( {$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[0]^) );
+     CopyFilesToClipboard( Z_STRVAL(p[0]^) );
 
   dispose_pzval_array(p);
 end;
@@ -135,7 +135,7 @@ begin
 
   _array_init( return_value, nil, 0 );
   for i := 0 to FileList.Count - 1 do
-    add_index_stringl(return_value, i, PAnsiChar(FileList[i]), Length(FileList[i]), 1);
+    add_index_stringl(return_value, i, zend_pchar(FileList[i]), Length(FileList[i]), 1);
 
   FileList.Destroy;
 end;
@@ -158,11 +158,11 @@ if (ht > 1) and (p[1]^._type <> IS_NULL) then
 begin
   Pic := TPicture.Create;
   M := TMemoryStream.Create;
-  format := LowerCase({$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[1]^));
+  format := LowerCase(Z_STRVAL(p[1]^));
 
   try
 
-    String2Stream( {$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[0]^), M );
+    String2Stream( Z_STRVAL(p[0]^), M );
   if ( format = 'png' )  then
   begin
        PNG := TPNGImage.Create;
@@ -227,11 +227,11 @@ end;
 
 procedure clipboard_checkformat;
 var p: pzval_array;
-format: ansistring;
+format: zend_ustr;
 begin
   if ht <> 1 then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
   zend_get_parameters_ex(ht, p);
-  format := LowerCase({$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[0]^));
+  format := LowerCase(Z_STRVAL(p[0]^));
   if (format = 'text') or (format = 'word') or (format = '1') then
   ZVAL_BOOL( return_value, Clipboard.HasFormat( CF_TEXT ) or Clipboard.HasFormat( CF_OEMTEXT )
   or Clipboard.HasFormat( CF_UNICODETEXT ) or Clipboard.HasFormat( CF_LOCALE )

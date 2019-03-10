@@ -24,7 +24,7 @@ uses
   Messages, MImage, GIFImage2, Jpeg, Grids,
   CaptionedDockTree2,
    Vcl.Imaging.PNGImage, svgimage,
-  Clipbrd, System.AnsiStrings,
+  Clipbrd, {$IFDEF PHP_UNICE}System.WideStrUtils,{$ELSE}System.AnsiStrings,{$ENDIF}
 
 {$IFDEF MSWINDOWS}
   ActiveX, ShlObj, WinInet, System.UITypes,
@@ -45,17 +45,17 @@ uses
   , SynCompletionProposal, SynEdit, SynEditHighlighter
   {$ENDIF}
 {$ENDIF};
-procedure RunCodeMy(Code: {$IFDEF PHP_UNICE}UTF8String{$ELSE}AnsiString{$ENDIF}; PSV: TpsvPHP = nil);
+procedure RunCodeMy(Code: zend_ustr; PSV: TpsvPHP = nil);
 procedure addVar(aName, aValue: variant; PSV: TpsvPHP = nil);
-// procedure createPHPProcess(S: AnsiString; BW: TBackgroundWorker);
+// procedure createPHPProcess(S: zend_ustr; BW: TBackgroundWorker);
 function ToObj(V: variant): TObject; overload;
 function ToObj(Parameters: TFunctionParams; I: integer): TObject; overload;
 function ToComp(V: variant): TComponent;
 function ToCntrl(V: variant): TControl;
-function ToPChar(V: variant): PAnsiChar;
+function ToPChar(V: variant): zend_pchar;
 function ToPWideChar(V: variant): PWideChar;
-procedure phperror(Error : PAnsiChar);
-procedure zenderror(Error : PAnsiChar);
+procedure phperror(Error : zend_pchar);
+procedure zenderror(Error : zend_pchar);
 procedure SetAsMainForm(aForm: TForm);
 
 type
@@ -745,9 +745,6 @@ type
     procedure _TSynEditFunctions6Execute(Sender: TObject;
       Parameters: TFunctionParams; var ReturnValue: variant;
       ZendVar: TZendVariable; TSRMLS_DC: Pointer);
-    procedure PHPLibraryFunctions50Execute(Sender: TObject;
-      Parameters: TFunctionParams; var ReturnValue: variant;
-      ZendVar: TZendVariable; TSRMLS_DC: Pointer);
     procedure _TSynEditFunctions7Execute(Sender: TObject;
       Parameters: TFunctionParams; var ReturnValue: variant;
       ZendVar: TZendVariable; TSRMLS_DC: Pointer);
@@ -929,9 +926,6 @@ type
       Parameters: TFunctionParams; var ReturnValue: variant;
       ZendVar: TZendVariable; TSRMLS_DC: Pointer);
     procedure _BackWorkerFunctions21Execute(Sender: TObject;
-      Parameters: TFunctionParams; var ReturnValue: variant;
-      ZendVar: TZendVariable; TSRMLS_DC: Pointer);
-    procedure PHPLibraryFunctions59Execute(Sender: TObject;
       Parameters: TFunctionParams; var ReturnValue: variant;
       ZendVar: TZendVariable; TSRMLS_DC: Pointer);
     procedure _TSizeCtrlFunctions13Execute(Sender: TObject;
@@ -1186,11 +1180,11 @@ type
 
     procedure RunFile(FName: string);
     procedure RunModuleFile(FName: string);
-    procedure RunCode(S: {$IFDEF PHP_UNICE}UTF8String{$ELSE}AnsiString{$ENDIF});
+    procedure RunCode(S: zend_ustr);
 
     procedure setVar(aName: string; aVal: variant);
-    function getVar(aName: {$IFDEF PHP_UNICE}UTF8String{$ELSE}AnsiString{$ENDIF}): {$IFDEF PHP_UNICE}UTF8String{$ELSE}AnsiString{$ENDIF};
-    procedure ThreadEval(const Name: {$IFDEF PHP_UNICE}UTF8String{$ELSE}AnsiString{$ENDIF}; PHP: TpsvPHP = nil;
+    function getVar(aName: zend_ustr): zend_ustr;
+    procedure ThreadEval(const Name: zend_ustr; PHP: TpsvPHP = nil;
       TSRMLS_DC: Pointer = nil);
   end;
 
@@ -1210,11 +1204,11 @@ type
   TArrayString = array of string;
   TArrayVariant = array of variant;
   TPHPArray = array of HashItem;
-  TVarDict = TDictionary<System.AnsiString, System.Variant>;
+  TVarDict = TDictionary<zend_ustr, System.Variant>;
   THidedLastError = record
-    AText: AnsiString;
+    AText: zend_ustr;
     AType: integer;
-    AFileName: AnsiString;
+    AFileName: zend_ustr;
     ALineNo: integer
   end;
 
@@ -1240,8 +1234,8 @@ var
 const
   aNil = -1;
 
-procedure PHPEnginelScriptError(Sender: TObject; AText: AnsiString;
-  AType: integer; AFileName: AnsiString; ALineNo: integer);
+procedure PHPEnginelScriptError(Sender: TObject; AText: zend_ustr;
+  AType: integer; AFileName: zend_ustr; ALineNo: integer);
 implementation
 
 uses uMain, uMainForm, ImgList, Math, IniFiles, Types,
@@ -1257,10 +1251,10 @@ begin
   Pointer(P^) := aForm;
 end;
 
-function File2String(FName: string): AnsiString;
+function File2String(FName: string): zend_ustr;
 var
   MyStream: TMemoryStream;
-  MyString: AnsiString;
+  MyString: zend_ustr;
 begin
   MyStream := TMemoryStream.Create;
   try
@@ -1287,27 +1281,27 @@ begin
   Result := V;
 end;
 
-function ToPChar(V: variant): PAnsiChar;
+function ToPChar(V: variant): zend_pchar;
 begin
-  Result := PAnsiChar(AnsiString(V));
+  Result := zend_pchar(zend_ustr(V));
 end;
  function ToPWideChar(V: variant): PWideChar;
 begin
   Result := PWideChar(String(ToStr(V)));
 end;
-function ToStrA(V: variant): AnsiString;
+function ToStrA(V: variant): zend_ustr;
 begin
-  Result := AnsiString(V);
+  Result := zend_ustr(V);
 end;
 
-function ToPCharA(V: variant): PAnsiChar;
+function ToPCharA(V: variant): zend_pchar;
 begin
-  Result := PAnsiChar(ToStrA(V));
+  Result := zend_pchar(zend_ustr(V));
 end;
 
 function ZendToVariant(const Value: pppzval): variant;
 var
-  S: AnsiString;
+  S: zend_ustr;
 begin
   case Value^^^._type of
     1:
@@ -1386,9 +1380,9 @@ begin
       varEmpty:
         add_index_null(HT, I);
       varString:
-        add_index_string(HT, I, PAnsiChar(AnsiString(ToStr(AR[I]))), 1);
+        add_index_string(HT, I, zend_pchar(zend_ustr(ToStr(AR[I]))), 1);
       258:
-        add_index_string(HT, I, PAnsiChar(AnsiString(ToStr(AR[I]))), 1);
+        add_index_string(HT, I, zend_pchar(zend_ustr(ToStr(AR[I]))), 1);
     end;
   end;
 end;
@@ -1397,35 +1391,39 @@ procedure ArrayToHash(Keys, AR: array of variant; var HT: pzval); overload;
 var
   I, Len: integer;
   V: variant;
-  Key: PAnsiChar;
-  S: PAnsiChar;
+  Key,  S: zend_pchar;
 begin
   _array_init(HT, nil, 1);
   Len := Length(AR);
   for I := 0 to Len - 1 do
   begin
     V := AR[I];
-    Key := PAnsiChar(ToStrA(Keys[I]));
-    S := PAnsiChar(ToStrA(V));
+    Key := ToPCharA(Keys[I]);
+    S := ToPCharA(V);
     case VarType(AR[I]) of
       varInteger, varSmallint, varLongWord, 17:
-        add_assoc_long_ex(HT, ToPChar(Keys[I]), System.AnsiStrings.StrLen(ToPChar(Keys[I]) ) +
+        add_assoc_long_ex(HT, ToPChar(Keys[I]),
+        {$IFDEF PHP_UNICE}Length{$ELSE}System.AnsiStrings.StrLen{$ENDIF}(ToPChar(Keys[I]) ) +
           1, AR[I]);
       varDouble, varSingle:
-        add_assoc_double_ex(HT, ToPChar(Keys[I]), System.AnsiStrings.StrLen(ToPChar(Keys[I])) +
+        add_assoc_double_ex(HT, ToPChar(Keys[I]),
+        {$IFDEF PHP_UNICE}Length{$ELSE}System.AnsiStrings.StrLen{$ENDIF}(ToPChar(Keys[I])) +
           1, AR[I]);
       varBoolean:
-        add_assoc_bool_ex(HT, ToPChar(Keys[I]), System.AnsiStrings.StrLen(ToPChar(Keys[I])) +
+        add_assoc_bool_ex(HT, ToPChar(Keys[I]),
+        {$IFDEF PHP_UNICE}Length{$ELSE}System.AnsiStrings.StrLen{$ENDIF}(ToPChar(Keys[I])) +
           1, AR[I]);
       varEmpty:
-        add_assoc_null_ex(HT, ToPChar(Keys[I]), System.AnsiStrings.StrLen(ToPChar(Keys[I])) + 1);
+        add_assoc_null_ex(HT, ToPChar(Keys[I]),
+        {$IFDEF PHP_UNICE}Length{$ELSE}System.AnsiStrings.StrLen{$ENDIF}(ToPChar(Keys[I])) + 1);
       varString, 258:
-        add_assoc_string_ex(HT, Key, System.AnsiStrings.StrLen(Key) + 1, S, 1);
+        add_assoc_string_ex(HT, Key,
+        {$IFDEF PHP_UNICE}Length{$ELSE}System.AnsiStrings.StrLen{$ENDIF}(Key) + 1, S, 1);
     end;
   end;
 end;
 
-procedure RunCodeMy(Code: {$IFDEF PHP_UNICE}UTF8String{$ELSE}AnsiString{$ENDIF}; PSV: TpsvPHP = nil);
+procedure RunCodeMy(Code: zend_ustr; PSV: TpsvPHP = nil);
 begin
   if PSV = nil then
     phpMOD.RunCode(Code + ' ?>')
@@ -1437,10 +1435,10 @@ procedure addVar(aName, aValue: variant; PSV: TpsvPHP = nil);
 begin
   aValue := StringReplace(aValue, '\', '\\', [rfReplaceAll]);
   if PSV = nil then
-    phpMOD.RunCode(AnsiString('$GLOBALS["' + aName + '"]= ''' + AddSlashes(aValue)
+    phpMOD.RunCode(zend_ustr('$GLOBALS["' + aName + '"]= ''' + AddSlashes(aValue)
       + '''; ?>'))
   else
-    PSV.RunCode(AnsiString('$GLOBALS["' + aName + '"]= ''' + AddSlashes(aValue) +
+    PSV.RunCode(zend_ustr('$GLOBALS["' + aName + '"]= ''' + AddSlashes(aValue) +
       '''; ?>'));
 end;
 
@@ -1544,7 +1542,7 @@ begin
   Write(myFile, S + #13 + #13 + #13);
   CloseFile(myFile);
 end;
-procedure TphpMOD.RunCode(S: {$IFDEF PHP_UNICE}UTf8String{$ELSE}AnsiString{$ENDIF});
+procedure TphpMOD.RunCode(S: zend_ustr);
 begin
   if not psvPHP.UseDelimiters then
     S := '<? ' + S;
@@ -1556,7 +1554,7 @@ procedure TphpMOD.RunFile(FName: string);
 begin
   if not FileExists(FName) then
     exit;
-  psvPHP.FileName := AnsiString(FName);
+  psvPHP.FileName := zend_ustr(FName);
   psvPHP.RunCode(File2String(FName));
 end;
 
@@ -1571,13 +1569,13 @@ end;
 
 procedure TphpMOD.setVar(aName: string; aVal: variant);
 begin
-  if psvPHP.variables.IndexOf(AnsiString(Name)) > -1 then
-    psvPHP.VariableByName(AnsiString(Name)).AsString := AnsiString(aVal)
+  if psvPHP.variables.IndexOf(zend_ustr(Name)) > -1 then
+    psvPHP.VariableByName(zend_ustr(Name)).AsString := zend_ustr(aVal)
   else
     with psvPHP.variables.Add do
     begin
-      Name := AnsiString(aName);
-      Value := AnsiString(aVal);
+      Name := zend_ustr(aName);
+      Value := zend_ustr(aVal);
     end;
 end;
 
@@ -1921,7 +1919,7 @@ begin
   initStream(Parameters);
 
   tmpST.Read(S, Parameters[1].ZendVariable.AsInteger);
-  ZendVar.AsString := AnsiString(S);
+  ZendVar.AsString := zend_ustr(S);
 end;
 
 procedure TphpMOD.TStreamLibFunctions5Execute(Sender: TObject;
@@ -1973,11 +1971,8 @@ end;
 procedure TphpMOD.TStringsLibFunctions0Execute(Sender: TObject;
   Parameters: TFunctionParams; var ReturnValue: variant; ZendVar: TZendVariable;
   TSRMLS_DC: Pointer);
-var
-  S: AnsiString;
 begin
-  S := Parameters[1].ZendVariable.AsString;
-  TStringList(ToObj(Parameters, 0)).Text := String(S);
+  TStringList(ToObj(Parameters, 0)).Text := Parameters[1].ZendVariable.AsString;
 end;
 
 procedure TphpMOD.TStringsLibFunctions1Execute(Sender: TObject;
@@ -2057,7 +2052,7 @@ begin
   ReturnValue := GetKeyState(Parameters[0].Value);
 end;
 
-function TphpMOD.getVar(aName: {$IFDEF PHP_UNICE}UTf8String{$ELSE}AnsiString{$ENDIF}): {$IFDEF PHP_UNICE}UTf8String{$ELSE}AnsiString{$ENDIF};
+function TphpMOD.getVar(aName: zend_ustr): zend_ustr;
 begin
   if psvPHP.variables.IndexOf(aName) > -1 then
     Result := psvPHP.VariableByName(aName).Value
@@ -2262,10 +2257,10 @@ procedure TphpMOD.libApplicationFunctions11Execute(Sender: TObject;
   Parameters: TFunctionParams; var ReturnValue: variant; ZendVar: TZendVariable;
   TSRMLS_DC: Pointer);
 var
-  Prop: AnsiString;
+  Prop: zend_ustr;
   V: variant;
 begin
-  Prop := AnsiLowerCase(Parameters[0].ZendVariable.AsString);
+  Prop := {$IFDEF PHP_UNICE}UTF8LowerCase{$ELSE}AnsiLowerCase{$ENDIF}(Parameters[0].ZendVariable.AsString);
   V := Parameters[1].Value;
 
   with Application do
@@ -2456,11 +2451,11 @@ end;
 // --------------------------------------------------------------------------- //
 {var fatal_handler_php: String;}
 
-procedure zenderror(Error : PAnsiChar);
+procedure zenderror(Error : zend_pchar);
 begin
 if fatal_handler_php <> '' then
   begin
-  RunCodeMy(AnsiString(fatal_handler_php + '(' + IntToStr(0) + ',' + AddSlashes(String(AnsiString(Error))) + ');'), nil);
+  RunCodeMy(zend_ustr(fatal_handler_php + '(' + IntToStr(0) + ',' + AddSlashes(String(zend_ustr(Error))) + ');'), nil);
   end
   else
   begin
@@ -2471,15 +2466,15 @@ procedure phperror(Error : PAnsiChar);
 begin
 if fatal_handler_php <> '' then
   begin
-  RunCodeMy(AnsiString(fatal_handler_php + '(' + IntToStr(0) + ',' + AddSlashes(String(AnsiString(Error))) + ');'), nil);
+  RunCodeMy(zend_ustr(fatal_handler_php + '(' + IntToStr(0) + ',' + AddSlashes(String(zend_ustr(Error))) + ');'), nil);
   end
   else
   begin
   zend_error(E_PARSE, Error);
   end;
 end;
-procedure PHPEnginelScriptError(Sender: TObject; AText: AnsiString;
-  AType: integer; AFileName: AnsiString; ALineNo: integer);
+procedure PHPEnginelScriptError(Sender: TObject; AText: zend_ustr;
+  AType: integer; AFileName: zend_ustr; ALineNo: integer);
 var
   S: string;
   PHP: TpsvPHP;
@@ -2493,14 +2488,14 @@ begin
     begin
       if Assigned(PHP.Thread) then
       begin
-        PHP.RunCode(AnsiString(fatal_handler_php + '(' + IntToStr(integer(AType)) + ',' +
+        PHP.RunCode(zend_ustr(fatal_handler_php + '(' + IntToStr(integer(AType)) + ',' +
           '''' + AddSlashes(String(AText)) + ''', ''' + AddSlashes(String(AFileName)) + ''', ' +
           IntToStr(ALineNo) + ');'));
         exit;
       end
     end;
 
-    RunCodeMy(AnsiString(fatal_handler_php + '(' + IntToStr(integer(AType)) + ',' + '''' +
+    RunCodeMy(zend_ustr(fatal_handler_php + '(' + IntToStr(integer(AType)) + ',' + '''' +
       AddSlashes(String(AText)) + ''', ''' + AddSlashes(string(AFileName)) + ''', ' +
       IntToStr(ALineNo) + ');'), nil);
 
@@ -2938,7 +2933,7 @@ begin
   end;
 end;
 
-function SetClipboardText(Wnd: HWND; Value: {$IFDEF PHP_UNICE}Utf8String{$ELSE}AnsiString{$ENDIF}): boolean;
+function SetClipboardText(Wnd: HWND; Value: zend_ustr): boolean;
 var
   hData: HGlobal;
   pData: Pointer;
@@ -2953,7 +2948,7 @@ begin
       try
         pData := GlobalLock(hData);
         try
-          Move(PAnsiChar(Value)^, pData^, Len);
+          Move(zend_pchar(Value)^, pData^, Len);
           EmptyClipboard;
           SetClipboardData({$IFDEF PHP_UNICE}CF_UNICODETEXT{$ELSE}CF_TEXT{$ENDIF}, hData);
         finally
@@ -2971,7 +2966,7 @@ begin
     Result := False;
 end;
 
-function GetClipboardText(Wnd: HWND; var {$IFDEF PHP_UNICE}strr{$ELSE}str{$ENDIF}: {$IFDEF PHP_UNICE}Utf8String{$ELSE}AnsiString{$ENDIF}): boolean;
+function GetClipboardText(Wnd: HWND; var {$IFDEF PHP_UNICE}strr{$ELSE}str{$ENDIF}: zend_ustr): boolean;
 var
   hData: HGlobal;
   {$IFDEF PHP_UNICE}str: String;{$ENDIF}
@@ -3004,10 +2999,10 @@ end;
 procedure TphpMOD.OSApiFunctions30Execute(Sender: TObject;
   Parameters: TFunctionParams; var ReturnValue: variant; ZendVar: TZendVariable;
   TSRMLS_DC: Pointer);
-var str: {$IFDEF PHP_UNICE}UTF8String{$ELSE}AnsiString{$ENDIF};
+var str: zend_ustr;
 begin
   GetClipboardText(Application.Handle, str);
-  ZVAL_STRINGU(ZendVar.AsZendVariable, PUtf8Char(str), false);
+  ZVAL_STRING(ZendVar.AsZendVariable, zend_pchar(str), false);
 end;
 
 procedure TphpMOD.OSApiFunctions31Execute(Sender: TObject;
@@ -3371,8 +3366,8 @@ procedure TphpMOD._ExeModFunctions2Execute(Sender: TObject;
   Parameters: TFunctionParams; var ReturnValue: variant; ZendVar: TZendVariable;
   TSRMLS_DC: Pointer);
 begin
-  ZendVar.AsString := AnsiString(ExeM.ExtractToString(Parameters[0].Value));
-  ReturnValue := AnsiString(ExeM.ExtractToString(Parameters[0].Value));
+  ZendVar.AsString := zend_ustr(ExeM.ExtractToString(Parameters[0].Value));
+  ReturnValue := zend_ustr(ExeM.ExtractToString(Parameters[0].Value));
 end;
 
 procedure TphpMOD._ExeModFunctions3Execute(Sender: TObject;
@@ -3409,7 +3404,7 @@ begin
 end;
 {
   var
-  Buffer: array[0..1023] of AnsiChar;
+  Buffer: array[0..1023] of zend_uchar;
   begin
   SetString(Result, Buffer, GetTempPath(Sizeof(Buffer) - 1, Buffer));
   end; }
@@ -3465,7 +3460,7 @@ begin
 
   try
     if (Parameters[1].ZendVariable.IsNull) then
-      ZendVar.AsString := AnsiString(TControl(O).HelpKeyword)
+      ZendVar.AsString := zend_ustr(TControl(O).HelpKeyword)
       // ReturnValue := TControl(o).HelpKeyword
     else
       TControl(O).HelpKeyword := String(Parameters[1].ZendVariable.AsString);
@@ -3710,7 +3705,7 @@ procedure TphpMOD.PHPLibraryFunctions28Execute(Sender: TObject;
   Parameters: TFunctionParams; var ReturnValue: variant; ZendVar: TZendVariable;
   TSRMLS_DC: Pointer);
 var
-  S: AnsiString;
+  S: zend_ustr;
 begin
   Parameters[0].Value := StringReplace(Parameters[0].Value, '/', '\',
     [rfReplaceAll]);
@@ -4026,12 +4021,12 @@ var
   res: longbool;
   Msg: tagMSG;
 
-  function PCharOrNil(const S: AnsiString): PAnsiChar;
+  function PCharOrNil(const S: zend_ustr): zend_pchar;
   begin
     if Length(S) = 0 then
       Result := nil
     else
-      Result := PAnsiChar(S);
+      Result := zend_pchar(S);
   end;
 
 begin
@@ -4040,8 +4035,8 @@ begin
   Sei.fMask := SEE_MASK_DOENVSUBST or SEE_MASK_FLAG_NO_UI or
     SEE_MASK_NOCLOSEPROCESS or SEE_MASK_FLAG_DDEWAIT;
   Sei.lpFile := PChar(FileName);
-  Sei.lpParameters := PWideChar(WideString(AnsiString(PCharOrNil(Parameters))));
-  Sei.lpVerb := PWideChar(WideString(AnsiString(PCharOrNil(Verb))));
+  Sei.lpParameters := PWideChar(WideString(zend_ustr(PCharOrNil(Parameters))));
+  Sei.lpVerb := PWideChar(WideString(zend_ustr(PCharOrNil(Verb))));
   Sei.nShow := CmdShow;
   Result := ShellExecuteEx(@Sei);
   if Result then
@@ -4267,11 +4262,11 @@ procedure TphpMOD.PHPLibraryFunctions33Execute(Sender: TObject;
   Parameters: TFunctionParams; var ReturnValue: variant; ZendVar: TZendVariable;
   TSRMLS_DC: Pointer);
 var
-  S: string;
+  S: zend_ustr;
 begin
   Parameters[0].Value := StringReplace(Parameters[0].Value, '/', '\',
     [rfReplaceAll]);
-  S := File2String(AnsiString(Parameters[0].Value));
+  S := File2String(zend_ustr(Parameters[0].Value));
   RunCode(S);
 end;
 
@@ -4311,11 +4306,11 @@ procedure TphpMOD.OSApiFunctions16Execute(Sender: TObject;
   TSRMLS_DC: Pointer);
 var
   cd: TCopyDataStruct;
-  S: AnsiString;
+  S: zend_ustr;
 begin
   S := Parameters[1].Value;
   cd.cbData := Length(S) + 1;
-  cd.lpData := PAnsiChar(S);
+  cd.lpData := zend_pchar(S);
   SendMessage(ToInt(Parameters[0].Value), WM_COPYDATA, 0, LParam(@cd));
 end;
 
@@ -5440,16 +5435,6 @@ begin
 {$ENDIF}
 end;
 
-procedure TphpMOD.PHPLibraryFunctions50Execute(Sender: TObject;
-  Parameters: TFunctionParams; var ReturnValue: variant; ZendVar: TZendVariable;
-  TSRMLS_DC: Pointer);
-begin
-  if Parameters[1].Value = 2012 then
-    ZendVar.AsString := (Parameters[0].ZendVariable.AsString)
-  else
-    ZendVar.AsString := Base64_Encode(Parameters[0].ZendVariable.AsString);
-end;
-
 procedure TphpMOD.__WinUtilsFunctions0Execute(Sender: TObject;
   Parameters: TFunctionParams; var ReturnValue: variant; ZendVar: TZendVariable;
   TSRMLS_DC: Pointer);
@@ -5463,16 +5448,14 @@ procedure TphpMOD.__WinUtilsFunctions1Execute(Sender: TObject;
   Parameters: TFunctionParams; var ReturnValue: Variant; ZendVar: TZendVariable;
   TSRMLS_DC: Pointer);
 begin
-dict.AddOrSetValue(AnsiString(Parameters[0].Value), Parameters[1].Value);
+dict.AddOrSetValue(zend_ustr(Parameters[0].Value), Parameters[1].Value);
 end;
 
 procedure TphpMOD.__WinUtilsFunctions2Execute(Sender: TObject;
   Parameters: TFunctionParams; var ReturnValue: Variant; ZendVar: TZendVariable;
   TSRMLS_DC: Pointer);
-var s: variant;
 begin
-dict.TryGetValue(AnsiString(Parameters[0].Value), s);
-ReturnValue := s;
+dict.TryGetValue(zend_ustr(Parameters[0].Value), ReturnValue);
 end;
 
 procedure TphpMOD.__WinUtilsFunctions3Execute(Sender: TObject;
@@ -6407,14 +6390,14 @@ procedure TphpMOD._TPictureLibFunctions22Execute(Sender: TObject;
 var
   b: Graphics.TBitmap;
   S: TMemoryStream;
-  My: Ansistring;
+  My: zend_ustr;
 begin
   b := Graphics.TBitmap(ToObj(Parameters, 0));
   S := TMemoryStream.Create;
   try
     b.SaveToStream(S);
     Stream2String(S, My);
-    ZendVar.AsString := AnsiString(My);
+    ZendVar.AsString := zend_ustr(My);
   finally
     FreeAndNil(S);
   end;
@@ -6457,7 +6440,7 @@ begin
   P := TPicture(ToObj(Parameters, 0));
   M := TMemoryStream.Create;
   String2Stream(Parameters[1].ZendVariable.AsString, M);
-  format := AnsiLowerCase(Parameters[2].ZendVariable.AsString);
+  format := {$IFDEF PHP_UNICE}UTF8LowerCase{$ELSE}AnsiLowerCase{$ENDIF}(Parameters[2].ZendVariable.AsString);
 
   if (format = 'png') then
   begin
@@ -6901,7 +6884,7 @@ begin
 
 end;
 
-procedure TphpMOD.ThreadEval(const Name: {$IFDEF PHP_UNICE}UTf8String{$ELSE}AnsiString{$ENDIF}; PHP: TpsvPHP = nil;
+procedure TphpMOD.ThreadEval(const Name: zend_ustr; PHP: TpsvPHP = nil;
   TSRMLS_DC: Pointer = nil);
 var
   id: integer;
@@ -6932,7 +6915,7 @@ begin
       if Pos('<?', Value) = 1 then
         Value := Copy(Value, 3, Length(Value) - 2);
 
-      zend_eval_string(PAnsiChar(AnsiString(Value)), nil, '', TSRMLS_DC);
+      zend_eval_string(zend_pchar(zend_ustr(Value)), nil, '', TSRMLS_DC);
       // RunCode( myDecode( value ) );
     end;
     Value := '';
@@ -6954,18 +6937,6 @@ procedure TphpMOD._BackWorkerFunctions24Execute(Sender: TObject;
   TSRMLS_DC: Pointer);
 begin
   // TUniPHPThread.Create( Parameters[0].ZendVariable.AsString, TSRMLS_DC  );
-end;
-
-procedure TphpMOD.PHPLibraryFunctions59Execute(Sender: TObject;
-  Parameters: TFunctionParams; var ReturnValue: variant; ZendVar: TZendVariable;
-  TSRMLS_DC: Pointer);
-var
-  S: AnsiString;
-begin
-  Parameters[0].Value := StringReplace(Parameters[0].Value, '/', '\',
-    [rfReplaceAll]);
-  S := (Base64_Decode(File2String(Parameters[0].Value)));
-  RunCode(S);
 end;
 
 procedure TphpMOD._TSizeCtrlFunctions13Execute(Sender: TObject;

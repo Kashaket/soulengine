@@ -1,5 +1,5 @@
 unit uPhpEvents;
-
+{$I PHP.inc}
 {$I 'sDef.inc'}
 {$ifdef fpc}
 {$mode delphi}
@@ -12,7 +12,7 @@ uses
   Classes, SysUtils, typinfo, ExtCtrls, StdCtrls, ComCtrls, SizeControl,
   Forms, Dialogs, Buttons, Controls,
   dwsHashtables, zendAPI, phpApi, ZENDTypes, php4delphi
-
+  {$IFDEF PHP_UNICE}, WideStrUtils{$ENDIF}
 {$IFDEF ADD_CHROMIUM}
     , uCefApplication, uCefChromium,  uCefChromiumOptions,
    uCEFv8Handler, uCEFv8Value, uCEFTypes,
@@ -39,7 +39,7 @@ type
 
     procedure onKeyDown(Sender: TObject; var Key: word; Shift: TShiftState);
     procedure onKeyUp(Sender: TObject; var Key: word; Shift: TShiftState);
-    procedure onKeyPress(Sender: TObject; var Key: AnsiChar);
+    procedure onKeyPress(Sender: TObject; var Key: zend_uchar);
 
     procedure onMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: integer);
@@ -196,14 +196,14 @@ type
     This: Pointer;
     TSRMLS_DC: Pointer;
   public
-    function GetEvent(const Name: ansistring): TPHPScriptEventHandler;
-    function RunEvent(const Name: ansistring; Args: array of const)
+    function GetEvent(const Name: zend_ustr): TPHPScriptEventHandler;
+    function RunEvent(const Name: zend_ustr; Args: array of const)
       : TPHPScriptEventHandler;
-    procedure ClearEvent(const Name: ansistring);
-    procedure AddEvent(const Name: ansistring; Call: pzval;
+    procedure ClearEvent(const Name: zend_ustr);
+    procedure AddEvent(const Name: zend_ustr; Call: pzval;
       First: boolean = False; aIsThread: boolean = False);
-    procedure SetEvent(const Name: ansistring; Call: pzval);
-    function GetFirstEvent(const Name: ansistring): pzval;
+    procedure SetEvent(const Name: zend_ustr; Call: pzval);
+    function GetFirstEvent(const Name: zend_ustr): pzval;
     constructor Create(This, TSRMLS_DC: Pointer);
     destructor Destroy; override;
   end;
@@ -238,11 +238,11 @@ type
   public
     IsThread: boolean;
     function ParamBool(Index: integer): boolean;
-    function ParamChar(Index: integer): AnsiChar;
+    function ParamChar(Index: integer): zend_uchar;
     function ParamInt(Index: integer): integer;
     function ParamPtr(Index: integer): Pointer;
     function ParamDouble(Index: integer): double;
-    function ParamString(Index: integer): ansistring;
+    function ParamString(Index: integer): zend_ustr;
 
     procedure AddArg(arg: pzval);
     procedure ClearAddArg;
@@ -259,8 +259,8 @@ type
   protected
     Main: TScriptThread;
   public
-    Data: ansistring;
-    MyData: ansistring;
+    Data: zend_ustr;
+    MyData: zend_ustr;
     FsSuspended: Boolean;
     procedure Execute; override;
     {$IFDEF SYSTEM.CLASSES.NOT_EDITED}
@@ -293,13 +293,13 @@ type
 
     FThread: TScriptThreadHelper;
 
-    class procedure SetBeforeCode(const Code: ansistring);
+    class procedure SetBeforeCode(const Code: zend_ustr);
 
     procedure Execute;
     procedure Resume;
     procedure Suspend;
 
-    procedure Sync(Func, MyData: ansistring);
+    procedure Sync(Func, MyData: zend_ustr);
 
     constructor Create;
     destructor Destroy; override;
@@ -373,7 +373,7 @@ var
   StartRequest_CRITICAL: TRTLCriticalSection;
   CntThreads_CRITICAL: TRTLCriticalSection;
 
-  ThreadBeforeCode: ansistring = '';
+  ThreadBeforeCode: zend_ustr = '';
   CntThreads: word = 0;
   MaxCntThreads: word = 300;
 
@@ -508,7 +508,7 @@ begin
     Result := Result + [ssDouble];
 end;
 
-procedure EventRun(Sender: TObject; Event: ansistring); overload;
+procedure EventRun(Sender: TObject; Event: zend_ustr); overload;
 var
   H: TPHPScriptEvents;
   M: TPHPScriptEventHandler;
@@ -516,16 +516,14 @@ begin
   H := GetEventController(Sender, nil);
   if H <> nil then
   begin
-  {$WARN Garbage ON}
-  {'This might cause some bugs, or fix them
-    Это может вызывать некоторые баги, ну или исправлять их...'}
+  {$MESSAGE 'This might cause some bugs, or fix them Это может вызывать некоторые баги, ну или исправлять их...'}
     M := H.RunEvent(Event, []);
      if M <> nil then
       M.ClearArgs;
   end;
 end;
 
-function EventRun(Sender: TObject; Event: ansistring; Args: array of const;
+function EventRun(Sender: TObject; Event: zend_ustr; Args: array of const;
   ClearArgs: boolean = True): TPHPScriptEventHandler; overload;
 var
   H: TPHPScriptEvents;
@@ -541,7 +539,7 @@ begin
     Result := nil;
 end;
 
-procedure EventAddNewType(Event: ansistring; handler: Pointer;
+procedure EventAddNewType(Event: zend_ustr; handler: Pointer;
   TypeClass: TClass = nil; IsThread: byte = 0);
 begin
   if EventTypes = nil then
@@ -557,7 +555,7 @@ begin
 end;
 
 // return true/false -
-function EventExists(Obj: TObject; Event: ansistring): boolean;
+function EventExists(Obj: TObject; Event: zend_ustr): boolean;
 var
   i: integer;
 begin
@@ -573,7 +571,7 @@ begin
   Result := False;
 end;
 
-function EventSet(Obj: TObject; Event: ansistring): boolean;
+function EventSet(Obj: TObject; Event: zend_ustr): boolean;
 var
   MT: TMethod;
   Func: Pointer;
@@ -1191,13 +1189,13 @@ begin
     Result := False;
 end;
 
-function TPHPScriptEventHandler.ParamChar(Index: integer): AnsiChar;
+function TPHPScriptEventHandler.ParamChar(Index: integer): zend_uchar;
 var
-  S: ansistring;
+  S: zend_ustr;
 begin
   S := Z_STRVAL(Args[index]);
   if Length(S) > 0 then
-    Result := S[1]
+    Result := {$IFDEF PHP_UNICE}zend_uchar(S[1]){$ELSE}S[1]{$ENDIF}
   else
     Result := #0;
 end;
@@ -1217,7 +1215,7 @@ begin
   Result := Pointer(Z_LVAL(Args[index]));
 end;
 
-function TPHPScriptEventHandler.ParamString(Index: integer): ansistring;
+function TPHPScriptEventHandler.ParamString(Index: integer): zend_ustr;
 begin
   Result := Z_STRVAL(Args[index]);
 end;
@@ -1226,7 +1224,9 @@ procedure TPHPScriptEventHandler.CopyVal(dest: integer; src: pzval);
 begin
   if Self.Args[dest] = nil then
   begin
+    {$IFNDEF PHP7}
     Self.Args[dest] := ALLOC_ZVAL;
+    {$ENDIF}
     INIT_PZVAL(Self.Args[dest]);
   end;
 
@@ -1243,14 +1243,14 @@ begin
 {$ENDIF}
 end;
 
-function tvarrectoansistring(const Value: TVarRec): ansistring;
+function tvarrectoansistring(const Value: TVarRec): zend_ustr;
 begin
   with Value do
   begin
     case vtype of
       vtAnsiString:
         begin
-          Result := ansistring(VAnsiString);
+          Result := zend_ustr(VAnsiString);
         end;
       vtInteger:
         begin
@@ -1266,19 +1266,19 @@ begin
         end;
       vtWideChar:
         begin
-          Result := ansistring(VWideChar);
+          Result := zend_ustr(VWideChar);
         end;
       vtString:
         begin
-          Result := VString^;
+          Result := zend_ustr(VString^);
         end;
       vtPChar:
         begin
-          Result := VPChar;
+          Result := zend_pchar(VPChar);
         end;
       vtPWideChar:
         begin
-          Result := ansistring(unicodestring(VPWideChar));
+          Result := zend_ustr(widestring(VPWideChar));
         end;
       vtCurrency:
         begin
@@ -1290,7 +1290,7 @@ begin
         end;
       vtWideString:
         begin
-          Result := ansistring(WideString(VWideString));
+          Result := zend_ustr(WideString(VWideString));
         end;
       vtInt64:
         begin
@@ -1298,7 +1298,7 @@ begin
         end;
       vtUnicodeString:
         begin
-          Result := ansistring(unicodestring(VUnicodeString));
+          Result := zend_ustr(unicodestring(VUnicodeString));
         end;
     else
       begin
@@ -1311,8 +1311,7 @@ end;
 procedure TPHPScriptEventHandler.Run(Args: array of const);
 var
   Cnt, i: integer;
-  S: ansistring;
-  strs: TStrings;
+  S: zend_ustr;
 begin
   Cnt := Length(Args);
   SetLength(Self.Args, Cnt + 1 + Length(AddArgs));
@@ -1320,7 +1319,9 @@ begin
 //ну вы если увидете, то передайте зайцеву привет
   if Self.Args[0]  = nil then
   begin
+  {$IFNDEF PHP7}
     Self.Args[0] := ALLOC_ZVAL;
+  {$ENDIF}
     INIT_PZVAL(Self.Args[0]);
   end;
   ZVAL_LONG(Self.Args[0], integer(This));
@@ -1329,7 +1330,9 @@ begin
   begin
     if Self.Args[i] = nil then
     begin
+    {$IFNDEF PHP7}
       Self.Args[i] := ALLOC_ZVAL;
+    {$ENDIF}
       INIT_PZVAL(Self.Args[i]);
     end;
 
@@ -1364,7 +1367,7 @@ begin
           if Args[i - 1].VAnsiString = nil then
             ZVAL_EMPTY_STRING(Self.Args[i])
           else
-            ZVAL_STRINGL(Self.Args[i], PAnsiChar(Args[i - 1].VAnsiString),
+            ZVAL_STRINGL(Self.Args[i], zend_pchar(zend_uchar(Args[i - 1].VAnsiString)),
               Length(ansistring(Args[i - 1].VAnsiString)), True);
         end;
       vtWideString:
@@ -1381,19 +1384,19 @@ begin
             ZVAL_EMPTY_STRING(Self.Args[i])
           else
             ZVAL_STRINGLW(Self.Args[i], PWideChar(Args[i - 1].VUnicodeString),
-              Length(ansistring(Args[i - 1].VUnicodeString)), True);
+              Length(unicodestring(Args[i - 1].VUnicodeString)), True);
         end;
       vtWideChar:
         begin
           S := tvarrectoansistring(Args[i - 1]);
-          ZVAL_STRINGL(Self.Args[i], PAnsiChar(S), 1, True);
+          ZVAL_STRINGL(Self.Args[i], zend_pchar(S), 1, True);
         end;
       vtCurrency:
         ZVAL_DOUBLE(Self.Args[i], double(Args[i - 1].VCurrency^));
       vtChar:
         begin
           S := Args[i - 1].VChar;
-          ZVAL_STRINGL(Self.Args[i], PAnsiChar(S), 1, True);
+          ZVAL_STRINGL(Self.Args[i], zend_pchar(S), 1, True);
         end
     else
       begin
@@ -1422,7 +1425,9 @@ procedure TPHPScriptEventHandler.AddArg(arg: pzval);
 var
   val: pzval;
 begin
+  {$IFNDEF PHP7}
   val := ALLOC_ZVAL;
+  {$ENDIF}
   INIT_PZVAL(val);
   zval_copy(val, arg);
 
@@ -1486,7 +1491,7 @@ begin
   end;
 end;
 
-procedure TPHPScriptEvents.ClearEvent(const Name: ansistring);
+procedure TPHPScriptEvents.ClearEvent(const Name: zend_ustr);
 begin
   with GetEvent(Name) do
     Clear;
@@ -1511,7 +1516,7 @@ begin
   inherited;
 end;
 
-function TPHPScriptEvents.GetEvent(const Name: ansistring)
+function TPHPScriptEvents.GetEvent(const Name: zend_ustr)
   : TPHPScriptEventHandler;
 var
   ID: integer;
@@ -1526,7 +1531,7 @@ begin
     Result := TPHPScriptEventHandler(Events.Objects[ID]);
 end;
 
-function TPHPScriptEvents.RunEvent(const Name: ansistring; Args: array of const)
+function TPHPScriptEvents.RunEvent(const Name: zend_ustr; Args: array of const)
   : TPHPScriptEventHandler;
 var
   ID: integer;
@@ -1552,7 +1557,7 @@ begin
   end;
 end;
 
-function TPHPScriptEvents.GetFirstEvent(const Name: ansistring): pzval;
+function TPHPScriptEvents.GetFirstEvent(const Name: zend_ustr): pzval;
 begin
   with GetEvent(Name) do
   begin
@@ -1758,14 +1763,14 @@ begin
   end;
 end;
 
-procedure THandlerFuncs.onKeyPress(Sender: TObject; var Key: AnsiChar);
+procedure THandlerFuncs.onKeyPress(Sender: TObject; var Key: zend_uchar);
 var
   H: TPHPScriptEventHandler;
 begin
   H := EventRun(Sender, 'OnKeyPress', [Key], False);
   if H <> nil then
   begin
-    Key := AnsiChar(H.ParamChar(1));
+    Key := zend_uchar(H.ParamChar(1));
     H.ClearArgs;
   end;
 end;
@@ -2082,7 +2087,6 @@ var
   H: TPHPScriptEventHandler;
 begin
   Result := True;
-
   H := EventRun(Sender, 'OnBeforeBrowse', [request.url, request.Method,
     integer(request.TransitionType), isRedirect, Result], False);
   if H <> nil then
@@ -2151,28 +2155,22 @@ end;
 
 procedure THandlerFuncs.OnLoadEnd(Sender: TObject; const browser: ICefBrowser;
 const frame: ICefFrame; httpStatusCode: Integer);
-var
-  H: TPHPScriptEventHandler;
 begin
-  H := EventRun(Sender, 'OnLoadEnd', [httpStatusCode], True);
+  EventRun(Sender, 'OnLoadEnd', [httpStatusCode], True);
 end;
 
 procedure THandlerFuncs.OnLoadError(Sender: TObject; const browser: ICefBrowser;
     const frame: ICefFrame;
     errorCode: TCefErrorCode; const errorText, failedUrl: ustring);
-var
-  H: TPHPScriptEventHandler;
 begin
-  H := EventRun(Sender, 'OnLoadError', [integer(errorCode), failedUrl,
+  EventRun(Sender, 'OnLoadError', [integer(errorCode), failedUrl,
     errorText], True);
 end;
 
 procedure THandlerFuncs.OnStatusMessage(Sender: TObject;
 const browser: ICefBrowser; const value: ustring);
-var
-  H: TPHPScriptEventHandler;
 begin
-  H := EventRun(Sender, 'OnStatusMessage', [Value], True);
+  EventRun(Sender, 'OnStatusMessage', [Value], True);
 end;
 
 procedure THandlerFuncs.OnAddressChange(Sender: TObject;
@@ -2266,13 +2264,13 @@ end;
 
 destructor TScriptSafeCommand_Message.Destroy;
 begin
-  Dispose(PAnsiString(Data));
+  Dispose(zend_pstr(Data));
   inherited;
 end;
 
 procedure TScriptSafeCommand_Message.Execute;
 begin
-  ShowMessage(PAnsiString(Data)^);
+  ShowMessage(zend_pstr(Data)^);
 end;
 
 { TScriptThread }
@@ -2321,7 +2319,7 @@ begin
     Self.FThread.FsSuspended := False;
 end;
 
-class procedure TScriptThread.SetBeforeCode(const Code: ansistring);
+class procedure TScriptThread.SetBeforeCode(const Code: zend_ustr);
 begin
   ThreadBeforeCode := Code;
 end;
@@ -2365,7 +2363,7 @@ begin
   End;
 end;
 
-procedure TScriptThread.Sync(Func, MyData: ansistring);
+procedure TScriptThread.Sync(Func, MyData: zend_ustr);
 begin
   FThread.Data := Func;
   FThread.MyData := MyData;
@@ -2387,14 +2385,14 @@ begin
   Return := MAKE_STD_ZVAL;
   Func := MAKE_STD_ZVAL;
 
-  ZVAL_STRINGL(Func, PAnsiChar(Data), Length(Data), True);
+  ZVAL_STRINGL(Func, zend_pchar(Data), Length(Data), True);
 
   SetLength(Args, 2);
   Args[0] := MAKE_STD_ZVAL;
   ZVAL_LONG(Args[0], integer(Self.Main));
 
   Args[1] := MAKE_STD_ZVAL;
-  ZVAL_STRINGL(Args[1], PAnsiChar(MyData), Length(MyData), True);
+  ZVAL_STRINGL(Args[1], zend_pchar(MyData), Length(MyData), True);
 
   call_user_function(GetExecutorGlobals.function_table, nil, Func, Return, 2,
     Args, getPsvPHP().TSRMLS_D);

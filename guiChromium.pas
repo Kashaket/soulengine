@@ -59,15 +59,15 @@ begin
   end;
   zend_get_parameters_my(ht, p, TSRMLS_DC);
 
-  GlobalCEFApp.Cache := {$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[0]^);
-  GlobalCEFApp.UserAgent := {$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[1]^);
-  GlobalCEFApp.ProductVersion := {$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[2]^);
-  GlobalCEFApp.Locale := {$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[3]^);
-  GlobalCEFApp.LogFile := {$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[4]^);
-  GlobalCEFApp.FrameworkDirPath := {$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[5]^);
+  GlobalCEFApp.Cache :=     Z_STRVAL(p[0]^);
+  GlobalCEFApp.UserAgent := Z_STRVAL(p[1]^);
+  GlobalCEFApp.ProductVersion := Z_STRVAL(p[2]^);
+  GlobalCEFApp.Locale := Z_STRVAL(p[3]^);
+  GlobalCEFApp.LogFile := Z_STRVAL(p[4]^);
+  GlobalCEFApp.FrameworkDirPath := Z_STRVAL(p[5]^);
   GlobalCEFApp.FlashEnabled := Z_BVAL(p[6]^);
   GlobalCEFApp.NoSandbox := Z_BVAL(p[7]^);
-  GLobalCEFAPP.JavaScriptFlags := {$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[8]^);
+  GLobalCEFAPP.JavaScriptFlags := Z_STRVAL(p[8]^);
   GlobalCEfApp.RemoteDebuggingPort := Z_LVAL(p[9]^);
   dispose_pzval_array(p);
 end;
@@ -99,7 +99,7 @@ begin
     for i := zend_hash_num_elements(arr) - 1 downto 0 do
     begin
       zend_hash_index_find(arr, i, tmp);
-      AllowedCall.SetValue(LowerCase(String({$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(tmp^^))), '');
+      AllowedCall.SetValue(LowerCase(String(Z_STRVAL(tmp^^))), '');
     end;
     Dispose(tmp);
   end;
@@ -109,7 +109,7 @@ end;
 
 procedure V8_ZVAL(Value: ICefv8Value; arg: pzval);
 var
-  S: ansistring;
+  S: zend_ustr;
 begin
   if Value.IsUndefined or Value.IsNull then
     ZVAL_NULL(arg)
@@ -123,11 +123,11 @@ begin
     ZVAL_DOUBLE(arg, Value.GetDateValue)
   else if Value.IsString then
   begin
-    S := AnsiString(Value.GetStringValue);
+    S := zend_ustr(Value.GetStringValue);
     if S = '' then
       ZVAL_EMPTY_STRING(arg)
     else
-      ZVAL_STRINGL(arg, PAnsiChar(S), Length(S), True);
+      ZVAL_STRINGL(arg, zend_pchar(S), Length(S), True);
   end
   else
     ZVAL_NULL(arg);
@@ -139,7 +139,7 @@ begin
     IS_LONG: Result := TCefv8ValueRef.NewInt(arg.Value.lval);
     IS_DOUBLE: Result := TCefv8ValueRef.NewDouble(arg.Value.dval);
     IS_BOOL: Result := TCefv8ValueRef.NewBool(boolean(arg.Value.lval));
-    IS_STRING: Result := TCefv8ValueRef.NewString(String({$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(arg)));
+    IS_STRING: Result := TCefv8ValueRef.NewString(String(Z_STRVAL(arg)));
     else
       Result := TCefv8ValueRef.NewNull;
   end;
@@ -150,7 +150,7 @@ function TExtension.Execute(const Name: ustring; const obj: ICefv8Value;
   var Exception: ustring): boolean;
   label ex1;
   var
-  S: ansistring;
+  S: zend_ustr;
   Args: pzval_array_ex;
   Return, Func: pzval;
   i: integer;
@@ -177,7 +177,7 @@ begin
       Return := MAKE_STD_ZVAL;
 
 
-      ZVAL_STRING(Func, PAnsiChar(S), True);
+      ZVAL_STRING(Func, zend_pchar(S), True);
 
       SetLength(args, length(arguments) - 1);
       for i := 0 to high(args) do

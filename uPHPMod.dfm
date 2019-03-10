@@ -442,20 +442,6 @@ object phpMOD: TphpMOD
         OnExecute = PHPLibraryFunctions48Execute
       end
       item
-        FunctionName = 'include_get'
-        Tag = 0
-        Parameters = <
-          item
-            Name = 'P1'
-            ParamType = tpUnknown
-          end
-          item
-            Name = 'P2'
-            ParamType = tpUnknown
-          end>
-        OnExecute = PHPLibraryFunctions50Execute
-      end
-      item
         FunctionName = 'scrollbox_vsshowing'
         Tag = 0
         Parameters = <
@@ -532,16 +518,6 @@ object phpMOD: TphpMOD
             ParamType = tpUnknown
           end>
         OnExecute = PHPLibraryFunctions57Execute
-      end
-      item
-        FunctionName = 'include_enc2'
-        Tag = 0
-        Parameters = <
-          item
-            Name = 'P1'
-            ParamType = tpUnknown
-          end>
-        OnExecute = PHPLibraryFunctions59Execute
       end
       item
         FunctionName = 'tevent_text'

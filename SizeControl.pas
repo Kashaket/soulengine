@@ -1328,7 +1328,7 @@ begin
   //nb: If controls overlap at screenPt, then the (top-most) child control
   //is selected if there is a parent-child relationship. Otherwise, simply
   //the first control under screenPt is returned.
-  Result := nil;
+
   if (ParentX = nil) then
     ParentX := fForm;
 

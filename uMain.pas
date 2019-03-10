@@ -17,7 +17,7 @@ uses
     sSpeedButton, sBitBtn, acProgressBar, sTrackBar, sBevel, sLabel
 {$ENDIF};
 
-function TempDir: Ansistring;
+function TempDir: zend_ustr;
 
 type
   T__fMain = class(TForm)
@@ -172,13 +172,13 @@ begin
     DLLFolder := ExtractFilePath(ParamStr(0));
 
   if FileExists(engineDir + '\php.ini') then
-    PHPEngine.IniPath := AnsiString(engineDir + '\php.ini')
+    PHPEngine.IniPath := zend_ustr(engineDir + '\php.ini')
   else if FileExists(iniDir + '\php.ini') then
-    PHPEngine.IniPath := AnsiString(iniDir)
+    PHPEngine.IniPath := zend_ustr(iniDir)
   else if FileExists(progDir + '\php.ini') then
-    PHPEngine.IniPath := AnsiString(progDir)
+    PHPEngine.IniPath := zend_ustr(progDir)
   else
-    PHPEngine.IniPath := AnsiString(PHPEngine.DLLFolder);
+    PHPEngine.IniPath := zend_ustr(PHPEngine.DLLFolder);
   /// FS := TFileStream.Create(PHPEngine.IniPath, fmOpenRead, fmShareDenyWrite);
 
   core_Init(PHPEngine, phpMOD.psvPHP);
@@ -236,12 +236,12 @@ begin
 end;
 end;
 
-function TempDir: Ansistring;
+function TempDir: zend_ustr;
 var
   WinDir: array [0 .. 1023] of char;
 begin
   GetTempPath(1023, WinDir);
-  Result := AnsiString(StrPas(WinDir));
+  Result := zend_ustr(StrPas(WinDir));
 end;
 
 procedure T__fMain.o1Click(Sender: TObject);

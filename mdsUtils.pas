@@ -2,7 +2,7 @@ unit mdsUtils;
 
 interface
 
-uses Windows, Messages, SysUtils, Classes, Graphics, ImgList, CommCtrl;
+uses Windows, Messages, SysUtils, Classes, Graphics, ZendTypes, ImgList, CommCtrl;
 
 function Min(A, B: longint): longint;
 function Max(A, B: longint): longint;
@@ -17,6 +17,7 @@ procedure DrawMonoBmp(ACanvas: TCanvas; MonoBmp: TBitmap;
 procedure DoDrawMonoBmp(ACanvas: TCanvas; AMonoColor: TColor;
   ALeft, ATop: integer);
 function AddSlashes(const S: string): string;
+function AddSlashesA(const S: zend_ustr): zend_ustr;
 
 
 var
@@ -32,13 +33,19 @@ type
 
 function AddSlashes(const S: string): string;
 begin
-  Result := StringReplace(S, chr(8), '8', [rfReplaceAll]);
   Result := StringReplace(S, '\', '\\', [rfReplaceAll]);
   Result := StringReplace(Result, '''', '\''', [rfReplaceAll]);
   Result := StringReplace(Result, '<?', '''."<".chr(' + IntToStr(Ord('?')) +
     ').''', [rfReplaceAll]);
 end;
-
+function AddSlashesA(const S: zend_ustr): zend_ustr;
+begin
+  Result := zend_ustr(StringReplace(
+  StringReplace(
+  StringReplace(String(S), '\', '\\', [rfReplaceAll])
+  , '''', '\''', [rfReplaceAll]), '<?', '''."<".chr(' + IntToStr(Ord('?')) +
+    ').''', [rfReplaceAll]));
+end;
 function Min(A, B: longint): longint;
 begin
   if A < B then

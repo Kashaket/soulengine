@@ -2,7 +2,7 @@ unit mainLCL;
 interface
 
 uses
-  SysUtils, Controls, Classes, Types, VCL.Forms, VCL.Dialogs
+  SysUtils, Controls, Classes, Types, ZendTypes
 
  {$ifdef fpc}
   ,fileUtil
@@ -10,10 +10,10 @@ uses
   ;
 
 function toID(o: TObject): integer;
-function ToStr(S: PAnsiChar; Len: integer): AnsiString; overload;
-function ToStr(V: variant): AnsiString; overload;
-function ToStrA(V: variant): AnsiString;
-function ToPChar(V: variant): PAnsiChar;
+function ToStr(S: zend_pchar; Len: integer): zend_ustr; overload;
+function ToStr(V: variant): zend_ustr; overload;
+function ToStrA(V: variant): zend_ustr;
+function ToPChar(V: variant): zend_pchar;
 function toObject(id: integer): TObject;
 function toWControl(id: integer): TWinControl;
 function toControl(id: integer): TControl;
@@ -43,13 +43,13 @@ begin
   Result := s;
 end;
 
-function ToStrA(V: variant): AnsiString;
+function ToStrA(V: variant): zend_ustr;
 begin
 
-  Result := AnsiString(V);
+  Result := zend_ustr(V);
 end;
 
-function ToStr(S: PAnsiChar; Len: integer): AnsiString; overload;
+function ToStr(S: zend_pchar; Len: integer): zend_ustr; overload;
 var
   i: integer;
 begin
@@ -57,18 +57,18 @@ begin
   for i := 0 to len - 1 do
   begin
     Inc(S);
-    Result := Result + s^;
+    Result := Result + zend_ustr(s^);
   end;
 end;
 
-function ToStr(V: variant): AnsiString;
+function ToStr(V: variant): zend_ustr;
 begin
-  Result := AnsiString(V);
+  Result := zend_ustr(V);
 end;
 
-function ToPChar(V: variant): PAnsiChar;
+function ToPChar(V: variant): zend_pchar;
 begin
-  Result := PAnsiChar(ToStr(V));
+  Result := zend_pchar(ToStr(V));
 end;
 
 function toID(o: TObject): integer;

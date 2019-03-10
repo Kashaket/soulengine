@@ -1,11 +1,11 @@
 unit dwsHashtables;
-
+{$I PHP.inc}
 interface
 
-uses SysUtils;
+uses SysUtils, ZendTypes {$IFDEF PHP_UNICE}, WideStrUtils{$ENDIF};
 
 type
-  ValueType = ansistring;
+  ValueType = zend_ustr;
 
   THashItem = class
     Twin: THashItem;
@@ -91,19 +91,25 @@ var
 
 procedure InitTables;
 var
-  I, K: AnsiChar;
+  I, K: zend_uchar;
   Temp: integer;
 begin
   for I := #0 to #255 do
   begin
     HashTable[I] := Ord(I);
-    InsensitiveHashTable[I] := Ord(AnsiString(AnsiUpperCase(string(I)))[1]);
+    InsensitiveHashTable[I] := Ord(
+    {$IFDEF PHP_UNICE}
+      Utf8UpperCase(Utf8String(I))[1]
+    {$ELSE}
+      AnsiString(AnsiUpperCase(string(I)))[1]
+    {$ENDIF}
+    );
   end;
   RandSeed := 111;
   for I := #1 to #255 do
   begin
     repeat
-      K := AnsiChar(Random(255));
+      K := zend_uchar(Random(255));
     until K <> #0;
     Temp := HashTable[I];
     HashTable[I] := HashTable[K];

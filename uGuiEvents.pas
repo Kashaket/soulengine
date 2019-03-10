@@ -6,7 +6,7 @@ interface
 
    uses classes, SysUtils, Dialogs, Variants, ExtCtrls,
     Graphics, Forms, Controls, ComCtrls, StdCtrls, Windows, FileCtrl,
-    ShellApi, TypInfo, ObjAuto, zendAPI, SizeControl,
+    ShellApi, TypInfo, zendAPI, zendTypes, SizeControl,
     Messages
 
       {$IFDEF ADD_CHROMIUM}
@@ -24,7 +24,7 @@ interface
       {$ENDIF}
     ;
 
-    function AddSlashes(const  S : AnsiString) : string;
+    function AddSlashes(const  S : zend_ustr) : zend_ustr;
 
     var
     __varEx: Variant;
@@ -38,7 +38,7 @@ type
   { ----------- key events -------------- }
   TKeyEvent = procedure (Sender: TObject; var Key: Word;
             Shift: TShiftState) of object;
-  TKeyEnterEvent = procedure (Sender: TObject; var Key: AnsiChar) of object;
+  TKeyEnterEvent = procedure (Sender: TObject; var Key: zend_uchar) of object;
   TChangingEvent = procedure (Sender: TObject; var AllowChange: Boolean) of object;
 
   { ----------- form events -------------- }
@@ -156,7 +156,7 @@ type
             Shift: TShiftState);
         procedure onKeyUp(Sender: TObject; var Key: Word;
             Shift: TShiftState);
-        procedure onKeyEnter(Sender: TObject; var Key: AnsiChar);
+        procedure onKeyEnter(Sender: TObject; var Key: zend_uchar);
 
         { ----- mouse events ------ }
         procedure onMouseDown(Sender: TObject; Button: TMouseButton;
@@ -288,7 +288,7 @@ implementation
 uses uPHPMod;
 
 { TEventItem }
-function GetSym(S: String; N: Integer): AnsiChar;
+function GetSym(S: String; N: Integer): zend_uchar;
 begin
   Result := S[N];
 end;
@@ -863,7 +863,7 @@ doEvent( Sender,'OnKeyDown',[integer(Sender),Key,Shift2Str(Shift)],'');
 Key := __varEx;
 end;
 
-procedure TEventItem.onKeyEnter(Sender: TObject; var Key: AnsiChar);
+procedure TEventItem.onKeyEnter(Sender: TObject; var Key: zend_uchar);
 begin
 __varEx := Key;
 doEvent( Sender,'OnKeyPress',[integer(Sender),Key],'');

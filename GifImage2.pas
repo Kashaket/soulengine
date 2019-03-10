@@ -76,11 +76,22 @@ interface
 {$ifdef TIME2HELP}
 {$UNDEF PIXELFORMAT_TOO_SLOW}
 {$endif}
-
+{$IFDEF VER230} {$DEFINE isVER230} {$ENDIF}
+{$IFDEF VER330} {$DEFINE isVER230} {$ENDIF}
+{$IFDEF VER320} {$DEFINE isVER230} {$ENDIF}
+{$IFDEF VER310} {$DEFINE isVER230} {$ENDIF}
+{$IFDEF VER300} {$DEFINE isVER230} {$ENDIF}
+{$IFDEF VER290} {$DEFINE isVER230} {$ENDIF}
+{$IFDEF VER280} {$DEFINE isVER230} {$ENDIF}
+{$IFDEF VER270} {$DEFINE isVER230} {$ENDIF}
+{$IFDEF VER260} {$DEFINE isVER230} {$ENDIF}
+{$IFDEF VER250} {$DEFINE isVER230} {$ENDIF}
+{$IFDEF VER240} {$DEFINE isVER230} {$ENDIF}
 uses
   sysutils,
   Windows,
   Graphics,
+  Types,
   Classes;
 
 const
@@ -700,6 +711,9 @@ type
 
   TGIFPainter = class(TThread)
   private
+    {$IFDEF isVER230}
+    FsSuspended: boolean; //The suspended state directive
+    {$ENDIF}
     FImage		: TGIFImage;	// The TGIFImage that owns this painter
     FCanvas		: TCanvas;	// Destination canvas
     FRect		: TRect;	// Destination rect
@@ -758,6 +772,10 @@ type
     property OnLoop: TNotifyEvent read FOnLoop write FOnLoop;
     property OnEndPaint	: TNotifyEvent read FOnEndPaint	 write FOnEndPaint	;
     property EventHandle: THandle read FEventHandle;
+    {$IFDEF isVER230}
+    procedure Suspenden;
+    procedure Resumenden;
+    {$ENDIF}
   end;
 
   TGIFWarning = procedure(Sender: TObject; Severity: TGIFSeverity; Message: string) of object;
@@ -1087,7 +1105,10 @@ const
   sProgressCopying	= 'Copying...';
   sProgressOptimizing	= 'Optimizing...';
 
-
+function SuspendThread (hThread: THandle): DWORD; StdCall;
+External 'Kernel32.dll' Name 'SuspendThread';
+function ResumeThread (hThread: THandle): DWORD; StdCall;
+External 'Kernel32.dll' Name 'ResumeThread';
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -10264,7 +10285,7 @@ end;
 procedure TGIFPainter.Start;
 begin
   if (goAsync in FDrawOptions) then
-    Resume;
+    {$IFDEF isVER230}Resumenden{$ELSE}Resume{$ENDIF};
 end;
 
 procedure TGIFPainter.Stop;
@@ -10277,15 +10298,38 @@ begin
       SetEvent(FEventHandle);
     Priority := tpNormal;
     if (Suspended) then
-      Resume; // Must be running before we can terminate
+      {$IFDEF isVER230}Resumenden{$ELSE}Resume{$ENDIF}; // Must be running before we can terminate
   end;
 end;
 
+procedure TGIFPainter.Resumenden;
+var
+  SuspendCount: Integer;
+begin
+  SuspendCount := ResumeThread(Self.Handle);
+  Self.CheckThreadError(SuspendCount >= 0);
+  if SuspendCount = 1 then
+    Self.FsSuspended := False;
+end;
+
+procedure TGIFPainter.Suspenden;
+var
+  OldSuspend: Boolean;
+begin
+  OldSuspend := Self.FsSuspended;
+  try
+    Self.FsSuspended := True;
+    Self.CheckThreadError(Integer(SuspendThread(Self.Handle)) >= 0);
+  except
+    Self.FsSuspended := OldSuspend;
+    raise;
+  End;
+end;
 procedure TGIFPainter.Restart;
 begin
   DoRestart := True;
   if (Suspended) and (goAsync in FDrawOptions) then
-    Resume; // Must be running before we can terminate
+    {$IFDEF isVER230}Resumenden{$ELSE}Resume{$ENDIF}; // Must be running before we can terminate
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -12150,7 +12194,7 @@ begin
   with FPainters.LockList do
     try
       for i := 0 to Count-1 do
-        TGIFPainter(Items[i]).Suspend;
+        TGIFPainter(Items[i]).{$IFDEF isVER230}Suspenden{$ELSE}Suspend{$ENDIF};
     finally
       FPainters.UnLockList;
     end;

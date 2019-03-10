@@ -7,7 +7,7 @@ uses
   {$IFDEF typelib} System.ShareMem, {$ENDIF}
   SysUtils, WinAPI.Windows,
   Dialogs, Forms, Graphics, Classes, Controls, StdCtrls, TypInfo, Variants,
-  mainLCL, RTTI, ZendApi, UnitClass, php4delphi
+  mainLCL, RTTI, ZendApi, UnitClass, php4delphi, ZENDTypes
   ;
 function setProperty(id: integer; prop: string; Value: variant): boolean;
 function getProperty(id: integer; prop: string): variant;
@@ -673,27 +673,27 @@ begin
             tkInteger:
               Result := v.AsInteger;
             tkEnumeration:
-              Result := v.AsString;
+              Result := zend_ustr(v.AsString);
             tkInt64:
               Result := v.AsInt64;
             tkWChar:
-              Result := UTF8Char(v.AsType<WideChar>);
+              Result := zend_uchar(v.AsType<WideChar>);
             tkChar:
-              Result := UTF8Char(v.AsType<AnsiChar>);
+              Result := zend_uchar(v.AsType<AnsiChar>);
             tkFloat:
               Result := v.AsExtended;
             tkString:
-              Result := UTF8String(v.AsType<ShortString>);
+              Result := zend_ustr(v.AsType<ShortString>);
             tkUString:
-              Result := v.AsType<UTF8String>;
+              Result := zend_ustr(v.AsType<UTF8String>);
             tkClass:
               Result := integer( v.AsObject );
             tkPointer:
               Result := regpoints.Get( v.AsType<Pointer> );
             tkAnsiString:
-              Result := UTF8String(v.AsType<AnsiString>);
+              Result := zend_ustr(v.AsType<AnsiString>);
             tkWString:
-              Result := UTF8String(v.AsType<WideString>);
+              Result := zend_ustr(v.AsType<WideString>);
             tkVariant:
               Result := v.AsVariant;
             end;
@@ -708,9 +708,9 @@ begin
             tkInt64:
               Result := Result.From<int64>( Int64(V) );
             tkWChar:
-              Result := Result.From<WideChar>( WideString(UTF8String(V))[1] );
+              Result := Result.From<WideChar>( WideString(zend_ustr(V))[1] );
             tkAnsiChar:
-              Result := Result.From<AnsiChar>( AnsiString(UTF8String(V))[1] );
+              Result := Result.From<AnsiChar>( AnsiString(zend_ustr(V))[1] );
             tkFloat:
               Result := Result.From<Extended>( Extended(V) );
             tkString:
@@ -718,13 +718,13 @@ begin
             tkClass:
               Result := Result.From<TObject>( TObject( integer( V ) ) );
             tkUString:
-              Result := Result.From<Utf8String>( Utf8String(V) );
+              Result := Result.From<Utf8String>( zend_ustr(V) );
             tkPointer:
               Result := regpoints.Get( integer( V ) );
             tkAnsiString:
-              Result := Result.From<AnsiString>( AnsiString(UTF8String(V)) );
+              Result := Result.From<AnsiString>( AnsiString(zend_ustr(V)) );
             tkWString:
-              Result := Result.From<WideString>( WideString(UTF8String(V)) );
+              Result := Result.From<WideString>( WideString(zend_ustr(V)) );
             tkEnumeration:
               Result := Result.From<Integer>( integer(V) );
             tkVariant:

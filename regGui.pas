@@ -5,7 +5,7 @@ unit regGui;
 interface
 
 uses Forms, Dialogs, SysUtils, Windows, Classes, Controls, Buttons,
-  Messages,
+  Messages,              ZendTypes,
   propertiesEngine,
   StdCtrls, ComCtrls, Menus, ExtCtrls, Mask, Grids,
   Tabs, Graphics, MImage, mainLCL, uGuiScreen, cooltrayicon,
@@ -107,11 +107,11 @@ uses Forms, Dialogs, SysUtils, Windows, Classes, Controls, Buttons,
 {$ENDIF}
     ;
 
-function createComponent(aClass: ansistring; aOwner: integer): integer;
+function createComponent(aClass: zend_ustr; aOwner: integer): integer;
 function parentControl(id: integer; parent: integer): integer;
 function ownerComponent(id: integer): integer;
-function objectClass(id: integer): ansistring;
-function objectIs(id: integer; const aClass: ansistring): Boolean;
+function objectClass(id: integer): zend_ustr;
+function objectIs(id: integer; const aClass: zend_ustr): Boolean;
 function ComponentToStringProc(id: integer): string;
 function StringToComponentProc(Instance: integer; Value: string): TComponent;
 
@@ -119,7 +119,7 @@ procedure registerGui();
 
 implementation
 
-function objectClass(id: integer): ansistring;
+function objectClass(id: integer): zend_ustr;
 begin
   Result := #0;
   if id <> 0 then
@@ -131,7 +131,7 @@ begin
   end
 end;
 
-function objectIs(id: integer; const aClass: ansistring): Boolean;
+function objectIs(id: integer; const aClass: zend_ustr): Boolean;
 var
   CL: TClass;
 begin
@@ -139,7 +139,7 @@ begin
   Result := (CL <> NIL) and (id <> 0) and (toObject(id) is CL);
 end;
 
-function createComponent(aClass: ansistring; aOwner: integer): integer;
+function createComponent(aClass: zend_ustr; aOwner: integer): integer;
 Var
   Owner: TComponent;
   P: TComponentClass;

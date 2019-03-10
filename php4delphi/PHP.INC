@@ -47,6 +47,7 @@ backward compatibility between PHP versions.
 {PHP5 must be defined if you are using PHP5}
 {$DEFINE PHP5}
 
+{$DEFINE soulengine_build}
 {For PHP5 you have to define the subversion of PHP}
 {$DEFINE PHP504}
 {$DEFINE PHP510}
@@ -57,7 +58,7 @@ backward compatibility between PHP versions.
 {$DEFINE PHP540}
 {$DEFINE PHP550}
 {$DEFINE PHP560}
-{$DEFINE soulengine_build}
+{.$DEFINE PHP7}
 {$IFDEF PHP530}
   {$DEFINE ZEND_WIN32}
   {$DEFINE PHP_COMPILER_ID}
@@ -70,7 +71,7 @@ backward compatibility between PHP versions.
 	{$DEFINE PHP530}
 	{$DEFINE PHP540}
 	{$DEFINE PHP550}
-	{$DEFINE PHP_UNICE}
+	{,$DEFINE PHP_UNICE}
 	{$DEFINE ZEND_WIN32}
 	{$DEFINE PHP_COMPILER_ID}
 {$ENDIF}

@@ -102,7 +102,7 @@ begin
   end;
   zend_get_parameters_ex(ht, p);
 
-  ShowMessage( {$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[0]^) );
+  ShowMessage( Z_STRVAL(p[0]^) );
 
   dispose_pzval_array(p);
 end;
@@ -110,7 +110,7 @@ end;
 procedure gui_SafeMessage;
 var
   p: pzval_array;
-  msg: PAnsiString;
+  msg: zend_pstr;
 begin
   if ht < 1 then
   begin
@@ -120,7 +120,7 @@ begin
   zend_get_parameters_ex(ht, p);
 
   New(Msg);
-  Msg^ := {$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[0]^);
+  Msg^ := Z_STRVAL(p[0]^);
   TScriptSafeCommand_Message.Create(Msg);
 
   dispose_pzval_array(p);

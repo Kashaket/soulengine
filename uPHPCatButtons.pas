@@ -5,7 +5,7 @@ interface
 uses
   SysUtils, Classes, Variants, Dialogs,
   PHPCommon, phpLibrary, phpFunctions, dsCategoryButtons,
-  ImgList, Controls;
+  ImgList, Controls, php4delphi;
 
 type
   TPHPCatButtons = class(TDataModule)

@@ -407,7 +407,7 @@ begin
 
   if FTabOnEnter and (Owner is TWinControl) then
   begin
-    if Key = AnsiChar(VK_RETURN) then
+    if Key = Char(VK_RETURN) then
     begin
       if HiWord(GetKeyState(VK_SHIFT)) <> 0 then
         PostMessage((Owner as TWinControl).Handle, WM_NEXTDLGCTL, 1, 0)
@@ -480,7 +480,7 @@ begin
 
   if FTabOnEnter and (Owner is TWinControl) then
   begin
-    if Key = AnsiChar(VK_RETURN) then
+    if Key = Char(VK_RETURN) then
     begin
       if HiWord(GetKeyState(VK_SHIFT)) <> 0 then
         PostMessage((Owner as TWinControl).Handle, WM_NEXTDLGCTL, 1, 0)

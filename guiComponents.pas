@@ -168,7 +168,7 @@ implementation
 procedure gui_registerSuperGlobal;
 var
   p: pzval_array;
-  Name: ansistring;
+  Name: zend_ustr;
 begin
   if ht < 1 then
   begin
@@ -177,9 +177,9 @@ begin
   end;
   zend_get_parameters_my(ht, p, TSRMLS_DC);
 
-  Name := {$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[0]^);
+  Name := Z_STRVAL(p[0]^);
 
-  ZVAL_LONG(return_value, zend_register_auto_global(PAnsiChar(Name),
+  ZVAL_LONG(return_value, zend_register_auto_global(zend_pchar(Name),
     Length(Name), nil, nil));
 
   dispose_pzval_array(p);
@@ -191,7 +191,7 @@ var
   p: pzval_array;
   id: integer;
   SW: WideString;
-  S: ansistring;
+  S: zend_ustr;
   CH: UTF8String;
 begin
   if ht <> 1 then
@@ -272,7 +272,7 @@ begin
   end;
   zend_get_parameters_my(ht, p, TSRMLS_DC);
 
-  variant2zval(regGUI.createComponent({$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[0]^), Z_LVAL(p[1]^)), return_value);
+  variant2zval(regGUI.createComponent(Z_STRVAL(p[0]^), Z_LVAL(p[1]^)), return_value);
 
   dispose_pzval_array(p);
 end;
@@ -358,7 +358,7 @@ begin
   zend_get_parameters_my(ht, p, TSRMLS_DC);
 
 
-  variant2zval(regGUI.objectIs(Z_LVAL(p[0]^), {$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[1]^)), return_value);
+  variant2zval(regGUI.objectIs(Z_LVAL(p[0]^), Z_STRVAL(p[1]^)), return_value);
 
   dispose_pzval_array(P);
 end;
@@ -391,9 +391,9 @@ begin
   end;
   zend_get_parameters_my(ht, p, TSRMLS_DC);
 
-   //   ShowMessage( Z_LVAL(p[0]^).ToString + #10#13 +  {$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[1]^) );
+   //   ShowMessage( Z_LVAL(p[0]^).ToString + #10#13 +  Z_STRVAL(p[1]^) );
 
-  regGUI.StringToComponentProc(Z_LVAL(p[0]^), {$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[1]^));
+  regGUI.StringToComponentProc(Z_LVAL(p[0]^), Z_STRVAL(p[1]^));
 
   dispose_pzval_array(p);
 end;
@@ -801,7 +801,7 @@ begin
   end;
   zend_get_parameters_my(ht, p, TSRMLS_DC);
 
-  TScriptThread.SetBeforeCode({$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[0]^));
+  TScriptThread.SetBeforeCode(Z_STRVAL(p[0]^));
 
   dispose_pzval_array(p);
 end;
@@ -821,7 +821,7 @@ begin
   ID := Z_LVAL(p[0]^);
   if (ID <> 0) and (TObject(ID) is TScriptThread) then
   begin
-    TScriptThread(ID).Sync({$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[1]^), {$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[2]^));
+    TScriptThread(ID).Sync(Z_STRVAL(p[1]^), Z_STRVAL(p[2]^));
   end;
 
   dispose_pzval_array(p);
@@ -831,7 +831,7 @@ procedure gui_threadData;
 var
   p: pzval_array;
   ID: integer;
-  S: ansistring;
+  S: zend_ustr;
 begin
   if ht < 2 then
   begin
@@ -844,11 +844,11 @@ begin
   if (ID <> 0) and (TObject(ID) is TScriptThread) then
   begin
     if ht > 2 then
-      TScriptThread(ID).addDATA.SetValue({$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[1]^), {$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[2]^))
+      TScriptThread(ID).addDATA.SetValue(Z_STRUVAL(p[1]^), Z_STRVAL(p[2]^))
     else
     begin
-      S := TScriptThread(ID).addDATA.Get({$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[1]^));
-      ZVAL_STRINGL(return_value, PAnsiChar(S), Length(S), True);
+      S := TScriptThread(ID).addDATA.Get(Z_STRVAL(p[1]^));
+      ZVAL_STRINGL(return_value, zend_pchar(S), Length(S), True);
     end;
   end;
 
@@ -870,7 +870,7 @@ begin
   ID := Z_LVAL(p[0]^);
   if (ID <> 0) and (TObject(ID) is TScriptThread) then
   begin
-    ZVAL_BOOL(return_value, TScriptThread(ID).addDATA.HasKey({$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[1]^)));
+    ZVAL_BOOL(return_value, TScriptThread(ID).addDATA.HasKey(Z_STRVAL(p[1]^)));
   end;
 
   dispose_pzval_array(p);
@@ -893,7 +893,7 @@ begin
   if (ID <> 0) and (TObject(ID) is TScriptThread) then
   begin
     ZVAL_BOOL(return_value, True);
-    TScriptThread(ID).addDATA.RemoveKey({$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[1]^));
+    TScriptThread(ID).addDATA.RemoveKey(Z_STRVAL(p[1]^));
   end;
 
   dispose_pzval_array(p);
@@ -981,7 +981,7 @@ begin
   O := TObject(Z_LVAL(p[0]^));
   if O <> nil then
   begin
-    M := TStringStream.Create({$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[1]^));
+    M := TStringStream.Create(Z_STRVAL(p[1]^));
         {$IFDEF ADD_SKINS}
         if O is TsSpeedButton then
           TsSpeedButton(O).Glyph.LoadFromStream(M)
@@ -1012,7 +1012,7 @@ begin
   zend_get_parameters_my(ht, p, TSRMLS_DC);
 
   O := TObject(Z_LVAL(p[0]^));
-  S := {$IFDEF PHP_UNICE}Z_STRUVAL{$ELSE}Z_STRVAL{$ENDIF}(p[1]^);
+  S := Z_STRVAL(p[1]^);
 
   if O <> nil then
   begin
@@ -1061,7 +1061,7 @@ begin
           TBitBtn(O).Glyph.SaveToStream(S);
   end;
 
-  ZVAL_STRINGL(return_value, PAnsiChar(AnsiString(S.DataString)), S.Size, True);
+  ZVAL_STRINGL(return_value, zend_pchar(zend_ustr(S.DataString)), S.Size, True);
   S.Free;
   dispose_pzval_array(p);
 end;

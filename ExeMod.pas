@@ -6,7 +6,7 @@ interface
 
 uses
   Windows, SysUtils, Classes, Forms, ShellAPI,
-  Dialogs, TypInfo, ZLib, ZLibConst;
+  Dialogs, TypInfo, ZendTypes, ZLib, ZLibConst;
 
 type
   TExeStream = class(TObject)
@@ -35,7 +35,7 @@ type
 
     procedure AttachToExe(ExeName: WideString);
     procedure ExtractFromExe(DemarcStr: WideString; var ExtractedStr: WideString);
-    procedure String2File(FileName: ansistring);
+    procedure String2File(FileName: zend_ustr);
     function IndexOf(Name: WideString): Integer;
     procedure SaveAsExe(FileName: WideString);
     property FileName: WideString read FFileName write SetFileName;
@@ -51,13 +51,13 @@ type
     procedure Save;
   end;
 
-function File2String(FileName: ansistring): ansistring;
-function Stream2String(b: TStream): ansistring; overload;
-procedure Stream2String(b: TStream; var a: ansistring); overload;
-procedure String2Stream(a: ansistring; b: TMemoryStream);
+function File2String(FileName: zend_ustr): zend_ustr;
+function Stream2String(b: TStream): zend_ustr; overload;
+procedure Stream2String(b: TStream; var a: zend_ustr); overload;
+procedure String2Stream(a: zend_ustr; b: TMemoryStream);
 function WinDrv: char;
 function getcnt: integer;
-procedure String2File2(String2BeSaved, FileName: ansistring);
+procedure String2File2(String2BeSaved, FileName: zend_ustr);
 
 implementation
 
@@ -126,7 +126,7 @@ begin
   SS.LoadFromFile(FileName);
 end;
 
-procedure TExeStream.String2File(FileName: ansistring);
+procedure TExeStream.String2File(FileName: zend_ustr);
 begin
   SetCurrentDir(ExtractFilePath(_MainExeName));
 
@@ -136,9 +136,9 @@ end;
 
 procedure TExeStream.Add2String(DemarcStr, String2Add: WideString);
 var
-  DemarcStr2: ansistring;
+  DemarcStr2: string;
 begin
-  DemarcStr2 := ansistring(string(DemarcStr).ToUpper);
+  DemarcStr2 := string(DemarcStr).ToUpper;
   SS.Position := SS.Size;
   SS.WriteString(WideString('SO!#' + DemarcStr2 + chr(182)) + String2Add +
     WideString('EO!#' + DemarcStr2));
@@ -178,11 +178,10 @@ procedure TExeStream
 . ExtractFromExe(DemarcStr: WideString; var ExtractedStr: WideString);
 var
   d, e: Integer;
-  Exe: ansistring;
-  DemarcStr2: ansistring;
+  Exe, DemarcStr2: string;
   rl: Integer;
 begin
-  DemarcStr2 := ansistring(string(DemarcStr).ToUpper);
+  DemarcStr2 := string(DemarcStr).ToUpper;
 
   Exe := SS.DataString;
 
@@ -240,7 +239,7 @@ end;
 function TExeStream.GetACount: Integer;
   var
   Count, X: Integer;
-  Exe: ansistring;
+  Exe: string;
 begin
   Exe := SS.DataString;
   Count := 0;
@@ -277,7 +276,7 @@ Begin
     Exit;
   For X := StartByte to StartByte + Count - 1 do
   begin
-    ReturnedStr := ReturnedStr + (AnsiChar(pointer(Hinstance + X - 1)^));
+    ReturnedStr := ReturnedStr + (Char(pointer(Hinstance + X - 1)^));
   end;
 End;
 
@@ -313,11 +312,11 @@ Var
   S: WideString;
 begin
   Len := AliasCount;
-  Name := ansistring(string(Name).ToUpper);
+  Name := string(Name).ToUpper;
   for Result := 0 to Len - 1 do
   begin
     GetDemarcName(Result, S);
-    if ansistring(string(S).ToUpper) = Name then
+    if string(S).ToUpper = Name then
       Exit;
   end;
   Result := -1;
@@ -333,7 +332,7 @@ begin
   ShowMessage('SetFileName:' + Value);
 end;
 
-procedure String2File2(String2BeSaved, FileName: ansistring);
+procedure String2File2(String2BeSaved, FileName: zend_ustr);
 var
   MyStream: TMemoryStream;
 begin
@@ -350,14 +349,14 @@ begin
   end;
 end;
 
-procedure String2Stream(a: ansistring; b: TMemoryStream);
+procedure String2Stream(a: zend_ustr; b: TMemoryStream);
 begin
   b.Position := 0;
   b.WriteBuffer(pointer(a)^, Length(a));
   b.Position := 0;
 end;
 
-procedure Stream2String(b: TStream; var a: ansistring); overload;
+procedure Stream2String(b: TStream; var a: zend_ustr); overload;
 begin
   b.Position := 0;
   SetLength(a, b.Size);
@@ -365,12 +364,12 @@ begin
   b.Position := 0;
 end;
 
-function Stream2String(b: TStream): ansistring; overload;
+function Stream2String(b: TStream): zend_ustr; overload;
 begin
   Stream2String(b, Result);
 end;
 
-function File2String(FileName: ansistring): ansistring;
+function File2String(FileName: zend_ustr): zend_ustr;
 var
   MyStream: TMemoryStream;
 begin

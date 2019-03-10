@@ -1,5 +1,5 @@
 unit uVSEditor;
-
+{$I PHP.inc}
 {$I 'sDef.inc'}
 
 interface
@@ -117,7 +117,7 @@ begin
 {$IFDEF VS_EDITOR}
 
   v := Parameters[2].Value;
-  n := AnsiLowerCase(string(Parameters[1].ZendVariable.AsString));
+  n :=  LowerCase(string(Parameters[1].ZendVariable.AsString));
   vF := Parameters[3].ZendVariable.AsBoolean;
 
   if vF = False then

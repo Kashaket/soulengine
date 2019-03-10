@@ -17,9 +17,20 @@ uses
 {$IF DEFINED(CLR)}
   WinUtils,
 {$ENDIF}
+  System.UITypes,
   Winapi.Windows, Winapi.Messages, Vcl.ImgList, System.Classes, Vcl.Forms,
   Vcl.Controls, Vcl.Graphics, Vcl.StdCtrls, Vcl.ExtCtrls, Vcl.GraphUtil, Vcl.ActnList, Vcl.Themes;
-
+{$IFDEF VER230} {$DEFINE isVER230} {$ENDIF}
+{$IFDEF VER330} {$DEFINE isVER230} {$ENDIF}
+{$IFDEF VER320} {$DEFINE isVER230} {$ENDIF}
+{$IFDEF VER310} {$DEFINE isVER230} {$ENDIF}
+{$IFDEF VER300} {$DEFINE isVER230} {$ENDIF}
+{$IFDEF VER290} {$DEFINE isVER230} {$ENDIF}
+{$IFDEF VER280} {$DEFINE isVER230} {$ENDIF}
+{$IFDEF VER270} {$DEFINE isVER230} {$ENDIF}
+{$IFDEF VER260} {$DEFINE isVER230} {$ENDIF}
+{$IFDEF VER250} {$DEFINE isVER230} {$ENDIF}
+{$IFDEF VER240} {$DEFINE isVER230} {$ENDIF}
 const
   crDragCopy = TCursor(-23); { New cursor, with a plus for copying }
 
@@ -415,7 +426,7 @@ type
   TBaseButtonItem = class(TBaseItem)
   strict private
     FActionLink: TButtonItemActionLink;
-    FImageIndex: TImageIndex;
+    FImageIndex: {$IFDEF isVER230}System.UITypes.TImageIndex{$ELSE}TImageIndex{$ENDIF};
     FData: TCustomData;
     FHint: string;
     FOnClick: TNotifyEvent;
@@ -432,7 +443,7 @@ type
     function IsImageIndexStored: Boolean;
     function IsOnClickStored: Boolean;
     procedure SetAction(const Value: TBasicAction);
-    procedure SetImageIndex(const Value: TImageIndex);
+    procedure SetImageIndex(const Value: {$IFDEF isVER230}System.UITypes.TImageIndex{$ELSE}TImageIndex{$ENDIF});
   public
     constructor Create(Collection: TCollection); override;
     destructor Destroy; override;
@@ -443,7 +454,7 @@ type
     property Action: TBasicAction read GetAction write SetAction;
     property Caption;
     property Hint: string read FHint write FHint stored IsHintStored;
-    property ImageIndex: TImageIndex read FImageIndex write SetImageIndex stored IsImageIndexStored;
+    property ImageIndex: {$IFDEF isVER230}System.UITypes.TImageIndex{$ELSE}TImageIndex{$ENDIF} read FImageIndex write SetImageIndex stored IsImageIndexStored;
     property OnClick: TNotifyEvent read FOnClick write FOnClick stored IsOnClickStored;
   end;
 
@@ -593,7 +604,7 @@ implementation
 uses
 {$IF DEFINED(CLR)}
   System.Runtime.InteropServices, System.Security.Permissions, System.Threading,
-{$ENDIF} System.SysUtils, System.Types, System.UITypes;
+{$ENDIF} System.SysUtils, System.Types;
 
 {$R dsCategoryButtons.res}             { Contains the Copy DragCursor }
 
@@ -4051,7 +4062,7 @@ begin
   end;
 end;
 
-procedure TBaseButtonItem.SetImageIndex(const Value: TImageIndex);
+procedure TBaseButtonItem.SetImageIndex(const Value: {$IFDEF isVER230}System.UITypes.TImageIndex{$ELSE}TImageIndex{$ENDIF});
 begin
   if FImageIndex <> Value then
   begin
