@@ -15,8 +15,3 @@ CEF4Delphi was developed and tested on Delphi 10.2 Tokyo and it has been tested 
 * [Installation instructions and more information about CEF4Delphi](https://www.briskbard.com/index.php?lang=en&pageid=cef)
 * [Developer Forums](https://www.briskbard.com/forum)
 * These components need Windows 7, 8, 8.1, 10 or newer to run. If you need Windows XP and Vista support use [OldCEF4Delphi](https://github.com/salvadordf/OldCEF4Delphi)
-
-## Donate
-If you find this project useful, please consider making a donation.
-
-[![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=FTSD2CCGXTD86)
