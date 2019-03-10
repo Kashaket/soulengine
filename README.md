@@ -20,7 +20,7 @@ Rewrited and Decompiled by Kashaket Corporation
 
 📦 Updated component packages:
 1) PHP4Delphi php 5.6 update by Andrew Zenin
-2) TB2k fatal error fix by Artem Ukolov (collaborator)
+2) TB2k fatal error fix by Artem Ukolov
 3) DCEF load fix and panel update by Andrew Zenin
 4) Captioned Dock Tree fix-update by Andrew Zenin
 5) GIFImage Delphi 2010+ port by Andrew Zenin
