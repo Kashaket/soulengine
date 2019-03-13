@@ -63,17 +63,17 @@ var
  sapi_activate: procedure (p : pointer); cdecl;
  sapi_deactivate: procedure (p : pointer); cdecl;
 
- sapi_add_header_ex: function(header_line : PAnsiChar; header_line_len : uint; duplicated : zend_bool; replace : zend_bool; TSRMLS_DC : pointer) : integer; cdecl;
+ sapi_add_header_ex: function(header_line : zend_pchar; header_line_len : uint; duplicated : zend_bool; replace : zend_bool; TSRMLS_DC : pointer) : integer; cdecl;
 
  php_execute_script : function (primary_file: pointer; TSRMLS_D : pointer) : Integer; cdecl;
 
  php_handle_aborted_connection:  procedure; cdecl;
 
- php_register_variable: procedure(_var : PAnsiChar; val: PAnsiChar; track_vars_array: pointer; TSRMLS_DC : pointer); cdecl;
+ php_register_variable: procedure(_var : zend_pchar; val: zend_pchar; track_vars_array: pointer; TSRMLS_DC : pointer); cdecl;
 
   // binary-safe version
-  php_register_variable_safe: procedure(_var : PAnsiChar; val : PAnsiChar; val_len : integer; track_vars_array : pointer; TSRMLS_DC : pointer); cdecl;
-  php_register_variable_ex: procedure(_var : PAnsiChar;   val : pzval;  track_vars_array : pointer; TSRMLS_DC : pointer); cdecl;
+  php_register_variable_safe: procedure(_var : zend_pchar; val : zend_pchar; val_len : integer; track_vars_array : pointer; TSRMLS_DC : pointer); cdecl;
+  php_register_variable_ex: procedure(_var : zend_pchar;   val : pzval;  track_vars_array : pointer; TSRMLS_DC : pointer); cdecl;
 
 //php_output.h
   php_output_startup: procedure(); cdecl;
@@ -84,12 +84,12 @@ var
   {$IFDEF PHP540}
   php_output_set_status: procedure(status: integer; TSRMLS_DC : pointer); cdecl;
   php_output_get_status: function(TSRMLS_DC : pointer) : integer; cdecl;
-  php_output_get_start_filename: function  (TSRMLS_D : pointer) : PAnsiChar; cdecl;
+  php_output_get_start_filename: function  (TSRMLS_D : pointer) : zend_pchar; cdecl;
   php_output_get_start_lineno: function (TSRMLS_D : pointer) : integer; cdecl;
   php_output_start_default:  function (TSRMLS_D : pointer) : integer; cdecl;
 
   php_start_ob_buffer: function  (output_handler : pzval; chunk_size : uint; flags:uint; TSRMLS_DC : pointer) : integer; cdecl;
-  php_start_ob_buffer_named: function  (const output_handler_name : PAnsiChar;  chunk_size : uint; flags:uint; TSRMLS_DC : pointer) : integer; cdecl;
+  php_start_ob_buffer_named: function  (const output_handler_name : zend_pchar;  chunk_size : uint; flags:uint; TSRMLS_DC : pointer) : integer; cdecl;
 
   php_end_ob_buffer: function (TSRMLS_DC : pointer): integer; cdecl;
   php_end_ob_buffers: procedure (TSRMLS_DC : pointer); cdecl;
@@ -97,29 +97,29 @@ var
   php_ob_get_length: function  (p : pzval; TSRMLS_DC : pointer) : integer; cdecl;
 
   php_output_set_implicit_flush: procedure(flush: uint; TSRMLS_DS: pointer); cdecl;
-  php_get_output_start_filename: function  (TSRMLS_D : pointer) : PAnsiChar; cdecl;
+  php_get_output_start_filename: function  (TSRMLS_D : pointer) : zend_pchar; cdecl;
   php_get_output_start_lineno: function (TSRMLS_D : pointer) : integer; cdecl;
 
-  php_output_handler_started: function (name: PAnsiChar; name_len: uint): integer; cdecl;
+  php_output_handler_started: function (name: zend_pchar; name_len: uint): integer; cdecl;
 
-  php_ob_init_conflict: function (handler_new : PAnsiChar;  handler_new_len: uint;
-  handler_set : PAnsiChar; handler_set_len: uint; TSRMLS_DC : pointer) : integer; cdecl;
+  php_ob_init_conflict: function (handler_new : zend_pchar;  handler_new_len: uint;
+  handler_set : zend_pchar; handler_set_len: uint; TSRMLS_DC : pointer) : integer; cdecl;
 
   {$ELSE}
   php_output_set_status: procedure(status: boolean; TSRMLS_DC : pointer); cdecl;
   php_output_get_status: function(TSRMLS_DC : pointer) : boolean; cdecl;
   php_start_ob_buffer: function  (output_handler : pzval; chunk_size : uint; erase : boolean; TSRMLS_DC : pointer) : integer; cdecl;
-  php_start_ob_buffer_named: function  (const output_handler_name : PAnsiChar;  chunk_size : uint; erase : boolean; TSRMLS_DC : pointer) : integer; cdecl;
+  php_start_ob_buffer_named: function  (const output_handler_name : zend_pchar;  chunk_size : uint; erase : boolean; TSRMLS_DC : pointer) : integer; cdecl;
   php_end_ob_buffer: procedure (send_buffer : boolean; just_flush : boolean; TSRMLS_DC : pointer); cdecl;
   php_end_ob_buffers: procedure (send_buffer : boolean; TSRMLS_DC : pointer); cdecl;
   php_ob_get_buffer: function  (p : pzval; TSRMLS_DC : pointer) : integer; cdecl;
   php_ob_get_length: function  (p : pzval; TSRMLS_DC : pointer) : integer; cdecl;
   php_start_implicit_flush: procedure (TSRMLS_D : pointer); cdecl;
   php_end_implicit_flush: procedure (TSRMLS_D : pointer); cdecl;
-  php_get_output_start_filename: function  (TSRMLS_D : pointer) : PAnsiChar; cdecl;
+  php_get_output_start_filename: function  (TSRMLS_D : pointer) : zend_pchar; cdecl;
   php_get_output_start_lineno: function (TSRMLS_D : pointer) : integer; cdecl;
-  php_ob_handler_used: function (handler_name : PAnsiChar; TSRMLS_DC : pointer) : integer; cdecl;
-  php_ob_init_conflict: function (handler_new : PAnsiChar; handler_set : PAnsiChar; TSRMLS_DC : pointer) : integer; cdecl;
+  php_ob_handler_used: function (handler_name : zend_pchar; TSRMLS_DC : pointer) : integer; cdecl;
+  php_ob_init_conflict: function (handler_new : zend_pchar; handler_set : zend_pchar; TSRMLS_DC : pointer) : integer; cdecl;
   {$ENDIF}
 
 //php_output.h
@@ -127,37 +127,37 @@ var
 
 
 function GetSymbolsTable : PHashTable;
-function GetTrackHash(Name : AnsiString) : PHashTable;
+function GetTrackHash(Name : zend_ustr) : PHashTable;
 function GetSAPIGlobals : Psapi_globals_struct; overload;
 function GetSAPIGlobals(TSRMLS_DC : pointer) : Psapi_globals_struct; overload;
-//procedure phperror(Error : PAnsiChar);
+//procedure phperror(Error : zend_pchar);
 
 var
 
 php_default_post_reader : procedure;
 
 //php_string.h
-php_strtoupper: function  (s : PAnsiChar; len : size_t) : PAnsiChar; cdecl;
-php_strtolower: function  (s : PAnsiChar; len : size_t) : PAnsiChar; cdecl;
+php_strtoupper: function  (s : zend_pchar; len : size_t) : zend_pchar; cdecl;
+php_strtolower: function  (s : zend_pchar; len : size_t) : zend_pchar; cdecl;
 
-php_strtr: function (str : PAnsiChar; len : Integer; str_from : PAnsiChar;
-  str_to : PAnsiChar; trlen : Integer) : PAnsiChar; cdecl;
+php_strtr: function (str : zend_pchar; len : Integer; str_from : zend_pchar;
+  str_to : zend_pchar; trlen : Integer) : zend_pchar; cdecl;
 
-php_stripcslashes: procedure (str : PAnsiChar; len : PInteger); cdecl;
+php_stripcslashes: procedure (str : zend_pchar; len : PInteger); cdecl;
 
-php_basename: function (str : PAnsiChar; len : size_t; suffix : PAnsiChar;
-  sufflen : size_t) : PAnsiChar; cdecl;
+php_basename: function (str : zend_pchar; len : size_t; suffix : zend_pchar;
+  sufflen : size_t) : zend_pchar; cdecl;
 
-php_dirname: procedure (str : PAnsiChar; len : Integer); cdecl;
+php_dirname: procedure (str : zend_pchar; len : Integer); cdecl;
 
-php_stristr: function (s : PByte; t : PByte; s_len : size_t; t_len : size_t) : PAnsiChar; cdecl;
+php_stristr: function (s : PByte; t : PByte; s_len : size_t; t_len : size_t) : zend_pchar; cdecl;
 
-php_str_to_str: function (haystack : PAnsiChar; length : Integer; needle : PAnsiChar;
-    needle_len : Integer; str : PAnsiChar; str_len : Integer;
-    _new_length : PInteger) : PAnsiChar; cdecl;
+php_str_to_str: function (haystack : zend_pchar; length : Integer; needle : zend_pchar;
+    needle_len : Integer; str : zend_pchar; str_len : Integer;
+    _new_length : PInteger) : zend_pchar; cdecl;
 
-php_strip_tags: procedure (rbuf : PAnsiChar; len : Integer; state : PInteger;
-  allow : PAnsiChar; allow_len : Integer); cdecl;
+php_strip_tags: procedure (rbuf : zend_pchar; len : Integer; state : PInteger;
+  allow : zend_pchar; allow_len : Integer); cdecl;
 
 php_implode: procedure (var delim : zval; var arr : zval;
   var return_value : zval); cdecl;
@@ -168,36 +168,36 @@ php_explode: procedure  (var delim : zval; var str : zval;
 
 var
 
-php_info_html_esc: function (str : PAnsiChar; TSRMLS_DC : pointer) : PAnsiChar; cdecl;
+php_info_html_esc: function (str : zend_pchar; TSRMLS_DC : pointer) : zend_pchar; cdecl;
 
 php_print_info_htmlhead: procedure (TSRMLS_D : pointer); cdecl;
 
 
 
 
-php_log_err: procedure (err_msg : PAnsiChar; TSRMLS_DC : pointer); cdecl;
+php_log_err: procedure (err_msg : zend_pchar; TSRMLS_DC : pointer); cdecl;
 
-php_html_puts: procedure (str : PAnsiChar; str_len : integer; TSRMLS_DC : pointer); cdecl;
+php_html_puts: procedure (str : zend_pchar; str_len : integer; TSRMLS_DC : pointer); cdecl;
 
-_php_error_log: function (opt_err : integer; msg : PAnsiChar; opt: PAnsiChar;  headers: PAnsiChar; TSRMLS_DC : pointer) : integer; cdecl;
+_php_error_log: function (opt_err : integer; msg : zend_pchar; opt: zend_pchar;  headers: zend_pchar; TSRMLS_DC : pointer) : integer; cdecl;
 
 php_print_credits: procedure (flag : integer); cdecl;
 
 php_info_print_css: procedure(); cdecl;
 
 php_set_sock_blocking: function (socketd : integer; block : integer; TSRMLS_DC : pointer) : integer; cdecl;
-php_copy_file: function (src : PAnsiChar; dest : PAnsiChar; TSRMLS_DC : pointer) : integer; cdecl;
+php_copy_file: function (src : zend_pchar; dest : zend_pchar; TSRMLS_DC : pointer) : integer; cdecl;
 
 var
 php_escape_html_entities: function (old : PByte; oldlen : integer; newlen : PINT; all : integer;
-  quote_style : integer; hint_charset: PAnsiChar; TSRMLS_DC : pointer) : PAnsiChar; cdecl;
+  quote_style : integer; hint_charset: zend_pchar; TSRMLS_DC : pointer) : zend_pchar; cdecl;
 
 var
-php_ini_long: function (name : PAnsiChar; name_length : uint; orig : Integer) : Longint; cdecl;
+php_ini_long: function (name : zend_pchar; name_length : uint; orig : Integer) : Longint; cdecl;
 
-php_ini_double: function(name : PAnsiChar; name_length : uint; orig : Integer) : Double; cdecl;
+php_ini_double: function(name : zend_pchar; name_length : uint; orig : Integer) : Double; cdecl;
 
-php_ini_string: function(name : PAnsiChar; name_length : uint; orig : Integer) : PAnsiChar; cdecl;
+php_ini_string: function(name : zend_pchar; name_length : uint; orig : Integer) : zend_pchar; cdecl;
 
 function  zval2variant(value : zval) : variant;
 procedure variant2zval(value : variant; var z : pzval);
@@ -206,16 +206,16 @@ procedure variant2zval(value : variant; var z : pzval);
 var
 
 php_url_free: procedure (theurl : pphp_url); cdecl;
-php_url_parse: function  (str : PAnsiChar) : pphp_url; cdecl;
-php_url_decode: function (str : PAnsiChar; len : Integer) : Integer; cdecl;
+php_url_parse: function  (str : zend_pchar) : pphp_url; cdecl;
+php_url_decode: function (str : zend_pchar; len : Integer) : Integer; cdecl;
                      { return value: length of decoded string }
 
-php_raw_url_decode: function (str : PAnsiChar; len : Integer) : Integer; cdecl;
+php_raw_url_decode: function (str : zend_pchar; len : Integer) : Integer; cdecl;
                           { return value: length of decoded string }
 
-php_url_encode: function (s : PAnsiChar; len : Integer; new_length : PInteger) : PAnsiChar; cdecl;
+php_url_encode: function (s : zend_pchar; len : Integer; new_length : PInteger) : zend_pchar; cdecl;
 
-php_raw_url_encode: function (s : PAnsiChar; len : Integer; new_length : PInteger) : PAnsiChar; cdecl;
+php_raw_url_encode: function (s : zend_pchar; len : Integer; new_length : PInteger) : zend_pchar; cdecl;
 
 {$IFDEF PHP510}
 php_register_extensions: function (ptr : pointer; count: integer; TSRMLS_DC: pointer) : integer; cdecl;
@@ -223,11 +223,11 @@ php_register_extensions: function (ptr : pointer; count: integer; TSRMLS_DC: poi
 php_startup_extensions: function (ptr: pointer; count : integer) : integer; cdecl;
 {$ENDIF}
 
-php_error_docref0: procedure (const docref : PAnsiChar; TSRMLS_DC : pointer; _type : integer; const Msg : PAnsiChar); cdecl;
-php_error_docref: procedure (const docref : PAnsiChar; TSRMLS_DC : pointer; _type : integer; const Msg : PAnsiChar); cdecl;
+php_error_docref0: procedure (const docref : zend_pchar; TSRMLS_DC : pointer; _type : integer; const Msg : zend_pchar); cdecl;
+php_error_docref: procedure (const docref : zend_pchar; TSRMLS_DC : pointer; _type : integer; const Msg : zend_pchar); cdecl;
 
-php_error_docref1: procedure (const docref : PAnsiChar; TSRMLS_DC : pointer; const param1 : PAnsiChar; _type: integer; Msg : PAnsiChar); cdecl;
-php_error_docref2: procedure (const docref : PAnsiChar; TSRMLS_DC : pointer; const param1 : PAnsiChar; const param2 : PAnsiChar; _type : integer; Msg : PAnsiChar); cdecl;
+php_error_docref1: procedure (const docref : zend_pchar; TSRMLS_DC : pointer; const param1 : zend_pchar; _type: integer; Msg : zend_pchar); cdecl;
+php_error_docref2: procedure (const docref : zend_pchar; TSRMLS_DC : pointer; const param1 : zend_pchar; const param2 : zend_pchar; _type : integer; Msg : zend_pchar); cdecl;
 
 sapi_globals_id : pointer;
 core_globals_id : pointer;
@@ -242,9 +242,9 @@ function GetPHPGlobals(TSRMLS_DC : pointer) : Pphp_Core_Globals;
 function PG(TSRMLS_DC : pointer) : Pphp_Core_Globals;
 
 
-procedure PHP_FUNCTION(var AFunction : zend_function_entry; AName : PAnsiChar; AHandler : pointer);
+procedure PHP_FUNCTION(var AFunction : zend_function_entry; AName : zend_pchar; AHandler : pointer);
 
-function LoadPHP(const DllFileName: AnsiString = PHPWin) : boolean;
+function LoadPHP(const DllFileName: zend_ustr = PHPWin) : boolean;
 
 procedure UnloadPHP;
 
@@ -254,8 +254,8 @@ function PHPLoaded : boolean;
 procedure CheckPHPErrors;
 {$ENDIF}
 
-function FloatToValue(Value: Extended): AnsiString;
-function ValueToFloat(Value : AnsiString) : extended;
+function FloatToValue(Value: Extended): zend_ustr;
+function ValueToFloat(Value : zend_ustr) : extended;
 
 
 var
@@ -263,7 +263,7 @@ php_print_info: procedure (flag : Integer; TSRMLS_DC : pointer); cdecl;
 
 
 php_info_print_table_colspan_header: procedure (num_cols : Integer;
-  header : PAnsiChar); cdecl;
+  header : zend_pchar); cdecl;
 
 php_info_print_box_start: procedure (bg : Integer); cdecl;
 
@@ -272,21 +272,21 @@ php_info_print_box_end: procedure; cdecl;
 php_info_print_hr: procedure; cdecl;
 
 php_info_print_table_start: procedure; cdecl;
-php_info_print_table_row1: procedure(n1 : integer; c1: PAnsiChar); cdecl;
-php_info_print_table_row2: procedure (n2 : integer; c1, c2 : PAnsiChar); cdecl;
-php_info_print_table_row3: procedure (n3 : integer; c1, c2, c3 : PAnsiChar); cdecl;
-php_info_print_table_row4: procedure (n4 : integer; c1, c2, c3, c4 : PAnsiChar); cdecl;
-php_info_print_table_row : procedure (n2 : integer; c1, c2 : pAnsiChar); cdecl;
+php_info_print_table_row1: procedure(n1 : integer; c1: zend_pchar); cdecl;
+php_info_print_table_row2: procedure (n2 : integer; c1, c2 : zend_pchar); cdecl;
+php_info_print_table_row3: procedure (n3 : integer; c1, c2, c3 : zend_pchar); cdecl;
+php_info_print_table_row4: procedure (n4 : integer; c1, c2, c3, c4 : zend_pchar); cdecl;
+php_info_print_table_row : procedure (n2 : integer; c1, c2 : zend_pchar); cdecl;
 
 php_info_print_table_end: procedure (); cdecl;
 
-php_body_write: function (const str : PAnsiChar; str_length: uint; TSRMLS_DC : pointer) : integer; cdecl;
-php_header_write: function (const str : PAnsiChar; str_length: uint; TSRMLS_DC : pointer) : integer; cdecl;
+php_body_write: function (const str : zend_pchar; str_length: uint; TSRMLS_DC : pointer) : integer; cdecl;
+php_header_write: function (const str : zend_pchar; str_length: uint; TSRMLS_DC : pointer) : integer; cdecl;
 
 
 php_header: function() : integer; cdecl;
-php_setcookie: function (name : PAnsiChar; name_len : integer; value : PAnsiChar; value_len: integer;
-    expires : longint; path : PAnsiChar; path_len : integer; domain : PAnsiChar; domain_len : integer;
+php_setcookie: function (name : zend_pchar; name_len : integer; value : zend_pchar; value_len: integer;
+    expires : longint; path : zend_pchar; path_len : integer; domain : zend_pchar; domain_len : integer;
     secure : integer; TSRMLS_DC : pointer) : integer; cdecl;
 
 
@@ -357,7 +357,7 @@ end;
 
 {$ENDIF}
 
-function GetTrackHash(Name : AnsiString) : PHashTable;
+function GetTrackHash(Name : zend_ustr) : PHashTable;
 var
  data : ^ppzval;
  arr  : PHashTable;
@@ -372,7 +372,7 @@ begin
  if Assigned(Arr) then
   begin
     new(data);
-    ret := zend_hash_find(arr, PAnsiChar(Name), Length(Name)+1, Data);
+    ret := zend_hash_find(arr, zend_pchar(Name), Length(Name)+1, Data);
     if ret = SUCCESS then
      begin
        Result := data^^^.value.ht;
@@ -431,7 +431,7 @@ begin
    IS_NULL    : Result := NULL;
    IS_LONG    : Result := Value.value.lval;
    IS_DOUBLE  : Result := Value.value.dval;
-   IS_STRING  : Result := AnsiString(Value.Value.str.val);
+   IS_STRING  : Result := zend_ustr(Value.Value.str.val);
    IS_BOOL    : Result := Boolean(Value.Value.lval);
     else
       Result := NULL;
@@ -495,7 +495,7 @@ begin
      ZVAL_NULL(z);
      Exit;
    end;
-    //   MessageBoxA(0, PAnsiChar(AnsiString( TVarData(Value).VType.ToString)), '', 0 ) ;
+    //   MessageBoxA(0, zend_pchar(zend_ustr( TVarData(Value).VType.ToString)), '', 0 ) ;
    case TVarData(Value).VType of
      varString    : //Peter Enz
          begin
@@ -513,7 +513,7 @@ begin
          begin
             S := string(TVarData(Value).VUString);
 
-             ZVAL_STRING(z, PAnsiChar(AnsiString(S)), true);
+             ZVAL_STRING(z, zend_pchar(zend_ustr(S)), true);
          end;
 
      varOleStr    : //Peter Enz
@@ -573,7 +573,7 @@ end;
 
 
 
-procedure PHP_FUNCTION(var AFunction : zend_function_entry; AName : PAnsiChar; AHandler : pointer);
+procedure PHP_FUNCTION(var AFunction : zend_function_entry; AName : zend_pchar; AHandler : pointer);
 begin
   AFunction.fname := AName;
 
@@ -586,7 +586,7 @@ begin
 end;
 
 
-{procedure phperror(Error : PAnsiChar);
+{procedure phperror(Error : zend_pchar);
 begin
   zend_error(E_PARSE, Error);
 end;    }
@@ -604,7 +604,7 @@ end;
 {$ENDIF}
 
 
-function LoadPHP(const DllFileName: AnsiString = PHPWin) : boolean;
+function LoadPHP(const DllFileName: zend_ustr = PHPWin) : boolean;
 
 begin
   Result := false;
@@ -927,7 +927,7 @@ begin
 end;
 
 
-function FloatToValue(Value: Extended): AnsiString;
+function FloatToValue(Value: Extended): zend_ustr;
 var
   {$IFDEF VERSION12}
   c: WideChar;
@@ -944,7 +944,7 @@ begin
   end;
 end;
 
-function ValueToFloat(Value : AnsiString) : extended;
+function ValueToFloat(Value : zend_ustr) : extended;
 var
   {$IFDEF VERSION12}
   c: WideChar;
@@ -962,16 +962,52 @@ begin
 end;
 
 
+{$IFDEF Linux}
+function GetPHPVersion: TPHPFileInfo;
+begin
+
+end;
+{$ELSE}
 function GetPHPVersion: TPHPFileInfo;
 var
-  FileName: AnsiString;
+  FileName: {$IFDEF PHP_UNICE}String{$ELSE}AnsiString{$ENDIF};
+  InfoSize, Wnd: DWORD;
+  VerBuf: Pointer;
+  FI: PVSFixedFileInfo;
+  VerSize: DWORD;
 begin
   Result.MajorVersion := 0;
   Result.MinorVersion := 0;
   Result.Release := 0;
   Result.Build := 0;
   FileName := PHPWin;
+  {$IFDEF PHP_UNICE}
+  InfoSize := GetFileVersionInfoSize(PWideChar(Filename), Wnd);
+  {$ELSE}
+  InfoSize := GetFileVersionInfoSizeA(PAnsiChar(FileName), Wnd);
+  {$ENDIF}
+   if InfoSize <> 0 then
+    begin
+      GetMem(VerBuf, InfoSize);
+      try
+      {$IFDEF PHP_UNICE}
+      if GetFileVersionInfo(PWideChar(FileName), Wnd, InfoSize, VerBuf) then
+      {$ELSE}
+        if GetFileVersionInfoA(PAnsiChar(FileName), Wnd, InfoSize, VerBuf) then
+      {$ENDIF}
+          if VerQueryValue(VerBuf, '\', Pointer(FI), VerSize) then
+           begin
+             Result.MajorVersion := HIWORD(FI.dwFileVersionMS);
+             Result.MinorVersion := LOWORD(FI.dwFileVersionMS);
+             Result.Release      := HIWORD(FI.dwFileVersionLS);
+             Result.Build        := LOWORD(FI.dwFileVersionLS);
+           end;
+      finally
+        FreeMem(VerBuf);
+      end;
+    end;
 end;
+{$ENDIF}
 
 initialization
 {$IFDEF PHP4DELPHI_AUTOLOAD}

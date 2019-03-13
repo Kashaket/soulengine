@@ -12,16 +12,17 @@
 unit php4AppIntf;
 
 interface
-
+type
+zend_pchar = {$IF DEFINED(Unicode)} PUTF8Char {$ELSE} PAnsiChar {$ENDIF};
 function  InitRequest : integer; stdcall;
 procedure DoneRequest(RequestID : integer); stdcall;
-procedure RegisterVariable(RequestID : integer; AName : PAnsiChar; AValue : PAnsiChar); stdcall;
-function  ExecutePHP(RequestID : integer; FileName : PAnsiChar) : integer; stdcall;
-function  ExecuteCode(RequestID : integer; ACode : PAnsiChar) : integer; stdcall;
-function  GetResultText(RequestID : integer; Buffer : PAnsiChar; BufLen : integer) : integer; stdcall;
-function  GetVariable(RequestID : integer; AName : PAnsiChar; Buffer : PAnsiChar; BufLen : integer) : integer; stdcall;
-procedure SaveToFile(RequestID : integer; AFileName : PAnsiChar); stdcall;
-function  GetVariableSize(RequestID : integer; AName : PAnsiChar) : integer; stdcall;
+procedure RegisterVariable(RequestID : integer; AName : zend_pchar; AValue : zend_pchar); stdcall;
+function  ExecutePHP(RequestID : integer; FileName : zend_pchar) : integer; stdcall;
+function  ExecuteCode(RequestID : integer; ACode : zend_pchar) : integer; stdcall;
+function  GetResultText(RequestID : integer; Buffer : zend_pchar; BufLen : integer) : integer; stdcall;
+function  GetVariable(RequestID : integer; AName : zend_pchar; Buffer : zend_pchar; BufLen : integer) : integer; stdcall;
+procedure SaveToFile(RequestID : integer; AFileName : zend_pchar); stdcall;
+function  GetVariableSize(RequestID : integer; AName : zend_pchar) : integer; stdcall;
 function  GetResultBufferSize(RequestID : integer) : integer; stdcall;
 
 implementation

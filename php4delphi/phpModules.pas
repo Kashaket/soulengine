@@ -16,7 +16,7 @@ unit phpModules;
 
 interface
  uses
-   SyncObjs, Windows, SysUtils, Types, Classes, VCL.Forms, VCL.Consts,
+   SyncObjs, {$IFNDEF FPC} Windows, {$ELSE} LCLType,LCLIntf,dynlibs,LCLProc,{$ENDIF} SysUtils, Types, Classes, VCL.Forms, VCL.Consts,
    PHPCommon,
    {$IFDEF VERSION6}RTLConsts, Variants,{$ENDIF} ZendAPI, phpAPI,
    phpFunctions,
@@ -46,11 +46,11 @@ type
   public
     constructor Create(AOwner : TComponent); override;
     destructor  Destroy; override;
-    procedure puts(str : PAnsiChar);
-    procedure phpwrite(str : PAnsiChar; str_len : integer);
-    procedure phpwrite_h(str : PAnsiChar; str_len : integer);
-    procedure puts_h(str : PAnsiChar);
-    procedure ReportError(ErrType : integer; ErrText : PAnsiChar);
+    procedure puts(str : zend_pchar);
+    procedure phpwrite(str : zend_pchar; str_len : integer);
+    procedure phpwrite_h(str : zend_pchar; str_len : integer);
+    procedure puts_h(str : zend_pchar);
+    procedure ReportError(ErrType : integer; ErrText : zend_pchar);
     function  FunctionByName(const AName : string) :TPHPFunction;
     property About : TPHPAboutInfo read FAbout write FAbout stored False;
     property ModuleType : TZendModuleType read FModuleType write FModuleType default mtPersistent;
@@ -164,7 +164,7 @@ begin
            else
              begin
                php_info_print_table_start();
-               php_info_print_table_row(2, PAnsiChar(Extension.ModuleName + ' support'), PAnsiChar('enabled'));
+               php_info_print_table_row(2, zend_pchar(Extension.ModuleName + ' support'), zend_pchar('enabled'));
                php_info_print_table_end();
              end;
      finally
@@ -290,9 +290,9 @@ function get_module : Pzend_module_entry; cdecl;
 var
   cnt       : integer;
   Extension : TPHPExtension;
-  ModuleName: AnsiString;
-  Version   : AnsiString;
-  FunctionName : AnsiString;
+  ModuleName: zend_ustr;
+  Version   : zend_ustr;
+  FunctionName : zend_ustr;
 begin
   if ModuleEntry.module_started = 1 then
   begin
@@ -309,20 +309,20 @@ begin
     ModuleEntry.size := sizeof(Tzend_module_entry);
     ModuleEntry.zend_api := ZEND_MODULE_API_NO;
     ModuleEntry.zts := USING_ZTS;
-    ModuleName := AnsiString(Extension.ModuleName);
+    ModuleName := zend_ustr(Extension.ModuleName);
 
     {$IFNDEF COMPILER_VC9}
-    ModuleEntry.Name := strdup(PAnsiChar(ModuleName));
+    ModuleEntry.Name := strdup(zend_pchar(ModuleName));
     {$ELSE}
-    ModuleEntry.Name := DupStr(PAnsiChar(ModuleName));
+    ModuleEntry.Name := DupStr(zend_pchar(ModuleName));
     {$ENDIF}
 
-    Version := AnsiString(Extension.Version);
+    Version := zend_ustr(Extension.Version);
 
     {$IFNDEF COMPILER_VC9}
-    ModuleEntry.version := strdup(PAnsiChar(Version));
+    ModuleEntry.version := strdup(zend_pchar(Version));
     {$ELSE}
-    ModuleEntry.version := DupStr(PAnsiChar(Version));
+    ModuleEntry.version := DupStr(zend_pchar(Version));
     {$ENDIF}
 
 
@@ -334,12 +334,12 @@ begin
     SetLength(module_entry_table, Extension.FFunctions.Count + 1);
     for cnt := 0 to Extension.FFunctions.Count - 1 do
     begin
-      FunctionName := AnsiString(Extension.FFunctions[cnt].FunctionName);
+      FunctionName := zend_ustr(Extension.FFunctions[cnt].FunctionName);
 
     {$IFNDEF COMPILER_VC9}
-      module_entry_table[cnt].fname := strdup(PAnsiChar(FunctionName));
+      module_entry_table[cnt].fname := strdup(zend_pchar(FunctionName));
     {$ELSE}
-      module_entry_table[cnt].fname :=DupStr(PAnsiChar(FunctionName));
+      module_entry_table[cnt].fname :=DupStr(zend_pchar(FunctionName));
     {$ENDIF}
 
       module_entry_table[cnt].handler := @DispatchRequest;
@@ -358,9 +358,9 @@ begin
     {$IFDEF PHP530}
 
     {$IFNDEF COMPILER_VC9}
-    moduleEntry.build_id := strdup(PAnsiChar(ZEND_MODULE_BUILD_ID));
+    moduleEntry.build_id := strdup(zend_pchar(ZEND_MODULE_BUILD_ID));
     {$ELSE}
-    moduleEntry.build_id := DupStr(PAnsiChar(ZEND_MODULE_BUILD_ID));
+    moduleEntry.build_id := DupStr(zend_pchar(ZEND_MODULE_BUILD_ID));
     {$ENDIF}
 
     {$ENDIF}
@@ -409,28 +409,28 @@ begin
    end;
 end;
 
-procedure TCustomPHPExtension.phpwrite(str: PAnsiChar; str_len: integer);
+procedure TCustomPHPExtension.phpwrite(str: zend_pchar; str_len: integer);
 begin
   php_body_write(str, str_len, FTSRMLS);
 end;
 
-procedure TCustomPHPExtension.phpwrite_h(str: PAnsiChar; str_len: integer);
+procedure TCustomPHPExtension.phpwrite_h(str: zend_pchar; str_len: integer);
 begin
   php_header_write(str, str_len, FTSRMLS);
 end;
 
-procedure TCustomPHPExtension.puts(str: PAnsiChar);
+procedure TCustomPHPExtension.puts(str: zend_pchar);
 begin
   php_body_write(str, strlen(str), FTSRMLS);
 end;
 
-procedure TCustomPHPExtension.puts_h(str: PAnsiChar);
+procedure TCustomPHPExtension.puts_h(str: zend_pchar);
 begin
   php_header_write(str, strlen(str), FTSRMLS);
 end;
 
 procedure TCustomPHPExtension.ReportError(ErrType: integer;
-  ErrText: PAnsiChar);
+  ErrText: zend_pchar);
 begin
   zend_error(ErrType, ErrText);
 end;
@@ -464,7 +464,9 @@ procedure DoneVCLApplication;
 begin
   try
    VCL.Forms.Application.OnException := nil;
+   {$IFDEF WINDOWS}
    if VCL.Forms.Application.Handle <> 0 then ShowOwnedPopups(VCL.Forms.Application.Handle, False);
+   {$ELSE}
    VCL.Forms.Application.ShowHint := False;
    VCL.Forms.Application.Destroying;
    VCL.Forms.Application.DestroyComponents;
@@ -502,7 +504,7 @@ begin
    FClassList.Free;
   except
     on E : Exception do
-     OutputDebugStringA(PAnsiChar(E.Message));
+     OutputDebugStringA(zend_pchar(E.Message));
   end;
   inherited Destroy;
 end;
@@ -690,7 +692,7 @@ begin
                       begin
                         if not IsParamTypeCorrect(FParameters[i].ParamType, pval) then
                          begin
-                           zend_error(E_WARNING, PAnsiChar(Format('Wrong parameter type for %s()', [get_active_function_name(TSRMLS_DC)])));
+                           zend_error(E_WARNING, zend_pchar(Format('Wrong parameter type for %s()', [get_active_function_name(TSRMLS_DC)])));
                            Exit;
                          end;
                         FParameters[i].ZendValue := pval;

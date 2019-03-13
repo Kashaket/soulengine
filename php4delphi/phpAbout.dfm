@@ -1205,7 +1205,7 @@ object dlgAbout: TdlgAbout
       Alignment = taCenter
       Anchors = []
       AutoSize = False
-      Caption = 'Copyright (c) 2002-2009, Serhiy Perevoznyk'#13#10'All Rights Reserved'
+      Caption = 'Copyright (c) 2002-2019 Serhiy Perevoznyk, Andrew Zenin'#13#10'All Rights Reserved'
     end
     object labVersion: TLabel
       Left = 4
@@ -1214,7 +1214,7 @@ object dlgAbout: TdlgAbout
       Height = 13
       Alignment = taCenter
       AutoSize = False
-      Caption = 'Version 6.0'
+      Caption = 'Version 7.4'
       Layout = tlCenter
     end
     object btnOK: TButton

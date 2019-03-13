@@ -16,7 +16,7 @@ unit phpWeb;
 interface
 
 uses
-  Windows, ToolsAPI, Forms, Dialogs, SysUtils, Graphics, Classes, ShellAPI;
+  {$IFNDEF FPC} Windows{$ELSE} LCLType,LCLIntf,dynlibs,libc{$ENDIF}, ToolsAPI, Forms, Dialogs, SysUtils, Graphics, Classes, ShellAPI;
 
 type
   TphpWebWizard = class(TNotifierObject, IOTAWIzard, IOTAMenuWizard)

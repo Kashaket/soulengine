@@ -16,7 +16,7 @@ unit PHPTypes;
 interface
 
 uses
-  Windows, ZENDTypes;
+  {$IFNDEF FPC} Windows{$ELSE} LCLType{$ENDIF}, ZENDTypes;
 
 {$IFDEF PHP4}
 const
@@ -27,7 +27,7 @@ const
 {$ENDIF}
     
 const
-  TRequestName : array [0..3] of AnsiString =
+  TRequestName : array [0..3] of zend_ustr =
   ('GET',
    'PUT',
    'POST',
@@ -58,7 +58,7 @@ const
 
 
 const
- short_track_vars_names : array [0..5] of AnsiString =
+ short_track_vars_names : array [0..5] of zend_ustr =
   ('_POST',
    '_GET',
    '_COOKIE',
@@ -136,7 +136,7 @@ type
   Psapi_header_struct = ^Tsapi_header_struct;
   sapi_header_struct =
     record
-      header : PAnsiChar;
+      header : zend_pchar;
       header_len : uint;
       {$IFNDEF PHP530}
       replace : zend_bool;
@@ -150,8 +150,8 @@ type
       headers : zend_llist;
       http_response_code : Integer;
       send_default_content_type : Byte;
-      mimetype : PAnsiChar;
-      http_status_line : PAnsiChar;
+      mimetype : zend_pchar;
+      http_status_line : zend_pchar;
     end;
    Tsapi_headers_struct = sapi_headers_struct;
 
@@ -159,7 +159,7 @@ type
   Psapi_post_entry =  ^Tsapi_post_entry;
   sapi_post_entry =
     record
-      content_type : PAnsiChar;
+      content_type : zend_pchar;
       content_type_len : uint;
       post_reader : pointer;  //void (*post_reader)(TSRMLS_D);
       post_handler : pointer; //void (*post_handler)(char *content_type_dup, void *arg TSRMLS_DC);
@@ -175,38 +175,38 @@ type
   Psapi_request_info = ^Tsapi_request_info;
   sapi_request_info =
     record
-      request_method : PAnsiChar;
-      query_string   : PAnsiChar;
-      post_data      : PAnsiChar;
-      raw_post_data  : PAnsiChar;
-      cookie_data    : PAnsiChar;
+      request_method : zend_pchar;
+      query_string   : zend_pchar;
+      post_data      : zend_pchar;
+      raw_post_data  : zend_pchar;
+      cookie_data    : zend_pchar;
       content_length : Longint;
       post_data_length : uint;
       raw_post_data_length : uint;
-      path_translated : PAnsiChar;
-      request_uri     : PAnsiChar;
-      content_type    : PAnsiChar;
+      path_translated : zend_pchar;
+      request_uri     : zend_pchar;
+      content_type    : zend_pchar;
       headers_only    : zend_bool;
       no_headers      : zend_bool;
       {$IFDEF PHP5}
       headers_read    : zend_bool;
       {$ENDIF}
       post_entry      : PSapi_post_entry;
-      content_type_dup : PAnsiChar;
+      content_type_dup : zend_pchar;
       //for HTTP authentication
-      auth_user : PAnsiChar;
-      auth_password : PAnsiChar;
+      auth_user : zend_pchar;
+      auth_password : zend_pchar;
       {$IFDEF PHP510}
-      auth_digest : PAnsiChar;
+      auth_digest : zend_pchar;
       {$ENDIF}
       //this is necessary for the CGI SAPI module
-      argv0 : PAnsiChar;
+      argv0 : zend_pchar;
       //this is necessary for Safe Mode
-      current_user : PAnsiChar;
+      current_user : zend_pchar;
       current_user_length : Integer;
       //this is necessary for CLI module
       argc : Integer;
-      argv : ^PAnsiChar;
+      argv : ^zend_pchar;
       {$IFDEF PHP510}
       proto_num : integer;
       {$ENDIF}
@@ -216,7 +216,7 @@ type
   Psapi_header_line = ^Tsapi_header_line;
   sapi_header_line =
     record
-      line : PAnsiChar;
+      line : zend_pchar;
       line_len : uint;
       response_code : Longint;
     end;
@@ -231,8 +231,8 @@ type
       read_post_bytes : Integer;
       headers_sent : Byte;
       global_stat : stat;
-      default_mimetype : PAnsiChar;
-      default_charset : PAnsiChar;
+      default_mimetype : zend_pchar;
+      default_charset : zend_pchar;
       rfc1867_uploaded_files : PHashTable;
       post_max_size : Longint;
       options : Integer;
@@ -273,16 +273,16 @@ type
       flush : pointer;
       stat : pointer;
       getenv : pointer;
-      
+
       sapi_error : pointer;
-      
+
       header_handler : pointer;
       send_headers : pointer;
       send_header : pointer;
-      
+
       read_post : pointer;
       read_cookies : pointer;
-      
+
       register_server_variables : pointer;
       log_message : pointer;
       get_request_time : pointer;
@@ -306,11 +306,11 @@ type
       force_http_10 : pointer;
       get_target_uid : pointer;
       get_target_gid : pointer;
-      
+
       input_filter : pointer;
-      
+
       ini_defaults : pointer;
-      
+
       phpinfo_as_text : integer;
 
       ini_entries : PAnsiChar;
@@ -326,22 +326,22 @@ type
   PPHP_URL = ^TPHP_URL;
   Tphp_url =
     record
-      scheme : PAnsiChar;
-      user : PAnsiChar;
-      pass : PAnsiChar;
-      host : PAnsiChar;
+      scheme : zend_pchar;
+      user : zend_pchar;
+      pass : zend_pchar;
+      host : zend_pchar;
       port : Smallint;
-      path : PAnsiChar;
-      query : PAnsiChar;
-      fragment : PAnsiChar;
+      path : zend_pchar;
+      query : zend_pchar;
+      fragment : zend_pchar;
     end;
 
 
 type
   arg_separators =
     record
-      output : PAnsiChar;
-      input : PAnsiChar;
+      output : zend_pchar;
+      input : zend_pchar;
     end;
 
 type
@@ -355,13 +355,13 @@ type
       allow_call_time_pass_reference : boolean;
       implicit_flush : boolean;
       output_buffering : Integer;
-      safe_mode_include_dir : PAnsiChar;
+      safe_mode_include_dir : zend_pchar;
       safe_mode_gid : boolean;
       sql_safe_mode : boolean;
       enable_dl :boolean;
-      output_handler : PAnsiChar;
-      unserialize_callback_func : PAnsiChar;
-      safe_mode_exec_dir : PAnsiChar;
+      output_handler : zend_pchar;
+      unserialize_callback_func : zend_pchar;
+      safe_mode_exec_dir : zend_pchar;
       memory_limit : Longint;
       max_input_time : Longint;
       track_errors : boolean;
@@ -372,21 +372,21 @@ type
       ignore_repeated_errors : boolean;
       ignore_repeated_source : boolean;
       report_memleaks : boolean;
-      error_log : PAnsiChar;
-      doc_root : PAnsiChar;
-      user_dir : PAnsiChar;
-      include_path : PAnsiChar;
-      open_basedir : PAnsiChar;
-      extension_dir : PAnsiChar;
-      upload_tmp_dir : PAnsiChar;
+      error_log : zend_pchar;
+      doc_root : zend_pchar;
+      user_dir : zend_pchar;
+      include_path : zend_pchar;
+      open_basedir : zend_pchar;
+      extension_dir : zend_pchar;
+      upload_tmp_dir : zend_pchar;
       upload_max_filesize : Longint;
-      error_append_string : PAnsiChar;
-      error_prepend_string : PAnsiChar;
-      auto_prepend_file : PAnsiChar;
-      auto_append_file : PAnsiChar;
+      error_append_string : zend_pchar;
+      error_prepend_string : zend_pchar;
+      auto_prepend_file : zend_pchar;
+      auto_append_file : zend_pchar;
       arg_separator : arg_separators;
-      gpc_order : PAnsiChar;
-      variables_order : PAnsiChar;
+      gpc_order : zend_pchar;
+      variables_order : zend_pchar;
       rfc1867_protected_variables : THashTable;
       connection_status : Smallint;
       ignore_user_abort : Smallint;
@@ -397,8 +397,8 @@ type
       register_globals : boolean;
       register_argc_argv : boolean;
       y2k_compliance : boolean;
-      docref_root : PAnsiChar;
-      docref_ext : PAnsiChar;
+      docref_root : zend_pchar;
+      docref_ext : zend_pchar;
       html_errors : boolean;
       xmlrpc_errors : boolean;
       xmlrpc_error_number : Longint;
@@ -409,15 +409,15 @@ type
       always_populate_raw_post_data : boolean;
       {$IFDEF PHP510}
       report_zend_debug : boolean;
-      last_error_message : PAnsiChar;
-      last_error_file : PAnsiChar;
+      last_error_message : zend_pchar;
+      last_error_file : zend_pchar;
       last_error_lineno : integer;
       {$IFNDEF PHP530}
       error_handling : error_handling_t;
       exception_class : Pointer;
       {$ENDIF}
-      disable_functions : PAnsiChar;
-      disable_classes : PAnsiChar;
+      disable_functions : zend_pchar;
+      disable_classes : zend_pchar;
       {$ENDIF}
       {$IFDEF PHP520}
       allow_url_include : zend_bool;
@@ -427,11 +427,11 @@ type
       {$ENDIF}
 
       {$IFDEF PHP530}
-      user_ini_filename : PAnsiChar;
+      user_ini_filename : zend_pchar;
       user_ini_cache_ttl : longint;
-      request_order : PAnsiChar;
+      request_order : zend_pchar;
       mail_x_header : zend_bool;
-      mail_log : PAnsiChar;
+      mail_log : zend_pchar;
       {$ENDIF}
     end;
 

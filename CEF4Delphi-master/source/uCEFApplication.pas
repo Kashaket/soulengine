@@ -75,6 +75,7 @@ const
 type
   TCefApplication = class
     protected
+      jLoad                          : boolean;
       FCache                         : ustring;
       FCookies                       : ustring;
       FUserDataPath                  : ustring;
@@ -570,7 +571,7 @@ end;
 destructor TCefApplication.Destroy;
 begin
   try
-    if (FProcessType = ptBrowser) then
+    if (FProcessType = ptBrowser) and not(jLoad) then
       begin
         if (FShutdownWaitTime > 0) then sleep(FShutdownWaitTime);
 
@@ -932,15 +933,21 @@ begin
     TempApp := nil;
   end;
 end;
-function TCefApplication.LoadLibrary;
+function TCefApplication.LoadLibrary : boolean;
 var TempApp: ICefApp;
 begin
+  Result  := True;
+  if FLibHandle <> 0 then Exit;
+
   if CheckCEFLibrary and LoadCEFlibrary then
         begin
           TempApp := TCustomCefApp.Create(self);
           Result  := InitializeLibrary(TempApp);
           TempApp := nil;
-        end;
+          jLoad   := True;
+        end
+        else
+    Result := False;
 end;
 procedure TCefApplication.DoMessageLoopWork;
 begin

@@ -132,14 +132,20 @@ procedure register_delphi_object(ht : integer; return_value : pzval; this_ptr : 
       return_value_used : integer; TSRMLS_DC : pointer); cdecl;
 {$ENDIF}
 
-{$IFDEF PHP510}
+{$IFDEF PHP5}
 procedure delphi_get_author(ht : integer; return_value : pzval; return_value_ptr : ppzval; this_ptr : pzval;
       return_value_used : integer; TSRMLS_DC : pointer); cdecl;
 {$ELSE}
 procedure delphi_get_author(ht : integer; return_value : pzval; this_ptr : pzval;
       return_value_used : integer; TSRMLS_DC : pointer); cdecl;
 {$ENDIF}
-
+{$IFDEF PHP5}
+procedure delphi_is_uc(ht : integer; return_value : pzval; return_value_ptr : ppzval; this_ptr : pzval;
+      return_value_used : integer; TSRMLS_DC : pointer); cdecl;
+{$ELSE}
+procedure delphi_is_uc(ht : integer; return_value : pzval; this_ptr : pzval;
+      return_value_used : integer; TSRMLS_DC : pointer); cdecl;
+{$ENDIF}
 {$IFDEF PHP510}
 procedure register_delphi_component(ht : integer; return_value : pzval; return_value_ptr : ppzval; this_ptr : pzval;
       return_value_used : integer; TSRMLS_DC : pointer); cdecl;
@@ -177,7 +183,7 @@ procedure delphi_str_date(ht : integer; return_value : pzval; this_ptr : pzval;
       return_value_used : integer; TSRMLS_DC : pointer); cdecl;
 {$ENDIF}
 begin
-  ZVAL_STRING(return_value, PAnsiChar(DateToStr(Date)), true);
+  ZVAL_STRING(return_value, zend_pchar(DateToStr(Date)), true);
 end;
 
 //proto float delphi_date(void)
@@ -333,7 +339,7 @@ var
  element : pzend_list_element;
  prop  : pzend_overloaded_element;
  p : pointer;
- propname : AnsiString;
+ propname : zend_ustr;
 // --> hupu, 2006.06.01
 // pt : TTypeKind;
 {$IFDEF VERSION7}
@@ -409,7 +415,7 @@ var
  element : pzend_list_element;
  prop  : pzend_overloaded_element;
  p : pointer;
- propname : AnsiString;
+ propname : zend_ustr;
 // --> hupu, 2006.06.01
 // pt : TTypeKind;
 {$IFDEF VERSION7}
@@ -473,7 +479,7 @@ Scripter.SetPropertyByID(Scripter.NameToDispID(propname),
 end;
 
 
-
+{$IFDEF PHP4}
 procedure _delphi_get_property_wrapper; assembler;
 asm
   push        ebp
@@ -512,7 +518,7 @@ asm
   pop         ebp
   ret
 end;
-
+{$ENDIF}
 
 procedure delphi_call_function(ht : integer; return_value : pzval; this_ptr : pzval;
       return_value_used : integer; TSRMLS_DC : pointer; property_reference : Pzend_property_reference ); cdecl;
@@ -522,7 +528,7 @@ var
  element : pzend_list_element;
  prop  : pzend_overloaded_element;
  p : pointer;
- MethodName : AnsiString;
+ MethodName : zend_ustr;
  Params : pzval_array;
  M, D : integer;
 begin
@@ -581,17 +587,17 @@ begin
 end;
 
 {$IFDEF PHP510}
-function delphi_call_method(method : PAnsiChar; ht : integer; return_value : pzval; return_value_ptr : ppzval; this_ptr : pzval;
+function delphi_call_method(method : zend_pchar; ht : integer; return_value : pzval; return_value_ptr : ppzval; this_ptr : pzval;
       return_value_used : integer; TSRMLS_DC : pointer) : integer; cdecl;
 {$ELSE}
-function delphi_call_method(method : PAnsiChar; ht : integer; return_value : pzval; this_ptr : pzval;
+function delphi_call_method(method : zend_pchar; ht : integer; return_value : pzval; this_ptr : pzval;
       return_value_used : integer; TSRMLS_DC : pointer) : integer; cdecl;
 {$ENDIF}
 begin
 
 end;
 
-function delphi_get_method(_object : pzval; method_name : PAnsiChar; method_len : integer; TSRMLS_DC : pointer) : PzendFunction; cdecl;
+function delphi_get_method(_object : pzval; method_name : zend_pchar; method_len : integer; TSRMLS_DC : pointer) : PzendFunction; cdecl;
 
 begin
 
@@ -600,7 +606,7 @@ end;
 
 {$ENDIF}
 
-{$IFDEF PHP510}
+{$IFDEF PHP5}
 procedure delphi_get_author(ht : integer; return_value : pzval; return_value_ptr : ppzval; this_ptr : pzval;
       return_value_used : integer; TSRMLS_DC : pointer); cdecl;
 {$ELSE}
@@ -608,7 +614,7 @@ procedure delphi_get_author(ht : integer; return_value : pzval; this_ptr : pzval
       return_value_used : integer; TSRMLS_DC : pointer); cdecl;
 {$ENDIF}
 var
- properties : array[0..3] of PAnsiChar;
+ properties : array[0..3] of zend_pchar;
 begin
   properties[0] := 'name';
   properties[1] := 'last';
@@ -641,8 +647,16 @@ begin
   {$ENDIF}
 end;
 
-
-
+{$IFDEF PHP5}
+procedure delphi_is_uc(ht : integer; return_value : pzval; return_value_ptr : ppzval; this_ptr : pzval;
+      return_value_used : integer; TSRMLS_DC : pointer); cdecl;
+{$ELSE}
+procedure delphi_is_uc(ht : integer; return_value : pzval; this_ptr : pzval;
+      return_value_used : integer; TSRMLS_DC : pointer);
+{$ENDIF}
+begin
+    {$IFDEF PHP_UNICE}ZVAL_TRUE{$ELSE}ZVAL_FALSE{$ENDIF}(return_value);
+end;
 
 {$IFDEF PHP510}
 procedure register_delphi_object(ht : integer; return_value : pzval; return_value_ptr : ppzval; this_ptr : pzval;

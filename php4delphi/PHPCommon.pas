@@ -46,8 +46,8 @@ type
 
   TPHPVariable = class(TCollectionItem)
   private
-    FName  : {$IFDEF PHP_UNICE}UTf8String{$ELSE}AnsiString{$ENDIF};
-    FValue : {$IFDEF PHP_UNICE}UTf8String{$ELSE}AnsiString{$ENDIF};
+    FName  : zend_ustr;
+    FValue : zend_ustr;
     function GetAsBoolean: boolean;
     function GetAsFloat: double;
     function GetAsInteger: integer;
@@ -59,11 +59,11 @@ type
   public
     property AsInteger : integer read GetAsInteger write SetAsInteger;
     property AsBoolean : boolean read GetAsBoolean write SetAsBoolean;
-    property AsString  : {$IFDEF PHP_UNICE}UTf8String{$ELSE}AnsiString{$ENDIF}  read FValue write FValue;
+    property AsString  : zend_ustr read FValue write FValue;
     property AsFloat   : double  read GetAsFloat write SetAsFloat;
   published
-    property Name  : {$IFDEF PHP_UNICE}UTf8String{$ELSE}AnsiString{$ENDIF} read FName write FName;
-    property Value : {$IFDEF PHP_UNICE}UTf8String{$ELSE}AnsiString{$ENDIF} read FValue write FValue;
+    property Name  : zend_ustr read FName write FName;
+    property Value : zend_ustr read FValue write FValue;
   end;
 
   TPHPVariables = class(TCollection)
@@ -76,22 +76,22 @@ type
   public
     function Add: TPHPVariable;
     constructor Create(AOwner: TComponent);
-    function GetVariables : AnsiString;
-    function IndexOf(AName : AnsiString) : integer;
-    procedure AddRawString(AString : AnsiString);
+    function GetVariables : zend_ustr;
+    function IndexOf(AName : zend_ustr) : integer;
+    procedure AddRawString(AString : zend_ustr);
     property Items[Index: Integer]: TPHPVariable read GetItem write SetItem; default;
-    function ByName(AName : AnsiString) : TPHPVariable;
+    function ByName(AName : zend_ustr) : TPHPVariable;
   end;
 
   TPHPConstant = class(TCollectionItem)
   private
-    FName  : AnsiString;
-    FValue : AnsiString;
+    FName  : zend_ustr;
+    FValue : zend_ustr;
   protected
     function GetDisplayName : string; override;
   published
-    property Name  : AnsiString read FName write FName;
-    property Value : AnsiString read FValue write FValue;
+    property Name  : zend_ustr read FName write FName;
+    property Value : zend_ustr read FValue write FValue;
   end;
 
   TPHPConstants = class(TCollection)
@@ -104,7 +104,7 @@ type
   public
     function Add: TPHPConstant;
     constructor Create(AOwner: TComponent);
-    function IndexOf(AName : AnsiString) : integer;
+    function IndexOf(AName : zend_ustr) : integer;
     property Items[Index: Integer]: TPHPConstant read GetItem write SetItem; default;
   end;
 
@@ -125,7 +125,7 @@ type
   public
     function Add: TPHPHeader;
     constructor Create(AOwner: TComponent);
-    function GetHeaders : AnsiString;
+    function GetHeaders : zend_ustr;
     property Items[Index: Integer]: TPHPHeader read GetItem write SetItem; default;
   end;
 
@@ -171,7 +171,7 @@ begin
   Result := FOwner;
 end;
 
-function TPHPVariables.GetVariables: AnsiString;
+function TPHPVariables.GetVariables: zend_ustr;
 var i : integer;
 begin
   for i := 0 to Count - 1 do
@@ -182,7 +182,7 @@ begin
     end;
 end;
 
-function TPHPVariables.IndexOf(AName: AnsiString): integer;
+function TPHPVariables.IndexOf(AName: zend_ustr): integer;
 var
  i : integer;
 begin
@@ -197,7 +197,7 @@ begin
   end;
 end;
 
-procedure TPHPVariables.AddRawString(AString : AnsiString);
+procedure TPHPVariables.AddRawString(AString : zend_ustr);
 var
  SL : TStringList;
  i  : integer;
@@ -227,7 +227,7 @@ begin
   SL.Free;
 end;
 
-function TPHPVariables.ByName(AName: AnsiString): TPHPVariable;
+function TPHPVariables.ByName(AName: zend_ustr): TPHPVariable;
 var
  i : integer;
 begin
@@ -359,7 +359,7 @@ begin
   Result := FOwner;
 end;
 
-function TPHPConstants.IndexOf(AName: AnsiString): integer;
+function TPHPConstants.IndexOf(AName: zend_ustr): integer;
 var
  i : integer;
 begin
@@ -408,7 +408,7 @@ begin
   Result := FOwner;
 end;
 
-function TPHPHeaders.GetHeaders: AnsiString;
+function TPHPHeaders.GetHeaders: zend_ustr;
 var i : integer;
 begin
   for i := 0 to Count - 1 do

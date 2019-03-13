@@ -96,11 +96,15 @@ type
   TCEFScrollBox = class(TCEFWinControl)
   private
     FBorderStyle: TBorderStyle;
+    {$IFNDEF FPC}
     class constructor Create;
     class destructor Destroy;
     procedure SetBorderStyle(Value: TBorderStyle);
+    {$ENDIF}
     procedure WMNCHitTest(var Message: TWMNCHitTest); message WM_NCHITTEST;
+    {$IFNDEF FPC}
     procedure CMCtl3DChanged(var Message: TMessage); message CM_CTL3DCHANGED;
+    {$ENDIF}
     procedure CMVisibleChanged(var Message: TMessage); message CM_VISIBLECHANGED;
   protected
     procedure CreateParams(var Params: TCreateParams); override;
@@ -112,11 +116,15 @@ type
     property Anchors;
     property AutoScroll default True;
     property AutoSize;
+    {$IFDEF FPC}
+    property BorderSpacing;
+    {$ELSE}
     property BevelEdges;
     property BevelInner;
     property BevelOuter;
     property BevelKind;
     property BevelWidth;
+    {$ENDIF}
     property BiDiMode;
     property BorderStyle: TBorderStyle read FBorderStyle write SetBorderStyle default bsSingle;
     property Constraints;
@@ -127,13 +135,19 @@ type
     property DragMode;
     property Enabled;
     property Color nodefault;
+    {$IFNDEF FPC}
     property Ctl3D;
+    {$ENDIF}
     property Font;
+    {$IFNDEF FPC}
     property Padding;
+    {$ENDIF}
     property ParentBiDiMode;
     property ParentBackground default False;
     property ParentColor;
+    {$IFNDEF FPC}
     property ParentCtl3D;
+    {$ENDIF}
     property ParentDoubleBuffered;
     property ParentFont;
     property ParentShowHint;
@@ -141,10 +155,12 @@ type
     property ShowHint;
     property TabOrder;
     property TabStop;
-    property Touch;
     property Visible;
+    {$IFNDEF FPC}
+    property Touch;
     property StyleElements;
     property OnCanResize;
+    {$ENDIF}
     property OnClick;
     property OnConstrainedResize;
     property OnContextPopup;
@@ -157,9 +173,13 @@ type
     property OnEndDrag;
     property OnEnter;
     property OnExit;
+    {$IFNDEF FPC}
     property OnGesture;
+    {$ENDIF}
     property OnGetSiteInfo;
+    {$IFNDEF FPC}
     property OnMouseActivate;
+    {$ENDIF}
     property OnMouseDown;
     property OnMouseEnter;
     property OnMouseLeave;
@@ -250,28 +270,28 @@ begin
   UpdateSize;
 end;
 { TCEFScrollBox }
-
+{$IFNDEF FPC}
 class constructor TCEFScrollBox.Create;
 begin
   TCustomStyleEngine.RegisterStyleHook(TCEFScrollBox, TScrollBoxStyleHook);
 end;
-
+{$ENDIF}
 constructor TCEFScrollBox.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   ControlStyle := [csAcceptsControls, csCaptureMouse, csClickEvents,
-    csSetCaption, csDoubleClicks, csPannable, csGestures];
+    csSetCaption, csDoubleClicks{$IFNDEF FPC}, csPannable, csGestures{$ENDIF}];
   AutoScroll := True;
   Width := 185;
   Height := 41;
   FBorderStyle := bsSingle;
 end;
-
+{$IFNDEF FPC}
 class destructor TCEFScrollBox.Destroy;
 begin
   TCustomStyleEngine.UnRegisterStyleHook(TCEFScrollBox, TScrollBoxStyleHook);
 end;
-
+{$ENDIF}
 procedure TCEFScrollBox.CMVisibleChanged(var Message: TMessage);
 begin
   inherited;
@@ -287,14 +307,14 @@ begin
   with Params do
   begin
     Style := Style or BorderStyles[FBorderStyle];
-    if NewStyleControls and Ctl3D and (FBorderStyle = bsSingle) then
+    if NewStyleControls {$IFNDEF FPC}and Ctl3D{$ENDIF} and (FBorderStyle = bsSingle) then
     begin
       Style := Style and not WS_BORDER;
       ExStyle := ExStyle or WS_EX_CLIENTEDGE;
     end;
   end;
 end;
-
+{$IFNDEF FPC}
 procedure TCEFScrollBox.SetBorderStyle(Value: TBorderStyle);
 begin
   if Value <> FBorderStyle then
@@ -303,18 +323,18 @@ begin
     RecreateWnd;
   end;
 end;
-
+{$ENDIF}
 procedure TCEFScrollBox.WMNCHitTest(var Message: TWMNCHitTest);
 begin
   DefaultHandler(Message);
 end;
-
+{$IFNDEF FPC}
 procedure TCEFScrollBox.CMCtl3DChanged(var Message: TMessage);
 begin
   if NewStyleControls and (FBorderStyle = bsSingle) then RecreateWnd;
   inherited;
 end;
-
+{$ENDIF}
 procedure TCEFScrollBox.PaintWindow(DC: HDC);
 begin
   //  Do nothing

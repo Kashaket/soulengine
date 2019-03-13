@@ -18,6 +18,7 @@ interface
 
 uses
   Windows, SysUtils, Classes, PHPCommon,
+  {$IFDEF PHP_UNICE}WideStrUtils, {$ENDIF}
   ZendTypes, ZendAPI, phpTypes, PHPAPI,
   phpFunctions;
 
@@ -32,8 +33,8 @@ type
   //Property
   TClassProperty = class(TCollectionItem)
   private
-    FName  : AnsiString;
-    FValue : AnsiString;
+    FName  : zend_ustr;
+    FValue : zend_ustr;
     function  GetAsBoolean: boolean;
     function  GetAsFloat: double;
     function  GetAsInteger: integer;
@@ -46,11 +47,11 @@ type
     procedure Assign(Source : TPersistent); override;
     property AsInteger : integer read GetAsInteger write SetAsInteger;
     property AsBoolean : boolean read GetAsBoolean write SetAsBoolean;
-    property AsString  : AnsiString  read FValue write FValue;
+    property AsString  : zend_ustr  read FValue write FValue;
     property AsFloat   : double  read GetAsFloat write SetAsFloat;
   published
-    property Name  : AnsiString read FName write FName;
-    property Value : AnsiString read FValue write FValue;
+    property Name  : zend_ustr read FName write FName;
+    property Value : zend_ustr read FValue write FValue;
   end;
 
   //Collection of the class properties
@@ -64,9 +65,9 @@ type
   public
     function Add: TClassProperty;
     constructor Create(AOwner: TComponent);
-    function GetVariables : AnsiString;
-    function IndexOf(AName : AnsiString) : integer;
-    function ByName(AName : AnsiString) : TClassProperty;
+    function GetVariables : zend_ustr;
+    function IndexOf(AName : zend_ustr) : integer;
+    function ByName(AName : zend_ustr) : TClassProperty;
     property Items[Index: Integer]: TClassProperty read GetItem write SetItem; default;
   end;
 
@@ -74,12 +75,12 @@ type
   TPHPClassMethod = class(TCollectionItem)
   private
     FOnExecute : TClassMethodExecute;
-    FName: AnsiString;
+    FName: zend_ustr;
     FTag       : integer;
     FFunctionParams: TFunctionParams;
     FZendVar   : TZendVariable;
     procedure SetFunctionParams(const Value: TFunctionParams);
-    procedure _SetDisplayName(value : AnsiString);
+    procedure _SetDisplayName(value : zend_ustr);
   public
     ReturnValue : variant;
     constructor Create(Collection : TCollection); override;
@@ -89,7 +90,7 @@ type
     procedure AssignTo(Dest: TPersistent); override;
     property  ZendVar: TZendVariable read FZendVar;
   published
-    property Name : AnsiString read FName write _SetDisplayName;
+    property Name : zend_ustr read FName write _SetDisplayName;
     property Tag  : integer read FTag write FTag;
     property Parameters: TFunctionParams read FFunctionParams write SetFunctionParams;
     property OnExecute : TClassMethodExecute read FOnExecute write FOnExecute;
@@ -107,7 +108,7 @@ type
   public
     constructor Create(Owner: TPersistent; ItemClass: TCollectionItemClass);
     function Add : TPHPClassMethod;
-    function ByName(AName : AnsiString) : TPHPClassMethod;
+    function ByName(AName : zend_ustr) : TPHPClassMethod;
     property Items[Index: Integer]: TPHPClassMethod read GetItem write SetItem; default;
   end;
 
@@ -117,14 +118,14 @@ type
     FProperties : TClassProperties;
     FMethods    : TPHPClassMethods;
     FClassObject: pzend_class_entry;
-    FClassName  : AnsiString;
+    FClassName  : zend_ustr;
     FClassEntry : tzend_class_entry;
     {$IFDEF PHP5}
     FClassFunction : array[0..1] of zend_function_entry;
     {$ENDIF}
     procedure SetProperties(const Value: TClassProperties);
     procedure SetMethods(const Value : TPHPClassMethods);
-    procedure SetClassName(const Value: AnsiString);
+    procedure SetClassName(const Value: zend_ustr);
   protected
     function  GetClassEntry : pzend_class_entry; virtual;
     procedure Loaded; override;
@@ -138,7 +139,7 @@ type
   published
     property Properties : TClassProperties read FProperties write SetProperties;
     property Methods : TPHPClassMethods read FMethods write SetMethods;
-    property PHPClassName : AnsiString read FClassName write SetClassName;
+    property PHPClassName : zend_ustr read FClassName write SetClassName;
   end;
 
 
@@ -197,7 +198,7 @@ end;
 
 
 //when object created from script using "new"
-function  class_call_constructor(AClassName : AnsiString; return_value : pzval) : TPHPClassInstance;
+function  class_call_constructor(AClassName : zend_ustr; return_value : pzval) : TPHPClassInstance;
 var
   Extension : TPHPExtension;
   idp : pointer;
@@ -234,7 +235,7 @@ var
  element : pzend_list_element;
  prop  : pzend_overloaded_element;
  p : pointer;
- propname : AnsiString;
+ propname : zend_ustr;
  tsrmls : pointer;
  param : TClassProperty;
 begin
@@ -274,7 +275,7 @@ var
  element : pzend_list_element;
  prop  : pzend_overloaded_element;
  p : pointer;
- MethodName : AnsiString;
+ MethodName : zend_ustr;
  Params : pzval_array;
  j : integer;
 begin
@@ -327,7 +328,7 @@ begin
                        begin
                          if not IsParamTypeCorrect(M.Parameters[j].ParamType, Params[j]^) then
                             begin
-                              zend_error(E_WARNING, PAnsiChar(Format('Wrong parameter type for %s()', [get_active_function_name(TSRMLS_DC)])));
+                              zend_error(E_WARNING, zend_pchar(Format('Wrong parameter type for %s()', [get_active_function_name(TSRMLS_DC)])));
                                Exit;
                              end;
                              M.Parameters[j].Value := zval2variant(Params[j]^^);
@@ -355,7 +356,7 @@ var
  prop  : pzend_overloaded_element;
  obj : TPHPClassInstance;
  p : pointer;
- propname : AnsiString;
+ propname : zend_ustr;
  tsrmls : pointer;
  data: ^ppzval;
  param : TClassProperty;
@@ -376,7 +377,7 @@ begin
    begin
     param := Obj.Properties.ByName(propname);
     if Assigned(param) then
-     ZVAL_STRING(val, PAnsiChar(param.value), true)
+     ZVAL_STRING(val, zend_pchar(param.value), true)
        else
          ZVAL_EMPTY_STRING(val)
    end
@@ -437,7 +438,7 @@ var
  retval : pzval;
  obj : TPHPClassInstance;
  data: ^ppzval;
- propname : AnsiString;
+ propname : zend_ustr;
  object_properties : PHashTable;
  param : TClassProperty;
 begin
@@ -459,7 +460,7 @@ begin
    begin
     param := Obj.Properties.ByName(propname);
     if Assigned(param) then
-     ZVAL_STRING(retval, PAnsiChar(param.value), true)
+     ZVAL_STRING(retval, zend_pchar(param.value), true)
        else
          ZVAL_EMPTY_STRING(retval);
    end
@@ -476,7 +477,7 @@ procedure class_set_property_handler(_object : pzval; member : pzval; value : pz
 var
  OBJ : TPHPClassInstance;
  data: ^ppzval;
- propname : AnsiString;
+ propname : zend_ustr;
  object_properties : PHashTable;
  param : TClassProperty;
 begin
@@ -503,10 +504,10 @@ begin
 end;
 
 {$IFDEF PHP510}
-function class_call_method(method : PAnsiChar; ht : integer; return_value : pzval; return_value_ptr : ppzval;
+function class_call_method(method : zend_pchar; ht : integer; return_value : pzval; return_value_ptr : ppzval;
     this_ptr : pzval; return_value_used : integer; TSRMLS_DC : pointer) : integer; cdecl;
 {$ELSE}
-function class_call_method(method : PAnsiChar; ht : integer; return_value : pzval; this_ptr : pzval;
+function class_call_method(method : zend_pchar; ht : integer; return_value : pzval; this_ptr : pzval;
       return_value_used : integer; TSRMLS_DC : pointer) : integer; cdecl;
 {$ENDIF}
 var
@@ -564,7 +565,7 @@ begin
                        begin
                          if not IsParamTypeCorrect(M.Parameters[j].ParamType, Params[j]^) then
                             begin
-                              zend_error(E_WARNING, PAnsiChar(Format('Wrong parameter type for %s()', [get_active_function_name(TSRMLS_DC)])));
+                              zend_error(E_WARNING, zend_pchar(Format('Wrong parameter type for %s()', [get_active_function_name(TSRMLS_DC)])));
                                Result := FAILURE;
                                Exit;
                              end;
@@ -587,7 +588,7 @@ begin
 end;
 
 //PHP5
-function class_get_method(_object : pzval; method_name : PAnsiChar; method_len : integer; TSRMLS_DC : pointer) : PzendFunction; cdecl;
+function class_get_method(_object : pzval; method_name : zend_pchar; method_len : integer; TSRMLS_DC : pointer) : PzendFunction; cdecl;
 var
  fnc : pZendFunction;
 begin
@@ -616,7 +617,7 @@ procedure class_init_new(ht : integer; return_value : pzval; this_ptr : pzval;
       return_value_used : integer; TSRMLS_DC : pointer); cdecl;
 {$ENDIF}
 var
- AClassName : PAnsiChar;
+ AClassName : zend_pchar;
  len : integer;
  Extension : TPHPExtension;
  idp : pointer;
@@ -670,7 +671,7 @@ begin
   {$ENDIF}
 
   if le_classresource = 0 then
-   le_classresource := zend_register_list_destructors_ex(@class_destructor_handler, nil, PAnsiChar(le_classresource_name), AModuleNumber);
+   le_classresource := zend_register_list_destructors_ex(@class_destructor_handler, nil, zend_pchar(le_classresource_name), AModuleNumber);
 
   if (Application.GetPHPClass(FClassName) = nil) then
    begin
@@ -679,11 +680,11 @@ begin
     ZeroMemory(@FClassEntry, SizeOf(TZend_Class_Entry));
 
     {$IFDEF PHP5}
-    FClassFunction[0].fname := PAnsiChar(FClassName);
+    FClassFunction[0].fname := zend_pchar(FClassName);
     FClassFunction[0].handler := @class_init_new;
-    INIT_CLASS_ENTRY(FClassEntry, PAnsiChar(FClassName) , @FClassFunction);
+    INIT_CLASS_ENTRY(FClassEntry, zend_pchar(FClassName) , @FClassFunction);
     {$ELSE}
-    INIT_CLASS_ENTRY(FClassEntry, PAnsiChar(FClassName) , nil);
+    INIT_CLASS_ENTRY(FClassEntry, zend_pchar(FClassName) , nil);
     {$ENDIF}
 
 
@@ -805,9 +806,9 @@ begin
 
 end;
 
-procedure TPHPClass.SetClassName(const Value: AnsiString);
+procedure TPHPClass.SetClassName(const Value: zend_ustr);
 begin
-  FClassName := LowerCase(Value);
+  FClassName := {$IFDEF PHP_UNICE}UTF8LowerCase(Value){$ELSE}LowerCase(Value){$ENDIF};
 end;
 
 procedure TPHPClass.SetMethods(const Value: TPHPClassmethods);
@@ -962,7 +963,7 @@ begin
   Result := FOwner;
 end;
 
-function TClassProperties.GetVariables: AnsiString;
+function TClassProperties.GetVariables: zend_ustr;
 var i : integer;
 begin
   for i := 0 to Count - 1 do
@@ -973,7 +974,7 @@ begin
     end;
 end;
 
-function TClassProperties.IndexOf(AName: AnsiString): integer;
+function TClassProperties.IndexOf(AName: zend_ustr): integer;
 var
  i : integer;
 begin
@@ -989,7 +990,7 @@ begin
 end;
 
 
-function TClassProperties.ByName(AName: AnsiString): TClassProperty;
+function TClassProperties.ByName(AName: zend_ustr): TClassProperty;
 var
  i : integer;
 begin
@@ -1011,7 +1012,7 @@ begin
   Result := TPHPClassMethod(inherited Add);
 end;
 
-function TPHPClassMethods.ByName(AName: AnsiString): TPHPClassMethod;
+function TPHPClassMethods.ByName(AName: zend_ustr): TPHPClassMethod;
 var
  i : integer;
 begin
@@ -1122,22 +1123,23 @@ var
   I: Integer;
   F: TPHPClassMethod;
 begin
-  if AnsiCompareText(Value, FName) <> 0 then
+  if
+  {$IFDEF PHP_UNICE}CompareText{$ELSE}AnsiCompareText{$ENDIF}(Value, FName) <> 0 then
   begin
     if Collection <> nil then
       for I := 0 to Collection.Count - 1 do
       begin
         F := TPHPClassMethods(Collection).Items[I];
         if (F <> Self) and (F is TPHPClassMethod) and
-          (AnsiCompareText(Value, F.Name) = 0) then
+          ({$IFDEF PHP_UNICE}CompareText{$ELSE}AnsiCompareText{$ENDIF}(Value, F.Name) = 0) then
           raise Exception.Create('Duplicate method name');
       end;
-    FName :=  LowerCase(Value);
+    FName :=  {$IFDEF PHP_UNICE}LowerCase(Value){$ELSE}AnsiLowerCase(Value){$ENDIF};
     Changed(False);
   end;
 end;
 
-procedure TPHPClassMethod._SetDisplayName(Value: AnsiString);
+procedure TPHPClassMethod._SetDisplayName(Value: zend_ustr);
 var
   NewName : string;
 begin

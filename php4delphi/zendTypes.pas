@@ -16,7 +16,7 @@ unit ZENDTypes;
 interface
 
 uses
-  Windows, SysUtils;
+  {$IFNDEF FPC} Windows {$ELSE} LCLType{$ENDIF}, SysUtils;
 
 const
   //zend.h
@@ -476,14 +476,46 @@ const
   ZEND_INI_STAGE_DEACTIVATE                       = (1 shl 3);
   ZEND_INI_STAGE_RUNTIME                          = (1 shl 4);
 
+{ Common Types }
 type
   zend_uint   = uint;
   zend_bool   = boolean;
-  zend_uchar  = AnsiChar;
+  zend_uchar  = {$IFDEF PHP_UNICE}Utf8Char{$ELSE}AnsiChar{$ENDIF};
+  zend_ustr   = {$IFDEF PHP_UNICE}Utf8String{$ELSE}AnsiString{$ENDIF};
   zend_ulong  = ulong;
+  zend_long   = integer;
+  zend_pchar  = {$IFDEF PHP_UNICE}PUtf8Char{$ELSE}PAnsiChar{$ENDIF};
+  zend_pstr   = {$IFDEF PHP_UNICE}PUtf8String{$ELSE}PAnsiString{$ENDIF};
+  {$IFDEF PHP7}
+  _zend_refcounted_h = record
+      refcount : cardinal;
+      u : record
+          case longint of
+            0 : ( v : record
+                _type : zend_uchar;
+                flags : zend_uchar;
+                gc_info : word;
+              end );
+            1 : ( type_info : cardinal );
+          end;
+    end;
+  zend_refcounted_h = _zend_refcounted_h;
+  _zend_refcounted = record
+      gc : zend_refcounted_h;
+    end;
+    zend_refcounted = _zend_refcounted;
+  zend_string = record
+      gc : zend_refcounted_h;
+      h : zend_ulong;
+      len : size_t;
+      val : zend_pchar;
+  end;
+  {$ENDIF}
   zend_ushort = word;
   unsigned_char = byte;
-
+{ Common Types }
+type
+  pzend_string = {$IFDEF PHP_UNICE}PUTF8Char{$ELSE}PAnsiChar{$ENDIF};
 
 type
   uint = longword;
@@ -521,7 +553,7 @@ type
 
 type
 
-  hash_func_t = function(arKey: PAnsiChar; nKeyLength: uint): ulong;
+  hash_func_t = function(arKey: zend_pchar; nKeyLength: uint): ulong;
 
   compare_func_t = function(_noname1: Pointer; _noname2: Pointer;
     TSRMLS_DC: Pointer): integer;
@@ -540,7 +572,7 @@ type
     pListLast: PBucket;
     pNext: PBucket;
     pLast: PBucket;
-    arKey: array[0..0] of AnsiChar;
+    arKey: array[0..0] of zend_uchar;
   end;
 
   PHashTable = ^THashTable;
@@ -568,7 +600,7 @@ type
   zend_op_array =
   record
     _type : zend_uchar;
-    function_name : PAnsiChar;
+    function_name : zend_pchar;
     scope : pointer;
     fn_flags : zend_uint;
     prototype : pointer;
@@ -603,10 +635,10 @@ type
     uses_this : zend_bool;
     {$ENDIF}
 
-    filename : PAnsiChar;
+    filename : zend_pchar;
     line_start : zend_uint;
     line_end : zend_uint;
-    doc_comment : PAnsiChar;
+    doc_comment : zend_pchar;
     doc_comment_len : zend_uint;
     {$IFDEF PHP530}
     early_binding : zend_uint;
@@ -617,7 +649,7 @@ type
   _zend_internal_function =
     record
       _type : byte;
-      function_name : PAnsiChar;
+      function_name : zend_pchar;
       scope : pointer;
       fn_flags : zend_uint;
       prototype : pointer;
@@ -643,7 +675,7 @@ type
           common :
               record
                 _type : zend_uchar;
-                function_name : PAnsiChar;
+                function_name : zend_pchar;
                 scope : pointer;
                 fn_flags : zend_uint;
                 prototype : pointer;
@@ -697,7 +729,7 @@ type
   type zend_op_array = record
     _type : zend_uchar;
     arg_types : PByte;
-    function_name : PAnsiChar;
+    function_name : zend_pchar;
     refcount : pointer;
     opcodes : pointer;
     last : zend_uint;
@@ -714,7 +746,7 @@ type
     return_reference : boolean;
     done_pass_two : boolean;
 
-    filename : PAnsiChar;
+    filename : zend_pchar;
     reserved : array[0..ZEND_MAX_RESERVED_RESOURCES - 1] of Pointer;
   end;
 
@@ -723,7 +755,7 @@ type
   _zend_internal_function = record
     _type : byte;
     arg_types : PByte;
-    function_name : PAnsiChar;
+    function_name : zend_pchar;
     handler : pointer;
   end;
   PZendInternalFunction = ^_zend_internal_function;
@@ -731,7 +763,7 @@ type
   _zend_overloaded_function = record
    _type : byte;
    arg_types : PByte;
-   function_name : PAnsiChar;
+   function_name : zend_pchar;
    _var : zend_uint;
   end;
 
@@ -743,7 +775,7 @@ type
               record
                 _type : zend_uchar;
                 arg_types : PByte;
-                function_name : PAnsiChar;
+                function_name : zend_pchar;
               end;
             );
         3 :
@@ -767,8 +799,8 @@ type
   {$IFDEF PHP4}
   Tzend_class_entry =
     record
-    _type: AnsiChar;
-    name: PAnsiChar;
+    _type: zend_uchar;
+    name: zend_pchar;
     name_length: uint;
     parent: pointer;
     refcount: pointer;
@@ -783,8 +815,8 @@ type
   {$ELSE}
 
   Tzend_class_entry = record
-   _type : AnsiChar;
-   name  : PAnsiChar;
+   _type : zend_uchar;
+   name  : zend_pchar;
    name_length : zend_uint;
    parent : PZend_class_entry;
    refcount : integer;
@@ -834,10 +866,10 @@ type
    interfaces : pointer;
    num_interfaces : zend_uint;
 
-   filename : PAnsiChar;
+   filename : zend_pchar;
    line_start : zend_uint;
    line_end : zend_uint;
-   doc_comment : PAnsiChar;
+   doc_comment : zend_pchar;
    doc_comment_len : zend_uint;
 
    module : pointer;
@@ -847,8 +879,16 @@ type
   Pzend_Object = ^Tzend_object;
   PPzend_Object = ^PZend_Object;
   _zend_object = record
+  {$IFDEF PHP7}
+    gc : zend_refcounted_h;
+    handle : cardinal;
+    handlers : P_zend_object_handlers;
+  {$ENDIF}
     ce: Pzend_class_entry;
     properties: PHashTable;
+  {$IFDEF PHP7}
+    properties_table : array[0..0] of zval;
+  {$ENDIF}
   {$IFDEF PHP5}
     in_get_set : cardinal;
   {$ENDIF}
@@ -908,12 +948,34 @@ type
  {$ENDIF}
 
   Pzvalue_value = ^zvalue_value;
+  {$IFDEF PHP7}
+   zvalue_value = Packed  record
+      case longint of
+        0 : ( lval : zend_long );
+        1 : ( dval : double );
+        2 : ( counted : P_zend_refcounted );
+        3 : ( str : Pzend_string );
+        4 : ( arr : Pzend_array );
+        5 : ( obj : Pzend_object );
+        6 : ( res : Pzend_resource );
+        7 : ( ref : P_zend_reference );
+        8 : ( ast : P_zend_ast_ref );
+        9 : ( zv : Pzval );
+        10 : ( ptr : pointer );
+        11 : ( ce : P_zend_class_entry );
+        12 : ( func : P_zend_function );
+        13 : ( ww : Packed record
+            w1 : cardinal;
+            w2 : cardinal;
+          end );
+      end;
+  {$ELSE}
   zvalue_value = record
     case longint of
-      0: (lval: longint);
+      0: (lval: zend_long);
       1: (dval: double);
       2: (str: record
-          val: {$IFDEF PHP_UNICE}PUTF8Char{$ELSE}PAnsiChar{$ENDIF};
+          val: zend_pchar;
           len: integer;
         end);
       3: (ht: PHashTable);
@@ -923,6 +985,7 @@ type
       4 : (obj :  _zend_object_value);
       {$ENDIF}
   end;
+  {$ENDIF}
   {$IFNDEF PHP700}
   pppzval = ^ppzval;
   ppzval = ^pzval;
@@ -939,6 +1002,32 @@ type
   Tzval = zval;
  {$ELSE}
   pzval = ^zval;
+  {$IFDEF PHP7}
+    _zval_struct = Packed  record
+      value : zend_value;
+      u1 : Packed  record
+          case longint of
+            0 : ( v : record
+                _type : zend_uchar;
+                type_flags : zend_uchar;
+                const_flags : zend_uchar;
+                reserved : zend_uchar;
+              end );
+            1 : ( type_info : cardinal );
+          end;
+      u2 :  Packed  record
+          case longint of
+            0 : ( var_flags : LongWord );
+            1 : ( next : cardinal );
+            2 : ( cache_slot : cardinal );
+            3 : ( lineno : cardinal );
+            4 : ( num_args : cardinal );
+            5 : ( fe_pos : cardinal );
+            6 : ( fe_iter_idx : cardinal );
+          end;
+    end;
+    zval = _zval_struct;
+  {$ENDIF}
   zval = record
    value : zvalue_value;
    refcount : zend_uint;
@@ -964,7 +1053,7 @@ type
 type
   PZendHashKey = ^TZendHashKey;
   zend_hash_key = record
-    arKey: PAnsiChar;
+    arKey: zend_pchar;
     nKeyLength: uint;
     h: ulong;
   end;
@@ -977,7 +1066,7 @@ type
   zend_constant = record
     value: zval;
     flags: Integer;
-    name: PAnsiChar;
+    name: zend_pchar;
     name_len: uint;
     module_number: Integer;
   end;
@@ -985,7 +1074,7 @@ type
 
 {$IFDEF PHP5}
 type
-   zend_stream_reader_t = function(handle : pointer; buf : PAnsiChar; len : size_t; TSRMLS_DC : pointer) : size_t; cdecl;
+   zend_stream_reader_t = function(handle : pointer; buf : zend_pchar; len : size_t; TSRMLS_DC : pointer) : size_t; cdecl;
    zend_stream_closer_t = procedure(handle : pointer; TSRMLS_DC : pointer); cdecl;
    zend_stream_fteller_t = function(handle : pointer; TSRMLS_DC : pointer) : longint; cdecl;
 
@@ -998,7 +1087,7 @@ zend_mmap  = record
 	len : size_t;
 	pos : size_t;
 	map : pointer;
-	buf : PAnsiChar;
+	buf : zend_pchar;
 	old_handle : pointer;
 	old_closer : zend_stream_closer_t;
 end;
@@ -1042,8 +1131,8 @@ type
     {$ELSE}
     _type: uchar;
     {$ENDIF}
-    filename: PAnsiChar;
-    opened_path: PAnsiChar;
+    filename: zend_pchar;
+    opened_path: zend_pchar;
     handle:
     record
       case Integer of
@@ -1090,26 +1179,26 @@ type
   Pzend_syntax_highlighter_ini = ^Tzend_syntax_highlighter_ini;
   zend_syntax_highlighter_ini =
     record
-    highlight_html    : PAnsiChar;
-    highlight_comment : PAnsiChar;
-    highlight_default : PAnsiChar;
-    highlight_string  : PAnsiChar;
-    highlight_keyword : PAnsiChar;
+    highlight_html    : zend_pchar;
+    highlight_comment : zend_pchar;
+    highlight_default : zend_pchar;
+    highlight_string  : zend_pchar;
+    highlight_keyword : zend_pchar;
   end;
   Tzend_syntax_highlighter_ini = zend_syntax_highlighter_ini;
 
 
 type
-  zend_write_t = function(str: PAnsiChar; str_length: integer): integer; cdecl;
+  zend_write_t = function(str: zend_pchar; str_length: integer): integer; cdecl;
 
 
 type
 
   {$IFDEF PHP5}
    _zend_arg_info = record
-   name : PAnsiChar;
+   name : zend_pchar;
    name_len : zend_uint;
-   class_name : PAnsiChar;
+   class_name : zend_pchar;
    class_name_len : zend_uint;
    {$IFDEF PHP510}
    array_type_hint : zend_bool;
@@ -1126,7 +1215,7 @@ type
 
   Pzend_function_entry = ^Tzend_function_entry;
   zend_function_entry = record
-    fname: PAnsiChar;
+    fname: zend_pchar;
     handler: pointer;
     {$IFDEF PHP4}
     func_arg_types: Pbyte;
@@ -1144,7 +1233,7 @@ type
     handlers:Pointer;
   end;
   _zend_function_entry = record
-    fname     : PAnsiChar;
+    fname     : zend_pchar;
     handler   : pointer;
     arg_info  : P_zend_arg_info;
     num_args  : uint;
@@ -1159,14 +1248,14 @@ type
     zts                   : byte;
     ini_entry             : pointer;
     deps                  : pointer;
-    name                  : PAnsiChar;
+    name                  : zend_pchar;
     functions             : Pointer;
     module_startup_func   : pointer;
     module_shutdown_func  : pointer;
     request_startup_func  : pointer;
     request_shutdown_func : pointer;
     info_func             : pointer;
-    version               : PAnsiChar;
+    version               : zend_pchar;
     globals_size          : size_t;
     globals_id_ptr        : pointer;
     globals_ctor          : pointer;
@@ -1176,7 +1265,7 @@ type
     _type                 : byte;
     handle                : pointer;
     module_number         : Integer;
-    build_id              : PAnsiChar;
+    build_id              : zend_pchar;
   end;
   Tzend_module_entry = record
     size: word;
@@ -1189,14 +1278,14 @@ type
     deps : pointer;
     {$ENDIF}
     {$ENDIF}
-    name: PAnsiChar;
+    name: zend_pchar;
     functions: Pointer;
     module_startup_func: pointer;
     module_shutdown_func: pointer;
     request_startup_func: pointer;
     request_shutdown_func: pointer;
     info_func: pointer;
-    version: PAnsiChar;
+    version: zend_pchar;
 
     {$IFDEF PHP5}
      {$IFDEF PHP520}
@@ -1223,7 +1312,7 @@ type
     handle: pointer;
     module_number: longint;
     {$IFDEF PHP530}
-    build_id : PAnsiChar;
+    build_id : zend_pchar;
     {$ENDIF}
   end;
 
@@ -1233,7 +1322,7 @@ type
   zend_list_element = record
     prev: pzend_list_element;
     next: pzend_list_element;
-    data: AnsiChar;
+    data: zend_uchar;
   end;
 
   pzend_llist = ^zend_llist;
@@ -1347,11 +1436,11 @@ type
 
     function_call_stack : zend_stack;
 
-    compiled_filename : PAnsiChar;
+    compiled_filename : zend_pchar;
 
     zend_lineno : integer;
     //comment_start_line : integer;
-    heredoc : PAnsiChar;
+    heredoc : zend_pchar;
     heredoc_len : integer;
 
     active_op_array : pointer;
@@ -1391,7 +1480,7 @@ type
 
     implementing_class : _znode;
     access_type : zend_uint;
-    doc_comment : PAnsiChar;
+    doc_comment : zend_pchar;
     doc_comment_len : integer;
   end;
   Tzend_compiler_globals = zend_compiler_globals;
@@ -1416,11 +1505,11 @@ type  _zend_objects_store = record
 
 type  _zend_property_info  = record
 	flags : zend_uint;
-	name : PAnsiChar;
+	name : zend_pchar;
 	name_length : integer;
 	h : ulong;
         {$IFDEF PHP510}
-        doc_comment : PAnsiChar;
+        doc_comment : zend_pchar;
         doc_comment_len : integer;
         {$ENDIF}
       end;
@@ -1552,7 +1641,7 @@ type
      //* locale stuff */
 
      {$IFNDEF PHP510}
-     float_separator : AnsiChar;
+     float_separator : zend_uchar;
      {$ENDIF}
 
      reserved: array[0..3] of pointer;
@@ -1569,13 +1658,13 @@ type
 {$ENDIF}
 
 {$IFDEF PHP530}
-function ZEND_MODULE_BUILD_ID : AnsiString;
+function ZEND_MODULE_BUILD_ID : zend_ustr;
 {$ENDIF}
 
 implementation
 
 {$IFDEF PHP530}
-function ZEND_MODULE_BUILD_ID : AnsiString;
+function ZEND_MODULE_BUILD_ID : zend_ustr;
 begin
   Result  := 'API' + IntToStr(ZEND_MODULE_API_NO) + ZEND_BUILD_TS + ZEND_BUILD_DEBUG + ZEND_BUILD_SYSTEM;
 end;

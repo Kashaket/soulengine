@@ -15,13 +15,13 @@ unit zend_dynamic_array;
 
 interface
   uses
-    Windows, SysUtils;
+   SysUtils, ZENDTypes;
 
 type
 
 
    dynamic_array = record
-        _array : PAnsiChar;
+        _array : zend_pchar;
         element_size : UINT;
         current : UINT;
         allocated : UINT;

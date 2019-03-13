@@ -55,7 +55,7 @@ type
     function GetInputArgAsFloat(AIndex:integer):double;
     function GetInputArgAsDateTime(AIndex:integer):TDateTime;
   public
-    procedure RegisterMethod(AName : AnsiString; ADescription : AnsiString; AProc : TDispatchProc; AParams : array of TParamType); virtual;
+    procedure RegisterMethod(AName : zend_ustr; ADescription : zend_ustr; AProc : TDispatchProc; AParams : array of TParamType); virtual;
     constructor Create(AOwner : TComponent); override;
     destructor  Destroy; override;
   end;
@@ -168,7 +168,7 @@ begin
    ReturnValue := FRetValue;
 end;
 
-procedure TPHPSimpleLibrary.RegisterMethod(AName: AnsiString; ADescription : AnsiString;
+procedure TPHPSimpleLibrary.RegisterMethod(AName: zend_ustr; ADescription : zend_ustr;
   AProc: TDispatchProc; AParams: array of TParamType);
 var
  Func  : TPHPFunction;
@@ -177,7 +177,8 @@ var
  O     : TDispatchObject;
 begin
   Func := TPHPFunction(Functions.Add);
-  Func.FunctionName := AnsiLowerCase(AName);
+  Func.FunctionName :=
+  {$IFDEF PHP_UNICE}LowerCase{$ELSE}AnsiLowerCase{$ENDIF}(AName);
   Func.Description := ADescription;
 
   for cnt := 0 to Length(AParams) - 1 do
@@ -351,22 +352,30 @@ end;
 
 procedure TPHPSystemLibrary.AnsiUpperCaseProc;
 begin
-  ReturnOutputArg( AnsiUpperCase( GetInputArgAsString( 0 ) ) );
+  ReturnOutputArg(
+    {$IFDEF PHP_UNICE}UpperCase{$ELSE}AnsiUpperCase{$ENDIF}( GetInputArgAsString( 0 ) )
+  );
 end;
 
 procedure TPHPSystemLibrary.AnsiLowerCaseProc;
 begin
-  ReturnOutputArg( AnsiLowerCase( GetInputArgAsString( 0 ) ) );
+  ReturnOutputArg(
+    {$IFDEF PHP_UNICE}LowerCase{$ELSE}AnsiLowerCase{$ENDIF}( GetInputArgAsString( 0 ) )
+  );
 end;
 
 procedure TPHPSystemLibrary.AnsiCompareStrProc;
 begin
-  ReturnOutputArg( AnsiCompareStr( GetInputArgAsString( 0 ),GetInputArgAsString( 1 ) ) );
+  ReturnOutputArg(
+    {$IFDEF PHP_UNICE}CompareStr{$ELSE}AnsiCompareStr{$ENDIF}( GetInputArgAsString( 0 ),GetInputArgAsString( 1 ) )
+  );
 end;
 
 procedure TPHPSystemLibrary.AnsiCompareTextProc;
 begin
-   ReturnOutputArg( AnsiCompareText( GetInputArgAsString( 0 ),GetInputArgAsString( 1 ) ) );
+   ReturnOutputArg(
+    {$IFDEF PHP_UNICE}CompareText{$ELSE}AnsiCompareText{$ENDIF}( GetInputArgAsString( 0 ),GetInputArgAsString( 1 ) )
+   );
 end;
 
 

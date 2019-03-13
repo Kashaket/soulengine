@@ -20,7 +20,7 @@ unit zendAPI;
 interface
 
 uses
-  Windows, SysUtils,
+  {$IFNDEF FPC} Windows{$ELSE} LCLType,LCLIntf,dynlibs,libc{$ENDIF}, SysUtils,
   ZendTypes, Variants,
   PHPTypes;
 type
@@ -65,7 +65,7 @@ PHPWin =
 
 type
   EPHP4DelphiException = class(Exception)
-   constructor Create(const Msg: AnsiString);
+   constructor Create(const Msg: zend_ustr);
   end;
 
   align_test = record
@@ -76,10 +76,10 @@ type
   end;
 const
   PLATFORM_ALIGNMENT = (SizeOf(align_test));
-
+{$IFNDEF PHP_UNICE}
 function AnsiFormat(const Format: AnsiString; const Args: array of const): AnsiString;
-
-function  LoadZEND(const DllFilename: AnsiString = PHPWin) : boolean;
+{$ENDIF}
+function  LoadZEND(const DllFilename: zend_ustr = PHPWin) : boolean;
 
 procedure UnloadZEND;
 function  ZENDLoaded: boolean;
@@ -87,16 +87,16 @@ function  ZENDLoaded: boolean;
 {Memory management functions}
 var
   {$IFNDEF PHP7}
-  zend_strndup   : function(s: PAnsiChar; length: Integer): PAnsiChar; cdecl;
+  zend_strndup   : function(s: zend_pchar; length: Integer): zend_pchar; cdecl;
   {$ELSE}
-  zend_strndup   : function(s:PAnsiChar; length:size_t):PAnsiChar; cdecl;
+  zend_strndup   : function(s:zend_pchar; length:size_t):zend_pchar; cdecl;
   {$ENDIF}
-  _emalloc       : function(size: size_t; __zend_filename: PAnsiChar; __zend_lineno: uint; __zend_orig_filename: PAnsiChar; __zend_orig_line_no: uint): pointer; cdecl;
-  _efree         : procedure(ptr: pointer; __zend_filename: PAnsiChar; __zend_lineno: uint; __zend_orig_filename: PAnsiChar; __zend_orig_line_no: uint); cdecl;
-  _ecalloc       : function(nmemb: size_t; size: size_t; __zend_filename: PAnsiChar; __zend_lineno: uint; __zend_orig_filename: PAnsiChar; __zend_orig_line_no: uint): pointer; cdecl;
-  _erealloc      : function(ptr: pointer; size: size_t; allow_failure: integer; __zend_filename: PAnsiChar; __zend_lineno: uint; __zend_orig_filename: PAnsiChar; __zend_orig_line_no: uint): pointer; cdecl;
-  _estrdup       : function(const s: PAnsiChar; __zend_filename: PAnsiChar; __zend_lineno: uint; __zend_orig_filename: PAnsiChar; __zend_orig_line_no: uint): pointer; cdecl;
-  _estrndup      : function(s: PAnsiChar; Len: Cardinal; __zend_filename: PAnsiChar; __zend_lineno: uint; __zend_orig_filename: PAnsiChar; __zend_orig_line_no: uint): PAnsiChar; cdecl;
+  _emalloc       : function(size: size_t; __zend_filename: zend_pchar; __zend_lineno: uint; __zend_orig_filename: zend_pchar; __zend_orig_line_no: uint): pointer; cdecl;
+  _efree         : procedure(ptr: pointer; __zend_filename: zend_pchar; __zend_lineno: uint; __zend_orig_filename: zend_pchar; __zend_orig_line_no: uint); cdecl;
+  _ecalloc       : function(nmemb: size_t; size: size_t; __zend_filename: zend_pchar; __zend_lineno: uint; __zend_orig_filename: zend_pchar; __zend_orig_line_no: uint): pointer; cdecl;
+  _erealloc      : function(ptr: pointer; size: size_t; allow_failure: integer; __zend_filename: zend_pchar; __zend_lineno: uint; __zend_orig_filename: zend_pchar; __zend_orig_line_no: uint): pointer; cdecl;
+  _estrdup       : function(const s: zend_pchar; __zend_filename: zend_pchar; __zend_lineno: uint; __zend_orig_filename: zend_pchar; __zend_orig_line_no: uint): pointer; cdecl;
+  _estrndup      : function(s: zend_pchar; Len: Cardinal; __zend_filename: zend_pchar; __zend_lineno: uint; __zend_orig_filename: zend_pchar; __zend_orig_line_no: uint): zend_pchar; cdecl;
   _estrndupu     : function(s: PUTF8Char; Len: Cardinal; __zend_filename: PUTF8Char;
   __zend_lineno: uint; __zend_orig_filename: PUTF8Char;
   __zend_orig_line_no: uint): PUTF8Char; cdecl;
@@ -104,9 +104,9 @@ function emalloc(size: size_t): pointer;
 procedure efree(ptr: pointer);
 function ecalloc(nmemb: size_t; size: size_t): pointer;
 function erealloc(ptr: pointer; size: size_t; allow_failure: integer): pointer;
-function estrdup(const s: PAnsiChar): PAnsiChar;
-function estrndup(s: PAnsiChar; len: Cardinal): PAnsiChar;
-function STR_EMPTY_ALLOC : PAnsiChar;
+function estrdup(const s: zend_pchar): zend_pchar;
+function estrndup(s: zend_pchar; len: Cardinal): zend_pchar;
+function STR_EMPTY_ALLOC : zend_pchar;
 
 var
   zend_set_memory_limit                           : function(memory_limit: uint): integer; cdecl;
@@ -119,43 +119,43 @@ var
 var
 
   zend_register_resource       : function (rsrc_result : pzval;  rsrc_pointer : pointer;  rsrc_type : integer) : integer; cdecl;
-  zend_fetch_resource          : function (passed_id  :{$IFNDEF PHP700} ppzval {$ELSE} pzval{$ENDIF}; TSRMLS_DC : pointer; default_id : integer;  resource_type_name : PAnsiChar;  found_resource_type : pointer; num_resource_types: integer; resource_type: integer) : pointer; cdecl;
+  zend_fetch_resource          : function (passed_id  :{$IFNDEF PHP700} ppzval {$ELSE} pzval{$ENDIF}; TSRMLS_DC : pointer; default_id : integer;  resource_type_name : zend_pchar;  found_resource_type : pointer; num_resource_types: integer; resource_type: integer) : pointer; cdecl;
   zend_list_insert             : function (ptr : pointer; _type: integer) : integer; cdecl;
   {$IFNDEF PHP7}
   _zend_list_addref            : function (id  : integer; TSRMLS_DC : pointer) : integer; cdecl;
   _zend_list_delete            : function (id : integer; TSRMLS_DC : pointer) : integer; cdecl;
   _zend_list_find              : function (id : integer; _type : pointer; TSRMLS_DC : pointer) : pointer; cdecl;
   {$ENDIF}
-  zend_rsrc_list_get_rsrc_type : function (resource: integer; TSRMLS_DC : pointer) : PAnsiChar; cdecl;
-  zend_fetch_list_dtor_id      : function (type_name : PAnsiChar) : integer; cdecl;
-  zend_register_list_destructors_ex : function (ld : pointer; pld : pointer; type_name : PAnsiChar; module_number : integer) : integer; cdecl;
+  zend_rsrc_list_get_rsrc_type : function (resource: integer; TSRMLS_DC : pointer) : zend_pchar; cdecl;
+  zend_fetch_list_dtor_id      : function (type_name : zend_pchar) : integer; cdecl;
+  zend_register_list_destructors_ex : function (ld : pointer; pld : pointer; type_name : zend_pchar; module_number : integer) : integer; cdecl;
 
 
 
 {disable functions}
 
 var
-  zend_disable_function : function(function_name : PAnsiChar; function_name_length : uint; TSRMLS_DC : pointer) : integer; cdecl;
-  zend_disable_class   : function(class_name : PAnsiChar; class_name_length : uint; TSRMLS_DC : pointer) : integer; cdecl;
+  zend_disable_function : function(function_name : zend_pchar; function_name_length : uint; TSRMLS_DC : pointer) : integer; cdecl;
+  zend_disable_class   : function(class_name : zend_pchar; class_name_length : uint; TSRMLS_DC : pointer) : integer; cdecl;
 
 
 {$IFDEF PHP4}
-  zend_hash_add_or_update  : function(ht: PHashTable; arKey: PAnsiChar;
+  zend_hash_add_or_update  : function(ht: PHashTable; arKey: zend_pchar;
     nKeyLength: uint; pData: Pointer; nDataSize: uint; pDest: Pointer;
     flag: Integer): Integer; cdecl;
 {$ELSE}
 var
- _zend_hash_add_or_update : function (ht : PHashTable; arKey : PAnsiChar;
+ _zend_hash_add_or_update : function (ht : PHashTable; arKey : zend_pchar;
     nKeyLength : uint; pData : pointer; nDataSize : uint; pDes : pointer;
-    flag : integer; __zend_filename: PAnsiChar; __zend_lineno: uint) : integer; cdecl;
+    flag : integer; __zend_filename: zend_pchar; __zend_lineno: uint) : integer; cdecl;
 
- function zend_hash_add_or_update(ht : PHashTable; arKey : PAnsiChar;
+ function zend_hash_add_or_update(ht : PHashTable; arKey : zend_pchar;
     nKeyLength : uint; pData : pointer; nDataSize : uint; pDes : pointer;
     flag : integer) : integer; cdecl;
 
 {$ENDIF}
 
-function zend_hash_add(ht : PHashTable; arKey : PAnsiChar; nKeyLength : uint; pData : pointer; nDataSize : uint; pDest : pointer) : integer; cdecl;
+function zend_hash_add(ht : PHashTable; arKey : zend_pchar; nKeyLength : uint; pData : pointer; nDataSize : uint; pDest : pointer) : integer; cdecl;
 
 var
  {$IFDEF PHP4}
@@ -168,7 +168,7 @@ var
     persistent: Integer; bApplyProtection: boolean): Integer; cdecl;
 
 
-  zend_hash_quick_add_or_update                   : function(ht: PHashTable; arKey: PAnsiChar;
+  zend_hash_quick_add_or_update                   : function(ht: PHashTable; arKey: zend_pchar;
     nKeyLength: uint; h: ulong; pData: Pointer; nDataSize: uint;
     pDest: Pointer; flag: Integer): Integer; cdecl;
 
@@ -182,10 +182,10 @@ var
 
  _zend_hash_init : function (ht : PHashTable; nSize : uint;
    pHashFunction : pointer; pDestructor : pointer; persistent: zend_bool;
-   __zend_filename: PAnsiChar; __zend_lineno: uint) : integer; cdecl;
+   __zend_filename: zend_pchar; __zend_lineno: uint) : integer; cdecl;
  _zend_hash_init_ex : function (ht : PHashTable;  nSize : uint;
    pHashFunction : pointer; pDestructor : pointer;  persistent : zend_bool;
-   bApplyProtection : zend_bool; __zend_filename: PAnsiChar; __zend_lineno: uint): integer; cdecl;
+   bApplyProtection : zend_bool; __zend_filename: zend_pchar; __zend_lineno: uint): integer; cdecl;
 
  function zend_hash_init (ht : PHashTable; nSize : uint; pHashFunction : pointer;
    pDestructor : pointer; persistent: zend_bool) : integer; cdecl;
@@ -204,7 +204,7 @@ var
 
 
 
-  zend_hash_add_empty_element                     : function(ht: PHashTable; arKey: PAnsiChar;
+  zend_hash_add_empty_element                     : function(ht: PHashTable; arKey: zend_pchar;
     nKeyLength: uint): Integer; cdecl;
 
 
@@ -231,25 +231,25 @@ var
 
   { Deletes }
 
-  zend_hash_del_key_or_index                      : function(ht: PHashTable; arKey: PAnsiChar;
+  zend_hash_del_key_or_index                      : function(ht: PHashTable; arKey: zend_pchar;
     nKeyLength: uint; h: ulong; flag: Integer): Integer; cdecl;
 
-  zend_get_hash_value                             : function(ht: PHashTable; arKey: PAnsiChar;
+  zend_get_hash_value                             : function(ht: PHashTable; arKey: zend_pchar;
     nKeyLength: uint): Longint; cdecl;
 
   { Data retreival }
 
-  zend_hash_find                                  : function(ht: PHashTable; arKey: PAnsiChar; nKeyLength: uint;
+  zend_hash_find                                  : function(ht: PHashTable; arKey: zend_pchar; nKeyLength: uint;
     pData: Pointer): Integer; cdecl;
 
-  zend_hash_quick_find                            : function(ht: PHashTable; arKey: PAnsiChar;
+  zend_hash_quick_find                            : function(ht: PHashTable; arKey: zend_pchar;
     nKeyLength: uint; h: ulong; pData: Pointer): Integer; cdecl;
 
   zend_hash_index_find                            : function(ht: PHashTable; h: ulong; pData: Pointer): Integer; cdecl;
 
   { Misc }
 
-  zend_hash_exists                                : function(ht: PHashTable; arKey: PAnsiChar; nKeyLength: uint): Integer; cdecl;
+  zend_hash_exists                                : function(ht: PHashTable; arKey: zend_pchar; nKeyLength: uint): Integer; cdecl;
 
   zend_hash_index_exists                          : function(ht: PHashTable; h: ulong): Integer; cdecl;
 
@@ -262,7 +262,7 @@ var
   zend_hash_move_backwards_ex                     : function(ht: PHashTable; pos: HashPosition): Integer; cdecl;
 
   zend_hash_get_current_key_ex                    : function(ht: PHashTable;
-    var str_index: PAnsiChar; var str_length: uint; var num_index: ulong;
+    var str_index: zend_pchar; var str_length: uint; var num_index: ulong;
     duplicate: boolean; pos: HashPosition): Integer; cdecl;
 
   zend_hash_get_current_key_type_ex               : function(ht: PHashTable; pos: HashPosition): Integer; cdecl;
@@ -292,7 +292,7 @@ var
 
   zend_hash_rehash                                : function(ht: PHashTable): Integer; cdecl;
 
-  zend_hash_func                                  : function(arKey: PAnsiChar; nKeyLength: uint): Longint; cdecl;
+  zend_hash_func                                  : function(arKey: zend_pchar; nKeyLength: uint): Longint; cdecl;
 
 
 function zend_hash_get_current_data(ht: PHashTable; pData: Pointer): Integer; cdecl;
@@ -300,35 +300,35 @@ procedure zend_hash_internal_pointer_reset(ht: PHashTable); cdecl;
 
 
 var
-  zend_get_constant                               : function(name: PAnsiChar; name_len: uint; var result: zval;
+  zend_get_constant                               : function(name: zend_pchar; name_len: uint; var result: zval;
     TSRMLS_DC: Pointer): Integer; cdecl;
 
-  zend_register_long_constant                     : procedure(name: PAnsiChar; name_len: uint;
+  zend_register_long_constant                     : procedure(name: zend_pchar; name_len: uint;
     lval: Longint; flags: Integer; module_number: Integer; TSRMLS_DC: Pointer); cdecl;
 
-  zend_register_double_constant                   : procedure(name: PAnsiChar; name_len: uint; dval: Double; flags: Integer; module_number: Integer;
+  zend_register_double_constant                   : procedure(name: zend_pchar; name_len: uint; dval: Double; flags: Integer; module_number: Integer;
     TSRMLS_DC: Pointer); cdecl;
 
-  zend_register_string_constant                   : procedure(name: PAnsiChar; name_len: uint; strval: PAnsiChar; flags: Integer; module_number: Integer;
+  zend_register_string_constant                   : procedure(name: zend_pchar; name_len: uint; strval: zend_pchar; flags: Integer; module_number: Integer;
     TSRMLS_DC: Pointer); cdecl;
 
-  zend_register_stringl_constant                  : procedure(name: PAnsiChar; name_len: uint;
-    strval: PAnsiChar; strlen: uint; flags: Integer; module_number: Integer;
+  zend_register_stringl_constant                  : procedure(name: zend_pchar; name_len: uint;
+    strval: zend_pchar; strlen: uint; flags: Integer; module_number: Integer;
     TSRMLS_DC: Pointer); cdecl;
 
   zend_register_constant                          : function(var c: zend_constant; TSRMLS_DC: Pointer): Integer; cdecl;
 
-  zend_register_auto_global : function(name: PAnsiChar; name_len: uint; callback: Pointer; TSRMLS_DC: Pointer): Integer; cdecl;
+  zend_register_auto_global : function(name: zend_pchar; name_len: uint; callback: Pointer; TSRMLS_DC: Pointer): Integer; cdecl;
 
-procedure REGISTER_MAIN_LONG_CONSTANT(name: PAnsiChar; lval: longint; flags: integer; TSRMLS_DC: Pointer);
-procedure REGISTER_MAIN_DOUBLE_CONSTANT(name: PAnsiChar; dval: double; flags: integer; TSRMLS_DC: Pointer);
-procedure REGISTER_MAIN_STRING_CONSTANT(name: PAnsiChar; str: PAnsiChar; flags: integer; TSRMLS_DC: Pointer);
-procedure REGISTER_MAIN_STRINGL_CONSTANT(name: PAnsiChar; str: PAnsiChar; len: uint; flags: integer; TSRMLS_DC: Pointer);
+procedure REGISTER_MAIN_LONG_CONSTANT(name: zend_pchar; lval: longint; flags: integer; TSRMLS_DC: Pointer);
+procedure REGISTER_MAIN_DOUBLE_CONSTANT(name: zend_pchar; dval: double; flags: integer; TSRMLS_DC: Pointer);
+procedure REGISTER_MAIN_STRING_CONSTANT(name: zend_pchar; str: zend_pchar; flags: integer; TSRMLS_DC: Pointer);
+procedure REGISTER_MAIN_STRINGL_CONSTANT(name: zend_pchar; str: zend_pchar; len: uint; flags: integer; TSRMLS_DC: Pointer);
 
 
 var
   tsrm_startup                                    : function(expected_threads: integer;
-    expected_resources: integer; debug_level: integer; debug_filename: PAnsiChar): integer; cdecl;
+    expected_resources: integer; debug_level: integer; debug_filename: zend_pchar): integer; cdecl;
 
   ts_allocate_id                                  : function(rsrc_id: pts_rsrc_id; size: size_t; ctor: pointer; dtor: pointer): ts_rsrc_id; cdecl;
   // deallocates all occurrences of a given id
@@ -338,28 +338,28 @@ var
   ts_resource_ex                                  : function(id: integer; p: pointer): pointer; cdecl;
   ts_free_thread                                  : procedure; cdecl;
 
-  zend_error                                      : procedure(ErrType: integer; ErrText: PAnsiChar); cdecl;
+  zend_error                                      : procedure(ErrType: integer; ErrText: zend_pchar); cdecl;
   zend_error_cb                                   : procedure; cdecl;
 
-  zend_eval_string                                : function(str: PAnsiChar; val: pointer; strname: PAnsiChar; tsrm: pointer): integer; cdecl;
-  zend_make_compiled_string_description           : function(a: PAnsiChar; tsrm: pointer): PAnsiChar; cdecl;
+  zend_eval_string                                : function(str: zend_pchar; val: pointer; strname: zend_pchar; tsrm: pointer): integer; cdecl;
+  zend_make_compiled_string_description           : function(a: zend_pchar; tsrm: pointer): zend_pchar; cdecl;
 
   {$IFDEF PHP4}
-  _zval_copy_ctor                                 : function(val: pzval; __zend_filename: PAnsiChar; __zend_lineno: uint): integer; cdecl;
-  _zval_dtor                                      : procedure(val: pzval; __zend_filename: PAnsiChar; __zend_lineno: uint); cdecl;
+  _zval_copy_ctor                                 : function(val: pzval; __zend_filename: zend_pchar; __zend_lineno: uint): integer; cdecl;
+  _zval_dtor                                      : procedure(val: pzval; __zend_filename: zend_pchar; __zend_lineno: uint); cdecl;
   {$ELSE}
-  _zval_copy_ctor_func                            : procedure(val: pzval; __zend_filename: PAnsiChar; __zend_lineno: uint); cdecl;
-  _zval_dtor_func                                 : procedure(val: pzval; __zend_filename: PAnsiChar; __zend_lineno: uint); cdecl;
-  _zval_ptr_dtor: procedure(val: ppzval;  __zend_filename: PAnsiChar); cdecl;
-  procedure  _zval_copy_ctor (val: pzval; __zend_filename: PAnsiChar; __zend_lineno: uint); cdecl;
-  procedure _zval_dtor(val: pzval; __zend_filename: PAnsiChar; __zend_lineno: uint); cdecl;
+  _zval_copy_ctor_func                            : procedure(val: pzval; __zend_filename: zend_pchar; __zend_lineno: uint); cdecl;
+  _zval_dtor_func                                 : procedure(val: pzval; __zend_filename: zend_pchar; __zend_lineno: uint); cdecl;
+  _zval_ptr_dtor: procedure(val: ppzval;  __zend_filename: zend_pchar); cdecl;
+  procedure  _zval_copy_ctor (val: pzval; __zend_filename: zend_pchar; __zend_lineno: uint); cdecl;
+  procedure _zval_dtor(val: pzval; __zend_filename: zend_pchar; __zend_lineno: uint); cdecl;
   {$ENDIF}
 
 var
   zend_print_variable                             : function(val: pzval): integer; cdecl;
 
 
-  zend_get_compiled_filename : function(TSRMLS_DC: Pointer): PAnsiChar; cdecl;
+  zend_get_compiled_filename : function(TSRMLS_DC: Pointer): zend_pchar; cdecl;
   zend_get_compiled_lineno   : function(TSRMLS_DC: Pointer): integer; cdecl;
 
 
@@ -370,7 +370,7 @@ function zval_copy_ctor(val : pzval) : integer;
 function ts_resource(id : integer) : pointer;
 function tsrmls_fetch : pointer;
 
-//procedure zenderror(Error : PAnsiChar);
+//procedure zenderror(Error : zend_pchar);
 
 var
   zend_stack_init                                 : function(stack: Pzend_stack): Integer; cdecl;
@@ -399,7 +399,7 @@ var
   //zend_operators.h
 
 var
-  _convert_to_string                              : procedure(op: pzval; __zend_filename: PAnsiChar; __zend_lineno: uint); cdecl;
+  _convert_to_string                              : procedure(op: pzval; __zend_filename: zend_pchar; __zend_lineno: uint); cdecl;
 
 procedure convert_to_string(op: pzval);
 
@@ -468,7 +468,7 @@ var
 
   add_string_to_string                            : function(_result: Pzval; op1: Pzval; op2: Pzval): Integer; cdecl;
 
-  zend_string_to_double                           : function(number: PAnsiChar; length: zend_uint): Double; cdecl;
+  zend_string_to_double                           : function(number: zend_pchar; length: zend_uint): Double; cdecl;
 
   zval_is_true                                    : function(op: Pzval): Integer; cdecl;
 
@@ -478,7 +478,7 @@ var
 
   string_compare_function                         : function(_result: Pzval; op1: Pzval; op2: Pzval; TSRMLS_DC: Pointer): Integer; cdecl;
 
-  zend_str_tolower                                : procedure(str: PAnsiChar; length: Integer); cdecl;
+  zend_str_tolower                                : procedure(str: zend_pchar; length: Integer); cdecl;
 
   zend_binary_zval_strcmp                         : function(s1: Pzval; s2: Pzval): Integer; cdecl;
 
@@ -488,13 +488,13 @@ var
 
   zend_binary_zval_strncasecmp                    : function(s1: Pzval; s2: Pzval; s3: Pzval): Integer; cdecl;
 
-  zend_binary_strcmp                              : function(s1: PAnsiChar; len1: uint; s2: PAnsiChar; len2: uint): Integer; cdecl;
+  zend_binary_strcmp                              : function(s1: zend_pchar; len1: uint; s2: zend_pchar; len2: uint): Integer; cdecl;
 
-  zend_binary_strncmp                             : function(s1: PAnsiChar; len1: uint; s2: PAnsiChar; len2: uint; length: uint): Integer; cdecl;
+  zend_binary_strncmp                             : function(s1: zend_pchar; len1: uint; s2: zend_pchar; len2: uint; length: uint): Integer; cdecl;
 
-  zend_binary_strcasecmp                          : function(s1: PAnsiChar; len1: uint; s2: PAnsiChar; len2: uint): Integer; cdecl;
+  zend_binary_strcasecmp                          : function(s1: zend_pchar; len1: uint; s2: zend_pchar; len2: uint): Integer; cdecl;
 
-  zend_binary_strncasecmp                         : function(s1: PAnsiChar; len1: uint; s2: PAnsiChar; len2: uint; length: uint): Integer; cdecl;
+  zend_binary_strncasecmp                         : function(s1: zend_pchar; len1: uint; s2: zend_pchar; len2: uint; length: uint): Integer; cdecl;
 
   zendi_smart_strcmp                              : procedure(_result: zval; s1: Pzval; s2: Pzval); cdecl;
 
@@ -504,12 +504,12 @@ var
 
   zend_compare_objects                            : procedure(_result: Pzval; o1: Pzval; o2: Pzval; TSRMLS_DC: Pointer); cdecl;
 
-  zend_atoi                                       : function(str: PAnsiChar; str_len: Integer): Integer; cdecl;
+  zend_atoi                                       : function(str: zend_pchar; str_len: Integer): Integer; cdecl;
 
   //zend_execute.h
-  get_active_function_name                        : function(TSRMLS_D: pointer): PAnsiChar; cdecl;
+  get_active_function_name                        : function(TSRMLS_D: pointer): zend_pchar; cdecl;
 
-  zend_get_executed_filename                      : function(TSRMLS_D: pointer): PAnsiChar; cdecl;
+  zend_get_executed_filename                      : function(TSRMLS_D: pointer): zend_pchar; cdecl;
 
   zend_get_executed_lineno                        : function(TSRMLS_DC: pointer): uint; cdecl;
 
@@ -525,13 +525,13 @@ var
 
   zend_strip                                      : procedure(TSRMLS_D: pointer); cdecl;
 
-  highlight_file                                  : function(filename: PAnsiChar; syntax_highlighter_ini: Pzend_syntax_highlighter_ini; TSRMLS_DC: Pointer): Integer; cdecl;
+  highlight_file                                  : function(filename: zend_pchar; syntax_highlighter_ini: Pzend_syntax_highlighter_ini; TSRMLS_DC: Pointer): Integer; cdecl;
 
-  highlight_string                                : function(str: Pzval; syntax_highlighter_ini: Pzend_syntax_highlighter_ini; str_name: PAnsiChar; TSRMLS_DC: Pointer): Integer; cdecl;
+  highlight_string                                : function(str: Pzval; syntax_highlighter_ini: Pzend_syntax_highlighter_ini; str_name: zend_pchar; TSRMLS_DC: Pointer): Integer; cdecl;
 
-  zend_html_putc                                  : procedure(c: AnsiChar); cdecl;
+  zend_html_putc                                  : procedure(c: zend_uchar); cdecl;
 
-  zend_html_puts                                  : procedure(s: PAnsiChar; len: uint; TSRMLS_DC: Pointer); cdecl;
+  zend_html_puts                                  : procedure(s: zend_pchar; len: uint; TSRMLS_DC: Pointer); cdecl;
 
   zend_indent                                     : procedure; cdecl;
 
@@ -554,47 +554,47 @@ var
 
 
 var
-  _zend_bailout                                   : procedure (filename : PAnsiChar; lineno : uint); cdecl;
+  _zend_bailout                                   : procedure (filename : zend_pchar; lineno : uint); cdecl;
 
   zend_alter_ini_entry                            : function(name: PAnsiChar; name_length: uint; new_value: PAnsiChar; new_value_length: uint; modify_type: Integer; stage: Integer): Integer; cdecl;
-  zend_alter_ini_entry_ex                            : function(name: PAnsiChar; name_length: uint; new_value: PAnsiChar; new_value_length: uint; modify_type: Integer; stage: Integer; force_change: integer): Integer; cdecl;
+  zend_alter_ini_entry_ex                            : function(name: zend_pchar; name_length: uint; new_value: zend_pchar; new_value_length: uint; modify_type: Integer; stage: Integer; force_change: integer): Integer; cdecl;
 
-  zend_restore_ini_entry                          : function(name: PAnsiChar; name_length: uint; stage: Integer): Integer; cdecl;
+  zend_restore_ini_entry                          : function(name: zend_pchar; name_length: uint; stage: Integer): Integer; cdecl;
 
-  zend_ini_long                                   : function(name: PAnsiChar; name_length: uint; orig: Integer): Longint; cdecl;
+  zend_ini_long                                   : function(name: zend_pchar; name_length: uint; orig: Integer): Longint; cdecl;
 
-  zend_ini_double                                 : function(name: PAnsiChar; name_length: uint; orig: Integer): Double; cdecl;
+  zend_ini_double                                 : function(name: zend_pchar; name_length: uint; orig: Integer): Double; cdecl;
 
-  zend_ini_string                                 : function(name: PAnsiChar; name_length: uint; orig: Integer): PAnsiChar; cdecl;
+  zend_ini_string                                 : function(name: zend_pchar; name_length: uint; orig: Integer): zend_pchar; cdecl;
 
-  compile_string                                  : function(source_string: pzval; filename: PAnsiChar; TSRMLS_DC: Pointer): pointer; cdecl;
+  compile_string                                  : function(source_string: pzval; filename: zend_pchar; TSRMLS_DC: Pointer): pointer; cdecl;
 
   execute                                         : procedure(op_array: pointer; TSRMLS_DC: Pointer); cdecl;
 
   zend_wrong_param_count                          : procedure(TSRMLS_D: pointer); cdecl;
-  _zend_hash_quick_add_or_update:function(ht: PHashTable; arKey: PAnsiChar; nKeyLength: uint; h: uint; out pData: pzval; nDataSize: uint; pDest: PPointer; flag: Integer) : Integer; cdecl;
+  _zend_hash_quick_add_or_update:function(ht: PHashTable; arKey: zend_pchar; nKeyLength: uint; h: uint; out pData: pzval; nDataSize: uint; pDest: PPointer; flag: Integer) : Integer; cdecl;
   {$IFDEF PHP4}
-  add_property_long_ex                            : function(arg: pzval; key: PAnsiChar; key_len: uint; l: longint): integer; cdecl;
+  add_property_long_ex                            : function(arg: pzval; key: zend_pchar; key_len: uint; l: longint): integer; cdecl;
   {$ELSE}
-  add_property_long_ex                            : function(arg: pzval; key: PAnsiChar; key_len: uint; l: longint; TSRMLS_DC : pointer): integer; cdecl;
+  add_property_long_ex                            : function(arg: pzval; key: zend_pchar; key_len: uint; l: longint; TSRMLS_DC : pointer): integer; cdecl;
   {$ENDIF}
 
   {$IFDEF PHP4}
-  add_property_null_ex                            : function(arg: pzval; key: PAnsiChar; key_len: uint): integer; cdecl;
-  add_property_bool_ex                            : function(arg: pzval; key: PAnsiChar; key_len: uint; b: integer): integer; cdecl;
-  add_property_resource_ex                        : function(arg: pzval; key: PAnsiChar; key_len: uint; r: integer): integer; cdecl;
-  add_property_double_ex                          : function(arg: pzval; key: PAnsiChar; key_len: uint; d: double): integer; cdecl;
-  add_property_string_ex                          : function(arg: pzval; key: PAnsiChar; key_len: uint; str: PAnsiChar; duplicate: integer): integer; cdecl;
-  add_property_stringl_ex                         : function(arg: pzval; key: PAnsiChar; key_len: uint; str: PAnsiChar; len: uint; duplicate: integer): integer; cdecl;
-  add_property_zval_ex                            : function(arg: pzval; key: PAnsiChar; key_len: uint; value: pzval): integer; cdecl;
+  add_property_null_ex                            : function(arg: pzval; key: zend_pchar; key_len: uint): integer; cdecl;
+  add_property_bool_ex                            : function(arg: pzval; key: zend_pchar; key_len: uint; b: integer): integer; cdecl;
+  add_property_resource_ex                        : function(arg: pzval; key: zend_pchar; key_len: uint; r: integer): integer; cdecl;
+  add_property_double_ex                          : function(arg: pzval; key: zend_pchar; key_len: uint; d: double): integer; cdecl;
+  add_property_string_ex                          : function(arg: pzval; key: zend_pchar; key_len: uint; str: zend_pchar; duplicate: integer): integer; cdecl;
+  add_property_stringl_ex                         : function(arg: pzval; key: zend_pchar; key_len: uint; str: zend_pchar; len: uint; duplicate: integer): integer; cdecl;
+  add_property_zval_ex                            : function(arg: pzval; key: zend_pchar; key_len: uint; value: pzval): integer; cdecl;
   {$ELSE}
-  add_property_null_ex                            : function(arg: pzval; key: PAnsiChar; key_len: uint; TSRMLS_DC: Pointer): integer; cdecl;
-  add_property_bool_ex                            : function(arg: pzval; key: PAnsiChar; key_len: uint; b: integer; TSRMLS_DC: Pointer): integer; cdecl;
-  add_property_resource_ex                        : function(arg: pzval; key: PAnsiChar; key_len: uint; r: integer; TSRMLS_DC: Pointer): integer; cdecl;
-  add_property_double_ex                          : function(arg: pzval; key: PAnsiChar; key_len: uint; d: double; TSRMLS_DC: Pointer): integer; cdecl;
-  add_property_string_ex                          : function(arg: pzval; key: PAnsiChar; key_len: uint; str: PAnsiChar; duplicate: integer; TSRMLS_DC: Pointer): integer; cdecl;
-  add_property_stringl_ex                         : function(arg: pzval; key: PAnsiChar; key_len: uint; str: PAnsiChar; len: uint; duplicate: integer; TSRMLS_DC: Pointer): integer; cdecl;
-  add_property_zval_ex                            : function(arg: pzval; key: PAnsiChar; key_len: uint; value: pzval; TSRMLS_DC: Pointer): integer; cdecl;
+  add_property_null_ex                            : function(arg: pzval; key: zend_pchar; key_len: uint; TSRMLS_DC: Pointer): integer; cdecl;
+  add_property_bool_ex                            : function(arg: pzval; key: zend_pchar; key_len: uint; b: integer; TSRMLS_DC: Pointer): integer; cdecl;
+  add_property_resource_ex                        : function(arg: pzval; key: zend_pchar; key_len: uint; r: integer; TSRMLS_DC: Pointer): integer; cdecl;
+  add_property_double_ex                          : function(arg: pzval; key: zend_pchar; key_len: uint; d: double; TSRMLS_DC: Pointer): integer; cdecl;
+  add_property_string_ex                          : function(arg: pzval; key: zend_pchar; key_len: uint; str: zend_pchar; duplicate: integer; TSRMLS_DC: Pointer): integer; cdecl;
+  add_property_stringl_ex                         : function(arg: pzval; key: zend_pchar; key_len: uint; str: zend_pchar; len: uint; duplicate: integer; TSRMLS_DC: Pointer): integer; cdecl;
+  add_property_zval_ex                            : function(arg: pzval; key: zend_pchar; key_len: uint; value: pzval; TSRMLS_DC: Pointer): integer; cdecl;
   {$ENDIF}
 
 
@@ -621,22 +621,22 @@ call_user_function_ex(HashTable *function_table,
 }
 
 
-  add_assoc_long_ex                               : function(arg: pzval; key: PAnsiChar; key_len: uint; n: longint): integer; cdecl;
-  add_assoc_null_ex                               : function(arg: pzval; key: PAnsiChar; key_len: uint): integer; cdecl;
-  add_assoc_bool_ex                               : function(arg: pzval; key: PAnsiChar; key_len: uint; b: integer): integer; cdecl;
-  add_assoc_resource_ex                           : function(arg: pzval; key: PAnsiChar; key_len: uint; r: integer): integer; cdecl;
-  add_assoc_double_ex                             : function(arg: pzval; key: PAnsiChar; key_len: uint; d: double): integer; cdecl;
-  add_assoc_string_ex                             : function(arg: pzval; key: PAnsiChar; key_len: uint; str: PAnsiChar; duplicate: integer): integer; cdecl;
-  add_assoc_stringl_ex                            : function(arg: pzval; key: PAnsiChar; key_len: uint; str: PAnsiChar; len: uint; duplicate: integer): integer; cdecl;
-  add_assoc_zval_ex                               : function(arg: pzval; key: PAnsiChar; key_len: uint; value: pzval): integer; cdecl;
+  add_assoc_long_ex                               : function(arg: pzval; key: zend_pchar; key_len: uint; n: longint): integer; cdecl;
+  add_assoc_null_ex                               : function(arg: pzval; key: zend_pchar; key_len: uint): integer; cdecl;
+  add_assoc_bool_ex                               : function(arg: pzval; key: zend_pchar; key_len: uint; b: integer): integer; cdecl;
+  add_assoc_resource_ex                           : function(arg: pzval; key: zend_pchar; key_len: uint; r: integer): integer; cdecl;
+  add_assoc_double_ex                             : function(arg: pzval; key: zend_pchar; key_len: uint; d: double): integer; cdecl;
+  add_assoc_string_ex                             : function(arg: pzval; key: zend_pchar; key_len: uint; str: zend_pchar; duplicate: integer): integer; cdecl;
+  add_assoc_stringl_ex                            : function(arg: pzval; key: zend_pchar; key_len: uint; str: zend_pchar; len: uint; duplicate: integer): integer; cdecl;
+  add_assoc_zval_ex                               : function(arg: pzval; key: zend_pchar; key_len: uint; value: pzval): integer; cdecl;
 
   add_index_long                                  : function(arg: pzval; idx: uint; n: longint): integer; cdecl;
   add_index_null                                  : function(arg: pzval; idx: uint): integer; cdecl;
   add_index_bool                                  : function(arg: pzval; idx: uint; b: integer): integer; cdecl;
   add_index_resource                              : function(arg: pzval; idx: uint; r: integer): integer; cdecl;
   add_index_double                                : function(arg: pzval; idx: uint; d: double): integer; cdecl;
-  add_index_string                                : function(arg: pzval; idx: uint; str: PAnsiChar; duplicate: integer): integer; cdecl;
-  add_index_stringl                               : function(arg: pzval; idx: uint; str: PAnsiChar; len: uint; duplicate: integer): integer; cdecl;
+  add_index_string                                : function(arg: pzval; idx: uint; str: zend_pchar; duplicate: integer): integer; cdecl;
+  add_index_stringl                               : function(arg: pzval; idx: uint; str: zend_pchar; len: uint; duplicate: integer): integer; cdecl;
   add_index_zval                                  : function(arg: pzval; index: uint; value: pzval): integer; cdecl;
 
   add_next_index_long                             : function(arg: pzval; n: longint): integer; cdecl;
@@ -644,33 +644,33 @@ call_user_function_ex(HashTable *function_table,
   add_next_index_bool                             : function(arg: pzval; b: integer): integer; cdecl;
   add_next_index_resource                         : function(arg: pzval; r: integer): integer; cdecl;
   add_next_index_double                           : function(arg: pzval; d: double): integer; cdecl;
-  add_next_index_string                           : function(arg: pzval; str: PAnsiChar; duplicate: integer): integer; cdecl;
-  add_next_index_stringl                          : function(arg: pzval; str: PAnsiChar; len: uint; duplicate: integer): integer; cdecl;
+  add_next_index_string                           : function(arg: pzval; str: zend_pchar; duplicate: integer): integer; cdecl;
+  add_next_index_stringl                          : function(arg: pzval; str: zend_pchar; len: uint; duplicate: integer): integer; cdecl;
   add_next_index_zval                             : function(arg: pzval; value: pzval): integer; cdecl;
 
-  add_get_assoc_string_ex                         : function(arg: pzval; key: PAnsiChar; key_len: uint; str: PAnsiChar; dest: pointer; duplicate: integer): integer; cdecl;
-  add_get_assoc_stringl_ex                        : function(arg: pzval; key: PAnsiChar; key_len: uint; str: PAnsiChar; len: uint; dest: pointer; duplicate: integer): integer; cdecl;
+  add_get_assoc_string_ex                         : function(arg: pzval; key: zend_pchar; key_len: uint; str: zend_pchar; dest: pointer; duplicate: integer): integer; cdecl;
+  add_get_assoc_stringl_ex                        : function(arg: pzval; key: zend_pchar; key_len: uint; str: zend_pchar; len: uint; dest: pointer; duplicate: integer): integer; cdecl;
 
   add_get_index_long                              : function(arg: pzval; idx: uint; l: longint; dest: pointer): integer; cdecl;
   add_get_index_double                            : function(arg: pzval; idx: uint; d: double; dest: pointer): integer; cdecl;
-  add_get_index_string                            : function(arg: pzval; idx: uint; str: PAnsiChar; dest: pointer; duplicate: integer): integer; cdecl;
-  add_get_index_stringl                           : function(arg: pzval; idx: uint; str: PAnsiChar; len: uint; dest: pointer; duplicate: integer): integer; cdecl;
+  add_get_index_string                            : function(arg: pzval; idx: uint; str: zend_pchar; dest: pointer; duplicate: integer): integer; cdecl;
+  add_get_index_stringl                           : function(arg: pzval; idx: uint; str: zend_pchar; len: uint; dest: pointer; duplicate: integer): integer; cdecl;
 
-  _array_init                                     : function(arg: pzval; __zend_filename: PAnsiChar; __zend_lineno: uint): integer; cdecl;
+  _array_init                                     : function(arg: pzval; __zend_filename: zend_pchar; __zend_lineno: uint): integer; cdecl;
 
   {$IFDEF PHP4}
-  _object_init                                    : function(arg: pzval; __zend_filename: PAnsiChar; __zend_lineno: uint; TSRMLS_DC: pointer): integer; cdecl;
+  _object_init                                    : function(arg: pzval; __zend_filename: zend_pchar; __zend_lineno: uint; TSRMLS_DC: pointer): integer; cdecl;
   {$ELSE}
   _object_init                                    : function(arg: pzval;TSRMLS_DC: pointer): integer; cdecl;
   {$ENDIF}
 
   {$IFDEF PHP4}
-  _object_init_ex                                 : function (arg: pzval; ce: pzend_class_entry; __zend_filename: PAnsiChar; __zend_lineno: uint; TSRMLS_DC: pointer) : integer; cdecl;
+  _object_init_ex                                 : function (arg: pzval; ce: pzend_class_entry; __zend_filename: zend_pchar; __zend_lineno: uint; TSRMLS_DC: pointer) : integer; cdecl;
   {$ELSE}
   _object_init_ex                                 : function (arg: pzval; ce: pzend_class_entry; __zend_lineno : integer; TSRMLS_DC : pointer) : integer; cdecl;
   {$ENDIF}
 
-  _object_and_properties_init                     : function(arg: pzval; ce: pointer; properties: phashtable; __zend_filename: PAnsiChar; __zend_lineno: uint; TSRMLS_DC: pointer): integer; cdecl;
+  _object_and_properties_init                     : function(arg: pzval; ce: pointer; properties: phashtable; __zend_filename: zend_pchar; __zend_lineno: uint; TSRMLS_DC: pointer): integer; cdecl;
 
 
   {$IFDEF PHP5}
@@ -680,46 +680,46 @@ call_user_function_ex(HashTable *function_table,
 var
   zend_write                                      : zend_write_t;
 
-procedure ZEND_PUTS(str: PAnsiChar);
+procedure ZEND_PUTS(str: zend_pchar);
 
 
 var
   zend_register_internal_class     : function(class_entry: pzend_class_entry; TSRMLS_DC: pointer): Pzend_class_entry; cdecl;
-  zend_register_internal_class_ex  : function(class_entry: pzend_class_entry; parent_ce: pzend_class_entry; parent_name: PAnsiChar; TSRMLS_DC: pointer): Pzend_class_entry; cdecl;
+  zend_register_internal_class_ex  : function(class_entry: pzend_class_entry; parent_ce: pzend_class_entry; parent_name: zend_pchar; TSRMLS_DC: pointer): Pzend_class_entry; cdecl;
   function ZvalInt(z:zval):Integer;
   function ZvalDouble(z:zval):Double;
   function ZvalBool(z:zval):Boolean;
 
   function ZvalStrS(z:zval) : string;
-  function ZvalStr(z:zval)  : AnsiString;
+  function ZvalStr(z:zval)  : zend_ustr;
   function ZvalStrW(z:zval) : WideString;
 
   procedure ZvalVAL(z:pzval; v:Boolean) overload;
   procedure ZvalVAL(z:pzval; v:Integer; const _type:Integer = IS_LONG) overload;
   procedure ZvalVAL(z:pzval) overload;
   procedure ZvalVAL(z:pzval; v:Double) overload;
-  procedure ZvalVAL(z: pzval; s: AnsiString; len: Integer = 0); overload;
+  procedure ZvalVAL(z: pzval; s: zend_ustr; len: Integer = 0); overload;
   procedure ZvalString(z:pzval) overload;
-  procedure ZvalString(z:pzval; s:PAnsiChar; len:Integer = 0) overload;
+  procedure ZvalString(z:pzval; s:zend_pchar; len:Integer = 0) overload;
   procedure ZvalString(z:pzval; s:PWideChar; len:Integer = 0) overload;
   procedure ZvalString(z:pzval; s:string; len:Integer = 0) overload;
 
 function ZvalArrayAdd(z: pzval; Args: array of const): Integer; overload;
 function ZvalArrayAdd(z: pzval; idx: Integer; Args: array of const)
   : Integer; overload;
-function ZvalArrayAdd(z: pzval; key: AnsiString; Args: array of const)
+function ZvalArrayAdd(z: pzval; key: zend_ustr; Args: array of const)
   : Integer; overload;
 
-function ZValArrayKeyExists(v: pzval; key: AnsiString): Boolean; overload;
-function ZValArrayKeyExists(v: pzval; key: AnsiString; out pData: pzval)
+function ZValArrayKeyExists(v: pzval; key: zend_ustr): Boolean; overload;
+function ZValArrayKeyExists(v: pzval; key: zend_ustr; out pData: pzval)
   : Boolean; overload;
 function ZValArrayKeyExists(v: pzval; idx: Integer): Boolean; overload;
 function ZValArrayKeyExists(v: pzval; idx: Integer; out pData: pzval)
   : Boolean; overload;
-function ZValArrayKeyDel(v: pzval; key: AnsiString): Boolean; overload;
+function ZValArrayKeyDel(v: pzval; key: zend_ustr): Boolean; overload;
 function ZValArrayKeyDel(v: pzval; idx: Integer): Boolean; overload;
 
-function ZValArrayKeyFind(v: pzval; key: AnsiString; out pData: ppzval)
+function ZValArrayKeyFind(v: pzval; key: zend_ustr; out pData: ppzval)
   : Boolean; overload;
 function ZValArrayKeyFind(v: pzval; idx: Integer; out pData: ppzval)
   : Boolean; overload;
@@ -738,11 +738,11 @@ function add_next_index_variant(arg: pzval; value: variant): integer;
 procedure ZVAL_ARRAY(z: pzval; arr:  TWSDate); overload;
 procedure ZVAL_ARRAY(z: pzval; arr:  TASDate); overload;
 procedure ZVAL_ARRAY(z: pzval; arr:  array of string); overload;
-procedure ZVAL_ARRAY(z: pzval; arr:  array of ansistring); overload;
+procedure ZVAL_ARRAY(z: pzval; arr:  array of zend_ustr); overload;
 procedure ZVAL_ARRAY(z: pzval; arr: array of variant); overload;
 procedure ZVAL_ARRAY(z: pzval; arr: System.TArray<System.integer>); overload;
 procedure ZVAL_ARRAY(z: pzval; arr: Variant); overload;
-procedure ZVAL_ARRAYAC(z: pzval; keynames: Array of PAnsiChar; keyvals: Array of PAnsiChar);
+procedure ZVAL_ARRAYAC(z: pzval; keynames: Array of AnsiChar; keyvals: Array of AnsiChar);
 procedure ZVAL_ARRAYWC(z: pzval; keynames: Array of PWideChar; keyvals: Array of PWideChar);
 procedure ZVAL_ARRAYAS(z: pzval; keynames: Array of AnsiString; keyvals: Array of AnsiString); overload;
 procedure ZVAL_ARRAYAS(z: pzval; keynames: TASDate; keyvals: TASDate);  overload;
@@ -751,28 +751,28 @@ procedure ZVAL_ARRAYWS(z: pzval; keynames: array of string; keyvals: array of st
 procedure HashToArray(HT: PHashTable; var AR: TArrayVariant); overload;
 procedure ArrayToHash(AR: Array of Variant; var HT: pzval); overload;
 procedure ArrayToHash(Keys,AR: Array of Variant; var HT: pzval); overload;
-function ToStrA(V: Variant): AnsiString;
+function ToStrA(V: Variant): zend_ustr;
 function ToStr(V: Variant): String;
-function toWChar(s: PAnsiChar): PWideChar;
+function toWChar(s: zend_pchar): PWideChar;
 function ZendToVariant(const Value: {$IFNDEF PHP700} pppzval {$ELSE} pzval{$ENDIF}): Variant; overload;
 function ZendToVariant(const Value: {$IFNDEF PHP700} ppzval {$ELSE} pzval{$ENDIF}): Variant; overload;
 
-procedure ZVAL_STRING(z: pzval; s: PAnsiChar; duplicate: boolean);
+procedure ZVAL_STRING(z: pzval; s: zend_pchar; duplicate: boolean);
 procedure ZVAL_STRINGU(z: pzval; s: PUtf8Char; duplicate: boolean);
 procedure ZVAL_STRINGW(z: pzval; s: PWideChar; duplicate: boolean);
 
-procedure ZVAL_STRINGL(z: pzval; s: PAnsiChar; l: integer; duplicate: boolean);
+procedure ZVAL_STRINGL(z: pzval; s: zend_pchar; l: integer; duplicate: boolean);
 procedure ZVAL_STRINGLW(z: pzval; s: PWideChar; l: integer; duplicate: boolean);
 
-procedure INIT_CLASS_ENTRY(var class_container: Tzend_class_entry; class_name: PAnsiChar; functions: pointer);
+procedure INIT_CLASS_ENTRY(var class_container: Tzend_class_entry; class_name: zend_pchar; functions: pointer);
 
 
 var
-  get_zend_version           : function(): PAnsiChar; cdecl;
+  get_zend_version           : function(): zend_pchar; cdecl;
   zend_make_printable_zval   : procedure(expr: pzval; expr_copy: pzval; use_copy: pint); cdecl;
   zend_print_zval            : function(expr: pzval; indent: integer): integer; cdecl;
   zend_print_zval_r          : procedure(expr: pzval; indent: integer); cdecl;
-  zend_output_debug_string   : procedure(trigger_break: boolean; Msg: PAnsiChar); cdecl;
+  zend_output_debug_string   : procedure(trigger_break: boolean; Msg: zend_pchar); cdecl;
 
 {$IFDEF PHP5}
   zend_copy_constants: procedure(target: PHashTable; source: PHashTable); cdecl;
@@ -802,9 +802,9 @@ function  setjmp(buf : jump_buf) : integer; cdecl; external  MSCRT name '_setjmp
 {$ENDIF}
 
 {$IFNDEF COMPILER_VC9}
-function  strdup(strSource : PAnsiChar) : PAnsiChar; cdecl; external MSCRT name '_strdup';
+function  strdup(strSource : zend_pchar) : zend_pchar; cdecl; external MSCRT name '_strdup';
 {$ELSE}
-function  DupStr(strSource : PAnsiChar) : PAnsiChar; cdecl;
+function  DupStr(strSource : zend_pchar) : zend_pchar; cdecl;
 {$ENDIF}
 {$IFNDEF PHP7}
 function ZEND_FAST_ALLOC: pzval;
@@ -845,7 +845,7 @@ function object_init(arg: pzval; ce: pzend_class_entry; TSRMLS_DC : pointer) : i
 function Z_LVAL(z : Pzval) : longint;
 function Z_BVAL(z : Pzval) : boolean;
 function Z_DVAL(z : Pzval) : double;
-function Z_STRVAL(z : Pzval) : AnsiString;
+function Z_STRVAL(z : Pzval) : zend_ustr;
 function Z_STRUVAL(z : PZval): UTF8String;
 function Z_STRWVAL(z : pzval) : String;
 function Z_STRLEN(z : Pzval) : longint;
@@ -865,17 +865,17 @@ function Z_VARREC(z: pzval): TVarRec;
 implementation
 
 
-function zend_hash_add(ht : PHashTable; arKey : PAnsiChar; nKeyLength : uint; pData : pointer; nDataSize : uint; pDest : pointer) : integer; cdecl;
+function zend_hash_add(ht : PHashTable; arKey : zend_pchar; nKeyLength : uint; pData : pointer; nDataSize : uint; pDest : pointer) : integer; cdecl;
 begin
   result := zend_hash_add_or_update(ht, arKey, nKeyLength, pData, nDataSize, pDest, HASH_ADD);
 end;
 
-function STR_EMPTY_ALLOC : PAnsiChar;
+function STR_EMPTY_ALLOC : zend_pchar;
 begin
   Result := estrndup('', 0);
 end;
 
-function estrndup(s: PAnsiChar; len: Cardinal): PAnsiChar;
+function estrndup(s: zend_pchar; len: Cardinal): zend_pchar;
 begin
   if assigned(s) then
     Result := _estrndup(s, len, nil, 0, nil, 0)
@@ -909,7 +909,7 @@ begin
   Result := _erealloc(ptr, size, allow_failure, nil, 0, nil, 0);
 end;
 
-function estrdup(const s: PAnsiChar): PAnsiChar;
+function estrdup(const s: zend_pchar): zend_pchar;
 begin
   if assigned(s) then
   begin
@@ -920,22 +920,22 @@ begin
 end;
 
 
-procedure REGISTER_MAIN_LONG_CONSTANT(name: PAnsiChar; lval: longint; flags: integer; TSRMLS_DC: Pointer);
+procedure REGISTER_MAIN_LONG_CONSTANT(name: zend_pchar; lval: longint; flags: integer; TSRMLS_DC: Pointer);
 begin
   zend_register_long_constant(name, length(name) + 1, lval, flags, 0, TSRMLS_DC);
 end;
 
-procedure REGISTER_MAIN_DOUBLE_CONSTANT(name: PAnsiChar; dval: double; flags: integer; TSRMLS_DC: Pointer);
+procedure REGISTER_MAIN_DOUBLE_CONSTANT(name: zend_pchar; dval: double; flags: integer; TSRMLS_DC: Pointer);
 begin
   zend_register_double_constant(name, length(name) + 1, dval, flags, 0, TSRMLS_DC);
 end;
 
-procedure REGISTER_MAIN_STRING_CONSTANT(name: PAnsiChar; str: PAnsiChar; flags: integer; TSRMLS_DC: Pointer);
+procedure REGISTER_MAIN_STRING_CONSTANT(name: zend_pchar; str: zend_pchar; flags: integer; TSRMLS_DC: Pointer);
 begin
   zend_register_string_constant(name, length(name) + 1, str, flags, 0, TSRMLS_DC);
 end;
 
-procedure REGISTER_MAIN_STRINGL_CONSTANT(name: PAnsiChar; str: PAnsiChar; len: uint; flags: integer; TSRMLS_DC: Pointer);
+procedure REGISTER_MAIN_STRINGL_CONSTANT(name: zend_pchar; str: zend_pchar; len: uint; flags: integer; TSRMLS_DC: Pointer);
 begin
   zend_register_stringl_constant(name, length(name) + 1, str, len, flags, 0, TSRMLS_DC);
 end;
@@ -975,7 +975,7 @@ begin
   z^._type := IS_STRING;
 end;
 
-procedure ZvalString(z:pzval; s:PAnsiChar; len:Integer = 0);
+procedure ZvalString(z:pzval; s:zend_pchar; len:Integer = 0);
 var
   lens:Integer;
 begin
@@ -998,7 +998,7 @@ begin
   if not assigned(s) then
     ZvalString(z)
   else
-    ZvalString(z, PAnsiChar(AnsiString(WideString(s))), len);
+    ZvalString(z, zend_pchar(zend_ustr(WideString(s))), len);
 end;
 
 procedure ZvalString(z:pzval; s:string; len:Integer = 0);
@@ -1064,12 +1064,12 @@ Begin
   z._type := IS_LONG;
   z.value.dval := v;
 End;
-procedure ZvalVAL(z: pzval; s: AnsiString; len: Integer = 0);
+procedure ZvalVAL(z: pzval; s: zend_ustr; len: Integer = 0);
 var
   lens: Integer;
-  AChar: PAnsiChar;
+  AChar: zend_pchar;
 begin
-  AChar := PAnsiChar(s);
+  AChar := zend_pchar(s);
 
   if not assigned(AChar) then
     ZVAL_NULL(z)
@@ -1087,10 +1087,10 @@ begin
 end;
 
 function AddElementZvalArray(z: pzval; Args: array of const; flag: Integer;
-  idx: uint = 0; len: uint = 0; const key: AnsiString = ''): Integer;
+  idx: uint = 0; len: uint = 0; const key: zend_ustr = ''): Integer;
 var
   tmp: pzval;
-  arKey: PAnsiChar;
+  arKey: zend_pchar;
 begin
   Result := FAILURE;
   if z._type <> IS_ARRAY then
@@ -1099,7 +1099,7 @@ begin
   if len <> 0 then
   begin
     inc(len);
-    arKey := PAnsiChar(key);
+    arKey := zend_pchar(key);
     idx := zend_hash_func(arKey, len);
   end;
 
@@ -1125,7 +1125,7 @@ begin
 end;
 
 // Add Assoc
-function ZvalArrayAdd(z: pzval; key: AnsiString; Args: array of const)
+function ZvalArrayAdd(z: pzval; key: zend_ustr; Args: array of const)
   : Integer; overload;
 begin
   Result := AddElementZvalArray(z, Args, HASH_UPDATE, 0, Length(key), key);
@@ -1136,7 +1136,7 @@ begin
   Result := v._type = IS_ARRAY;
 end;
 
-function ZValArrayKeyExists(v: pzval; key: AnsiString): Boolean; overload;
+function ZValArrayKeyExists(v: pzval; key: zend_ustr): Boolean; overload;
 begin
   Result := false;
   if v._type <> IS_ARRAY then
@@ -1145,7 +1145,7 @@ begin
   if v.value.ht.nNumOfElements = 0  then
     exit;
 
-  Result := zend_hash_exists(v.value.ht, PAnsiChar(key), Length(key) + 1) = 1;
+  Result := zend_hash_exists(v.value.ht, zend_pchar(key), Length(key) + 1) = 1;
 end;
 
 function ZValArrayKeyExists(v: pzval; idx: Integer): Boolean; overload;
@@ -1160,7 +1160,7 @@ begin
   Result := zend_hash_index_exists(v.value.ht, idx) = 1;
 end;
 
-function ZValArrayKeyExists(v: pzval; key: AnsiString; out pData: pzval)
+function ZValArrayKeyExists(v: pzval; key: zend_ustr; out pData: pzval)
   : Boolean; overload;
 var
   tmp: {$IFNDEF PHP700} ppzval {$ELSE} pzval{$ENDIF};
@@ -1188,11 +1188,11 @@ begin
   end;
 end;
 
-function ZValArrayKeyDel(v: pzval; key: AnsiString): Boolean; overload;
+function ZValArrayKeyDel(v: pzval; key: zend_ustr): Boolean; overload;
 begin
   Result := false;
   if ZValArrayKeyExists(v, key) then
-    Result := zend_hash_del_key_or_index(v.value.ht, PAnsiChar(key),
+    Result := zend_hash_del_key_or_index(v.value.ht, zend_pchar(key),
       Length(key) + 1, 0, HASH_DEL_KEY) = SUCCESS;
 end;
 
@@ -1204,13 +1204,13 @@ begin
       HASH_DEL_INDEX) = SUCCESS;
 end;
 
-function ZValArrayKeyFind(v: pzval; key: AnsiString; out pData: {$IFNDEF PHP700} ppzval {$ELSE} pzval{$ENDIF})
+function ZValArrayKeyFind(v: pzval; key: zend_ustr; out pData: {$IFNDEF PHP700} ppzval {$ELSE} pzval{$ENDIF})
   : Boolean; overload;
 var
-  keyStr: PAnsiChar;
+  keyStr: zend_pchar;
   KeyLength: uint;
 begin
-  keyStr := PAnsiChar(key);
+  keyStr := zend_pchar(key);
   KeyLength := Length(key) + 1;
 
   Result := zend_hash_quick_find(v.value.ht, keyStr, KeyLength,
@@ -1258,21 +1258,21 @@ begin
       vtClass, vtObject:
         ZvalVAL(Result, Args._Reserved1);
       vtString:
-        ZvalVAL(Result, AnsiString(Args.VString^));
+        ZvalVAL(Result, zend_ustr(Args.VString^));
       vtAnsiString:
-        ZvalVAL(Result, PAnsiChar(Args.VAnsiString));
+        ZvalVAL(Result, zend_pchar(zend_ustr(Args.VAnsiString)));
       vtUnicodeString:
         ZvalVAL(Result, UnicodeString(Args._Reserved1));
       vtWideChar:
-        ZvalVAL(Result, AnsiString(Args.VWideChar));
+        ZvalVAL(Result, zend_ustr(Args.VWideChar));
       vtChar:
-        ZvalVAL(Result, Args.VChar);
+        ZvalVAL(Result, zend_pchar(zend_uchar(Args.VChar)));
       vtPWideChar:
         ZvalVAL(Result, Args.VPWideChar);
       vtPChar:
-        ZvalVAL(Result, Args.VPChar);
+        ZvalVAL(Result, zend_pchar(Args.VPChar));
       vtWideString:
-        ZvalVAL(Result, PWideChar(Args.VWideString));
+        ZvalVAL(Result, zend_pchar(Args.VWideString));
     end;
   end;
 end;
@@ -1296,9 +1296,9 @@ begin
   z^._type := IS_STRING;
 end;
 
-procedure ZVAL_STRING(z: pzval; s: PAnsiChar; duplicate: boolean);
+procedure ZVAL_STRING(z: pzval; s: zend_pchar; duplicate: boolean);
 var
-  __s : PAnsiChar;
+  __s : zend_pchar;
 begin
   if not assigned(s) then
    __s := ''
@@ -1316,8 +1316,8 @@ end;
 
 procedure ZVAL_STRINGW(z: pzval; s: PWideChar; duplicate: boolean);
 var
-  __s : PAnsiChar;
-  StA : AnsiString;
+  __s : zend_pchar;
+  StA : zend_ustr;
   StW : WideString;
 begin
   if not assigned(s) then
@@ -1325,8 +1325,8 @@ begin
     else
       begin
         StW := WideString(s);
-        StA := AnsiString(StW);
-        __s := PAnsiChar(StA);
+        StA := zend_ustr(StW);
+        __s := zend_pchar(StA);
       end;
 
   z^.value.str.len := strlen(__s);
@@ -1338,9 +1338,9 @@ begin
   z^._type := IS_STRING;
 end;
 
-procedure ZVAL_STRINGL(z: pzval; s: PAnsiChar; l: integer; duplicate: boolean);
+procedure ZVAL_STRINGL(z: pzval; s: zend_pchar; l: integer; duplicate: boolean);
 var
-  __s  : PAnsiChar;
+  __s  : zend_pchar;
   __l  : integer;
 begin
   if not assigned(s) then
@@ -1358,9 +1358,9 @@ end;
 
 procedure ZVAL_STRINGLW(z: pzval; s: PWideChar; l: integer; duplicate: boolean);
 var
-  __s  : PAnsiChar;
+  __s  : zend_pchar;
   __l  : integer;
-  StA : AnsiString;
+  StA : zend_ustr;
   StW : WideString;
 begin
   if not assigned(s) then
@@ -1368,8 +1368,8 @@ begin
     else
      begin
        StW := WideString(s);
-       StA := AnsiString(StW);
-        __s := PAnsiChar(StA);
+       StA := zend_ustr(StW);
+        __s := zend_pchar(StA);
      end;
 
   __l := l;
@@ -1403,7 +1403,7 @@ begin
   z^._type := IS_BOOL;
   z^.value.lval := 0;
 end;
-function ToStrA(V: Variant): AnsiString;
+function ToStrA(V: Variant): zend_ustr;
 begin
   Result := V;
 end;
@@ -1413,12 +1413,12 @@ begin
   Result := V;
 end;
 
-function ToPChar(V: Variant): PAnsiChar;
+function ToPChar(V: Variant): zend_pchar;
 begin
-  Result := PAnsiChar(ToStr(V));
+  Result := zend_pchar(ToStr(V));
 end;
 
-function toWChar(s: PAnsiChar): PWideChar;
+function toWChar(s: zend_pchar): PWideChar;
   var
   ss: WideString;
   ss2: string;
@@ -1485,8 +1485,8 @@ begin
      varDouble,varSingle: add_index_double(ht,i,AR[i]);
      varBoolean: add_index_bool(ht,i,AR[I]);
      varEmpty: add_index_null(ht,i);
-     varString: add_index_string(ht,i,PAnsiChar(ToStr(AR[I])),1);
-     258: add_index_string(ht,i,PAnsiChar(AnsiString(ToStr(AR[I]))),1);
+     varString: add_index_string(ht,i,zend_pchar(ToStr(AR[I])),1);
+     258: add_index_string(ht,i,zend_pchar(zend_ustr(ToStr(AR[I]))),1);
      end;
    end;
 end;
@@ -1495,16 +1495,16 @@ procedure ArrayToHash(Keys,AR: Array of Variant; var HT: pzval); overload;
   Var
   I,Len: Integer;
     v: Variant;
-    key: PAnsiChar;
-    s: PAnsiChar;
+    key: zend_pchar;
+    s: zend_pchar;
 begin
   _array_init(ht,nil,1);
   len := Length(AR);
   for i:=0 to len-1 do
    begin
      v := AR[I];
-     key := PAnsiChar(ToStrA(keys[i]));
-     s := PAnsiChar(ToStrA(v));
+     key := zend_pchar(ToStrA(keys[i]));
+     s := zend_pchar(ToStrA(v));
      case VarType(AR[i]) of
      varInteger, varSmallint, varLongWord, 17: add_assoc_long_ex(ht,ToPChar(Keys[i]),strlen(ToPChar(Keys[i]))+1,AR[i]);
      varDouble,varSingle: add_assoc_double_ex(ht,ToPChar(Keys[i]),strlen(ToPChar(Keys[i]))+1,AR[i]);
@@ -1527,7 +1527,7 @@ begin
      Result := add_next_index_zval(arg, iz);
      Exit;
    end;
-    //   MessageBoxA(0, PAnsiChar(AnsiString( TVarData(Value).VType.ToString)), '', 0 ) ;
+    //   MessageBoxA(0, zend_pchar(AnsiString( TVarData(Value).VType.ToString)), '', 0 ) ;
    case TVarData(Value).VType of
      varString    : //Peter Enz
          begin
@@ -1545,7 +1545,7 @@ begin
          begin
             S := string(TVarData(Value).VUString);
 
-             ZVAL_STRING(iz, PAnsiChar(AnsiString(S)), true);
+             ZVAL_STRING(iz, zend_pchar(zend_ustr(S)), true);
          end;
 
      varOleStr    : //Peter Enz
@@ -1594,7 +1594,7 @@ begin
 
    for i := 0 to Length(arr)-1 do
     begin
-       add_next_index_string(z, PAnsiChar(AnsiString(arr[i])), 1);
+       add_next_index_string(z, zend_pchar(zend_ustr(arr[i])), 1);
     end;
     Exit;
 end;
@@ -1617,7 +1617,7 @@ begin
 
    for i := 0 to Length(arr)-1 do
     begin
-       add_next_index_string(z, PansiChar(arr[i]), 1);
+       add_next_index_string(z, zend_pchar(arr[i]), 1);
     end;
     Exit;
 end;
@@ -1640,12 +1640,12 @@ begin
 
    for i := 0 to Length(arr)-1 do
     begin
-       add_next_index_string(z, PansiChar(AnsiString(arr[i])), 1);
+       add_next_index_string(z, zend_pchar(zend_ustr(arr[i])), 1);
     end;
     Exit;
 end;
 
-procedure ZVAL_ARRAY(z: pzval; arr:  array of AnsiString); overload;
+procedure ZVAL_ARRAY(z: pzval; arr:  array of zend_ustr); overload;
 var
   i: integer;
 begin
@@ -1663,7 +1663,7 @@ begin
 
    for i := 0 to Length(arr)-1 do
     begin
-       add_next_index_string(z, PansiChar(arr[i]), 1);
+       add_next_index_string(z, zend_pchar(arr[i]), 1);
     end;
     Exit;
 end;
@@ -1737,36 +1737,36 @@ begin
       varEmpty, varNull:
         add_next_index_null(z);
       varSmallInt:
-        add_next_index_string(z, PansiChar(AnsiString(IntToStr(V.VSmallInt))), 1);
+        add_next_index_string(z, zend_pchar(zend_ustr(IntToStr(V.VSmallInt))), 1);
       varInteger:
-        add_next_index_string(z, PansiChar(AnsiString(IntToStr(V.VInteger))), 1);
+        add_next_index_string(z, zend_pchar(zend_ustr(IntToStr(V.VInteger))), 1);
       varSingle:
-        add_next_index_string(z, PansiChar(AnsiString(V.VSingle.ToString())), 1);
+        add_next_index_string(z, zend_pchar(zend_ustr(V.VSingle.ToString())), 1);
       varDouble:
         add_next_index_double(z, V.VDouble);
       varCurrency:
-        add_next_index_string(z, PansiChar(AnsiString(CurrToStr(V.VCurrency))), 1);
+        add_next_index_string(z, zend_pchar(zend_ustr(CurrToStr(V.VCurrency))), 1);
       varDate:
-        add_next_index_string(z, PansiChar(AnsiString(DateTimeToStr(V.VDate))), 1);
+        add_next_index_string(z, zend_pchar(zend_ustr(DateTimeToStr(V.VDate))), 1);
       varOleStr:
-        add_next_index_string(z, PansiChar(AnsiString(V.VOleStr)), 1);
+        add_next_index_string(z, zend_pchar(zend_ustr(V.VOleStr)), 1);
       varBoolean:
         add_next_index_bool(z, V.VBoolean.ToInteger());
       varByte:
-        add_next_index_string(z, PansiChar(AnsiString(IntToStr(V.VByte))), 1);
+        add_next_index_string(z, zend_pchar(zend_ustr(IntToStr(V.VByte))), 1);
       varWord:
-        add_next_index_string(z, PansiChar(AnsiString(IntToStr(V.VWord))), 1);
+        add_next_index_string(z, zend_pchar(zend_ustr(IntToStr(V.VWord))), 1);
       varShortInt:
-        add_next_index_string(z, PansiChar(AnsiString(IntToStr(V.VShortInt))), 1);
+        add_next_index_string(z, zend_pchar(zend_ustr(IntToStr(V.VShortInt))), 1);
       varLongWord:
         add_next_index_long(z, V.VLongWord);
       varInt64:
-        add_next_index_string(z, PansiChar(AnsiString(IntToStr(V.VInt64))), 1);
+        add_next_index_string(z, zend_pchar(zend_ustr(IntToStr(V.VInt64))), 1);
       varString:
-        add_next_index_string(z, PansiChar(AnsiString(V.VString)), 1);
+        add_next_index_string(z, zend_pchar(zend_ustr(V.VString)), 1);
       {$IFDEF SUPPORTS_UNICODE_STRING}{
       varUString:
-        add_next_index_string(z, PansiChar(AnsiString(V.VUString)), 1);
+        add_next_index_string(z, zend_pchar(zend_ustr(V.VUString)), 1);
       {$ENDIF SUPPORTS_UNICODE_STRING}
       {varArray,
       varDispatch,
@@ -1782,7 +1782,7 @@ begin
     Exit;
 end;
 
-procedure ZVAL_ARRAYAC(z: pzval; keynames: Array of PAnsiChar; keyvals: Array of PAnsiChar);
+procedure ZVAL_ARRAYAC(z: pzval; keynames: Array of ansichar; keyvals: Array of ansichar);
 var
   i : integer;
 begin
@@ -1801,17 +1801,12 @@ begin
   if Length(keynames) = Length(keyvals) then
    begin
    for i := 0 to Length(keynames)-1 do
-    begin
-      add_assoc_string_ex(z, keynames[i], StrLen(keynames[i]) + 1, keyvals[i], 1);
-    end;
-    Exit;
+      add_assoc_string_ex(z, zend_pchar(zend_uchar(keynames[i])), StrLen(PAnsiChar(keynames[i])) + 1, zend_pchar(zend_uchar(keyvals[i])), 1);
    end
    else
    begin
       ZVAL_FALSE(z);
-    Exit;
    end;
-
 end;
 procedure ZVAL_ARRAYWC(z: pzval; keynames: Array of PWideChar; keyvals: Array of PWideChar);
 var
@@ -1833,7 +1828,7 @@ begin
    begin
    for i := 0 to Length(keynames)-1 do
     begin
-      add_assoc_string_ex(z, PAnsiChar(keynames[i]), StrLen(PAnsiChar(keynames[i])) + 1, PAnsiChar(keyvals[i]), 1);
+      add_assoc_string_ex(z, zend_pchar(keynames[i]), StrLen(zend_pchar(keynames[i])) + 1, zend_pchar(keyvals[i]), 1);
     end;
     Exit;
    end
@@ -1866,8 +1861,8 @@ begin
     begin
                     //Создаём строку в массиве первого уровня
                     //Создаём ассоциацию строки с ключём первого уровня
-      add_assoc_string_ex(z, PAnsiChar(AnsiString(keynames[i])), StrLen(PAnsiChar(AnsiString(keynames[i]))) + 1,
-      PAnsiChar(AnsiString(keyvals[i])), 1);
+      add_assoc_string_ex(z, zend_pchar(zend_ustr(keynames[i])), StrLen(zend_pchar(zend_ustr(keynames[i]))) + 1,
+      zend_pchar(zend_ustr(keyvals[i])), 1);
 
                     //Продолжаем цикл
     end;
@@ -1900,8 +1895,8 @@ begin
    begin
    for i := 0 to Length(keynames)-1 do
     begin
-      add_assoc_string_ex(z, PAnsiChar(AnsiString(keynames[i])), StrLen(PAnsiChar(AnsiString(keynames[i]))) + 1,
-      PAnsiChar(AnsiString(keyvals[i])), 1);
+      add_assoc_string_ex(z, zend_pchar(zend_ustr(keynames[i])), StrLen(zend_pchar(zend_ustr(keynames[i]))) + 1,
+      zend_pchar(zend_ustr(keyvals[i])), 1);
     end;
     Exit;
    end
@@ -1932,7 +1927,7 @@ begin
    begin
    for i := 0 to Length(keynames)-1 do
     begin
-      add_assoc_string_ex(z, PAnsiChar(keynames[i]), StrLen(PAnsiChar(keynames[i])) + 1, PAnsiChar(keyvals[i]), 1);
+      add_assoc_string_ex(z, zend_pchar(keynames[i]), StrLen(zend_pchar(keynames[i])) + 1, zend_pchar(keyvals[i]), 1);
     end;
     Exit;
    end
@@ -1963,7 +1958,7 @@ begin
    begin
    for i := 0 to Length(keynames)-1 do
     begin
-      add_assoc_string_ex(z, PAnsiChar(keynames[i]), StrLen(PAnsiChar(keynames[i])) + 1, PAnsiChar(keyvals[i]), 1);
+      add_assoc_string_ex(z, zend_pchar(zend_ustr(keynames[i])), StrLen(PAnsiChar(keynames[i])) + 1, zend_pchar(zend_ustr(keyvals[i])), 1);
     end;
     Exit;
    end
@@ -1991,14 +1986,14 @@ begin
 end;
 
 
-function LoadZEND(const DllFilename: AnsiString = PHPWin) : boolean;
+function LoadZEND(const DllFilename: zend_ustr = PHPWin) : boolean;
 var
   WriteFuncPtr  : pointer;
 begin
  {$IFDEF QUIET_LOAD}
   Result := false;
  {$ENDIF}
-  PHPLib := LoadLibraryA(PAnsiChar(DllFileName));
+  PHPLib := {$IFDEF PHP_UNICE}LoadLibrary( PWideChar(WideString(DllFilename)) ){$ELSE}LoadLibraryA(zend_pchar(DllFileName)){$ENDIF};
 
 {$IFNDEF QUIET_LOAD}
   if PHPLib = 0 then
@@ -2744,7 +2739,7 @@ begin
   Result := true;
 end;
 
-procedure ZEND_PUTS(str: PAnsiChar);
+procedure ZEND_PUTS(str: zend_pchar);
 begin
   if assigned(str) then
     zend_write(str, strlen(str));
@@ -2755,7 +2750,7 @@ begin
   _convert_to_string(op, nil, 0);
 end;
 
-procedure INIT_CLASS_ENTRY(var class_container: Tzend_class_entry; class_name: PAnsiChar; functions: pointer);
+procedure INIT_CLASS_ENTRY(var class_container: Tzend_class_entry; class_name: zend_pchar; functions: pointer);
 begin
 
   if class_name = nil then
@@ -2903,12 +2898,12 @@ end;
 
 { EPHP4DelphiException }
 
-constructor EPHP4DelphiException.Create(const Msg: AnsiString);
+constructor EPHP4DelphiException.Create(const Msg: zend_ustr);
 begin
   inherited Create('Unable to link '+ Msg+' function');
 end;
 
-{procedure zenderror(Error : PAnsiChar);
+{procedure zenderror(Error : zend_pchar);
 begin
   zend_error(E_PARSE, Error);
 end;}
@@ -3257,7 +3252,7 @@ begin
 	while (ptr.fname<> nil) do begin
           if (zend_hash_exists(target_function_table, ptr.fname, strlen(ptr.fname)+1)) = 1 then
           begin
-            zend_error(error_type, PAnsiChar(Format('Function registration failed - duplicate name - %s', [ptr.fname])));
+            zend_error(error_type, zend_pchar(Format('Function registration failed - duplicate name - %s', [ptr.fname])));
 	  end;
 	   inc(ptr);
 	 end;
@@ -3280,7 +3275,7 @@ var
 begin
   Result := nil;
   try
-    global_id := GetProcAddress(PHPLib, PAnsiChar(resource_name));
+    global_id := GetProcAddress(PHPLib, zend_pchar(resource_name));
     if Assigned(global_id) then
      begin
        tsrmls_dc := tsrmls_fetch;
@@ -3414,7 +3409,7 @@ end;
 
 function Z_VARREC(z: pzval): TVarRec;
   Var
-  P: AnsiString;
+  P: zend_ustr;
 begin
   if z = nil then
   begin
@@ -3438,12 +3433,16 @@ begin
             Result.VExtended^ := z.value.dval;
         end;
         IS_STRING: begin
-            Result.VType := vtAnsiString;
+            Result.VType := {$IFDEF PHP_UNICE}vtString{$ELSE}vtAnsiString{$ENDIF};
 
             SetLength(P, z.value.str.len);
             Move(z.value.str.val^, P[1], z.value.str.len);
 
-            Result.VAnsiString := Pointer(P);
+            {$IFDEF PHP_UNICE}
+              Result.VUnicodeString := Pointer(p);
+            {$ELSE}
+              Result.VAnsiString := Pointer(P);
+            {$ENDIF}
         end;
         else
         begin
@@ -3475,7 +3474,7 @@ begin
     end;
 end;
 
-function Z_STRVAL(z : pzval) : AnsiString;
+function Z_STRVAL(z : pzval) : zend_ustr;
 begin
   if z = nil then
   begin
@@ -3551,7 +3550,7 @@ end;
 {$ENDIF}
 
 {$IFDEF PHP5}
-procedure  _zval_copy_ctor (val: pzval; __zend_filename: PAnsiChar; __zend_lineno: uint);
+procedure  _zval_copy_ctor (val: pzval; __zend_filename: zend_pchar; __zend_lineno: uint);
 begin
   if val^._type <= IS_BOOL then
    Exit
@@ -3559,7 +3558,7 @@ begin
       _zval_copy_ctor_func(val, __zend_filename, __zend_lineno);
 end;
 
-procedure _zval_dtor(val: pzval; __zend_filename: PAnsiChar; __zend_lineno: uint);
+procedure _zval_dtor(val: pzval; __zend_filename: zend_pchar; __zend_lineno: uint);
 begin
   if val^._type <= IS_BOOL then
    Exit
@@ -3572,7 +3571,7 @@ begin
   Result := _zend_hash_init(ht, nSize, pHashFunction, pDestructor, persistent, nil, 0);
 end;
 
-function zend_hash_add_or_update(ht : PHashTable; arKey : PAnsiChar;
+function zend_hash_add_or_update(ht : PHashTable; arKey : zend_pchar;
     nKeyLength : uint; pData : pointer; nDataSize : uint; pDes : pointer;
     flag : integer) : integer;
 begin
@@ -3590,16 +3589,16 @@ end;
 
 {$ENDIF}
 
-
+{$IFNDEF PHP_UNICE}
 function AnsiFormat(const Format: AnsiString; const Args: array of const): AnsiString;
 begin
    Result := Sysutils.Format(Format, Args);
 end;
-
+{$ENDIF}
 {$IFDEF COMPILER_VC9}
-function  DupStr(strSource : PAnsiChar) : PAnsiChar; cdecl;
+function  DupStr(strSource : zend_pchar) : zend_pchar; cdecl;
 var
-  P : PAnsiChar;
+  P : zend_pchar;
 begin
 
   if (strSource = nil) then

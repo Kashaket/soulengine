@@ -19,7 +19,9 @@ unit phpFunctions;
 
 interface
  uses
-   Windows, SysUtils,  Classes, {$IFDEF VERSION6} Variants,
+   Windows, SysUtils,  Classes,
+   {$IFDEF PHP_UNICE}WideStrUtils, {$ENDIF}
+   {$IFDEF VERSION6} Variants,
    {$ENDIF} ZendTypes, PHPTypes, ZendAPI, PHPAPI ;
 
 type
@@ -32,10 +34,10 @@ type
     procedure SetAsBoolean(const Value: boolean);
     function  GetAsFloat: double;
     function  GetAsInteger: integer;
-    function  GetAsString: AnsiString;
+    function  GetAsString: zend_ustr;
     procedure SetAsFloat(const Value: double);
     procedure SetAsInteger(const Value: integer);
-    procedure SetAsString(const Value: AnsiString);
+    procedure SetAsString(const Value: zend_ustr);
     function  GetAsDate: TDateTime;
     function  GetAsDateTime: TDateTime;
     function  GetAsTime: TDateTime;
@@ -54,7 +56,7 @@ type
     property    AsZendVariable : Pzval read FValue write FValue;
     property    AsBoolean : boolean read GetAsBoolean write SetAsBoolean;
     property    AsInteger : integer read GetAsInteger write SetAsInteger;
-    property    AsString  : AnsiString read GetAsString  write SetAsString;
+    property    AsString  : zend_ustr read GetAsString  write SetAsString;
     property    AsFloat   : double  read GetAsFloat write SetAsFloat;
     property    AsDate    : TDateTime read GetAsDate write SetAsDate;
     property    AsTime    : TDateTime read GetAsTime write SetAsTime;
@@ -111,12 +113,12 @@ type
   TPHPFunction = class(TCollectionItem)
   private
     FOnExecute : TPHPExecute;
-    FFunctionName  : AnsiString;
+    FFunctionName  : zend_ustr;
     FTag       : integer;
     FFunctionParams: TFunctionParams;
-    FDescription: AnsiString;
+    FDescription: zend_ustr;
     procedure SetFunctionParams(const Value: TFunctionParams);
-    procedure _SetDisplayName(const value : AnsiString);
+    procedure _SetDisplayName(const value : zend_ustr);
   public
     constructor Create(Collection : TCollection); override;
     destructor Destroy; override;
@@ -124,11 +126,11 @@ type
     procedure SetDisplayName(const Value: string); override;
     procedure AssignTo(Dest: TPersistent); override;
   published
-    property FunctionName : AnsiString read FFunctionName write _SetDisplayName;
+    property FunctionName : zend_ustr read FFunctionName write _SetDisplayName;
     property Tag  : integer read FTag write FTag;
     property Parameters: TFunctionParams read FFunctionParams write SetFunctionParams;
     property OnExecute : TPHPExecute read FOnExecute write FOnExecute;
-    property Description : AnsiString read FDescription write FDescription;
+    property Description : zend_ustr read FDescription write FDescription;
   end;
 
   TPHPFunctions = class(TCollection)
@@ -142,7 +144,7 @@ type
   public
     constructor Create(AOwner: TPersistent; ItemClass: TCollectionItemClass); virtual;
     function Add : TPHPFunction;
-    function FunctionByName(const AName : AnsiString) : TPHPFunction;
+    function FunctionByName(const AName : zend_ustr) : TPHPFunction;
     property Items[Index: Integer]: TPHPFunction read GetItem write SetItem; default;
   end;
 
@@ -199,7 +201,7 @@ begin
   FOwner := AOwner;
 end;
 
-function TPHPFunctions.FunctionByName(const AName: AnsiString): TPHPFunction;
+function TPHPFunctions.FunctionByName(const AName: zend_ustr): TPHPFunction;
 var
  cnt : integer;
 begin
@@ -308,25 +310,25 @@ procedure TPHPFunction.SetDisplayName(const Value: string);
 var
   I: Integer;
   F: TPHPFunction;
-  NameValue : AnsiString;
+  NameValue : zend_ustr;
 begin
    NameValue := Value;
-  if AnsiCompareText(NameValue, FFunctionName) <> 0 then
+  if {$IFDEF PHP_UNICE}CompareText{$ELSE}AnsiCompareText{$ENDIF}(NameValue, FFunctionName) <> 0 then
   begin
     if Collection <> nil then
       for I := 0 to Collection.Count - 1 do
       begin
         F := TPHPFunctions(Collection).Items[I];
         if (F <> Self) and (F is TPHPFunction) and
-          (AnsiCompareText(NameValue, F.FunctionName) = 0) then
+          ({$IFDEF PHP_UNICE}CompareText{$ELSE}AnsiCompareText{$ENDIF}(NameValue, F.FunctionName) = 0) then
           raise Exception.CreateFmt('Duplicate function name: %s', [Value]);
       end;
-    FFunctionName :=  AnsiLowerCase(Value);
+    FFunctionName :=  {$IFDEF PHP_UNICE}UTF8LowerCase{$ELSE}AnsiLowerCase{$ENDIF}(Value);
     Changed(False);
   end;
 end;
 
-procedure TPHPFunction._SetDisplayName(const Value: AnsiString);
+procedure TPHPFunction._SetDisplayName(const Value: zend_ustr);
 var
   NewName : string;
 begin
@@ -476,14 +478,14 @@ var
   I: Integer;
   F: TFunctionParam;
 begin
-  if AnsiCompareText(Value, FName) <> 0 then
+  if {$IFDEF PHP_UNICE}CompareText{$ELSE}AnsiCompareText{$ENDIF}(Value, FName) <> 0 then
   begin
     if Collection <> nil then
       for I := 0 to Collection.Count - 1 do
       begin
         F := TFunctionParams(Collection).Items[I];
         if ((F <> Self) and (F is TFunctionParam) and
-          (AnsiCompareText(Value, F.Name) = 0)) then
+          ({$IFDEF PHP_UNICE}CompareText{$ELSE}AnsiCompareText{$ENDIF}(Value, F.Name) = 0)) then
           raise Exception.Create('Duplicate parameter name');
       end;
     FName := Value;
@@ -570,7 +572,7 @@ end;
 {$IFDEF VERSION5}
 function StrToFloatDef(const S: string; const Default: Extended): Extended;
 begin
-  if not TextToFloat(PAnsiChar(S), Result, fvExtended) then
+  if not TextToFloat(zend_pchar(S), Result, fvExtended) then
     Result := Default;
 end;
 {$ENDIF}
@@ -611,7 +613,7 @@ begin
   end;
 end;
 
-function TZendVariable.GetAsString: AnsiString;
+function TZendVariable.GetAsString: zend_ustr;
 begin
   if not Assigned(FValue) then
    begin
@@ -759,13 +761,13 @@ begin
   ZVAL_LONG(FValue, Value);
 end;
 
-procedure TZendVariable.SetAsString(const Value: AnsiString);
+procedure TZendVariable.SetAsString(const Value: zend_ustr);
 begin
   if not Assigned(FValue) then
    begin
     Exit;
    end;
-  ZVAL_STRINGL(FValue, PAnsiChar(Value), Length(Value), true);
+  ZVAL_STRINGL(FValue, zend_pchar(Value), Length(Value), true);
 end;
 
 procedure TZendVariable.SetAsTime(const Value: TDateTime);

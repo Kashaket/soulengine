@@ -33,7 +33,7 @@ type
 
  TPHPInfoBlock = class
  private
-  FBuffer  : AnsiString;
+  FBuffer  : zend_ustr;
   FVarList : TStringList;
   {$IFDEF PHP5}
   FVirtualStream : TMemoryStream;
@@ -42,20 +42,20 @@ type
  public
   constructor Create; virtual;
   destructor  Destroy; override;
-  property    Buffer : AnsiString read FBuffer write FBuffer;
+  property    Buffer : zend_ustr read FBuffer write FBuffer;
   property    VarList : TStringList read FVarList write SetVarList;
  end;
 
 function  InitRequest : integer; stdcall;
 procedure DoneRequest(RequestID : integer); stdcall;
 
-procedure RegisterVariable(RequestID : integer; AName : PAnsiChar; AValue : PAnsiChar); stdcall;
-function  ExecutePHP(RequestID : integer; FileName : PAnsiChar) : integer; stdcall;
-function  ExecuteCode(RequestID : integer; ACode : PAnsiChar) : integer; stdcall;
-function  GetResultText(RequestID : integer; Buffer : PAnsiChar; BufLen : integer) : integer; stdcall;
-function  GetVariable(RequestID : integer; AName : PAnsiChar; Buffer : PAnsiChar; BufLen : integer) : integer; stdcall;
-procedure SaveToFile(RequestID : integer; AFileName : PAnsiChar); stdcall;
-function  GetVariableSize(RequestID : integer; AName : PAnsiChar) : integer; stdcall;
+procedure RegisterVariable(RequestID : integer; AName : zend_pchar; AValue : zend_pchar); stdcall;
+function  ExecutePHP(RequestID : integer; FileName : zend_pchar) : integer; stdcall;
+function  ExecuteCode(RequestID : integer; ACode : zend_pchar) : integer; stdcall;
+function  GetResultText(RequestID : integer; Buffer : zend_pchar; BufLen : integer) : integer; stdcall;
+function  GetVariable(RequestID : integer; AName : zend_pchar; Buffer : zend_pchar; BufLen : integer) : integer; stdcall;
+procedure SaveToFile(RequestID : integer; AFileName : zend_pchar); stdcall;
+function  GetVariableSize(RequestID : integer; AName : zend_pchar) : integer; stdcall;
 function  GetResultBufferSize(RequestID : integer) : integer; stdcall;
 
 procedure PrepareStartup;
@@ -73,8 +73,8 @@ var
 procedure php_info_delphi(zend_module : Pointer; TSRMLS_DC : pointer); cdecl;
 begin
   php_info_print_table_start();
-  php_info_print_table_row(2, PAnsiChar('SAPI module version'), PAnsiChar('PHP4Delphi 7.4 Oct 2009'));
-  php_info_print_table_row(2, PAnsiChar('Home page'), PAnsiChar('http://users.telenet.be/ws36637'));
+  php_info_print_table_row(2, zend_pchar('SAPI module version'), zend_pchar('PHP4Delphi 7.4 Oct 2009'));
+  php_info_print_table_row(2, zend_pchar('Home page'), zend_pchar('http://users.telenet.be/ws36637'));
   php_info_print_table_end();
 end;
 
@@ -89,9 +89,9 @@ begin
 end;
 
 
-function php_delphi_ub_write(str : PAnsiChar; len : uint; p : pointer) : integer; cdecl;
+function php_delphi_ub_write(str : zend_pchar; len : uint; p : pointer) : integer; cdecl;
 var
- s : AnsiString;
+ s : zend_ustr;
  php : TPHPInfoBlock;
  gl : psapi_globals_struct;
 begin
@@ -133,8 +133,8 @@ begin
    try
      for cnt := 0 to InfoBlock.VarList.Count - 1 do
       begin
-        php_register_variable(PAnsiChar(InfoBlock.VarList.Names[cnt]),
-               PAnsiChar(InfoBlock.VarList.Values[InfoBlock.VarList.Names[cnt]]), val, p);
+        php_register_variable(zend_pchar(InfoBlock.VarList.Names[cnt]),
+               zend_pchar(InfoBlock.VarList.Values[InfoBlock.VarList.Names[cnt]]), val, p);
       end;
    except
    end;
@@ -206,9 +206,9 @@ begin
 
   {$IFDEF PHP530}
   {$IFNDEF COMPILER_VC9}
-  php_delphi_module.build_id := strdup(PAnsiChar(ZEND_MODULE_BUILD_ID));
+  php_delphi_module.build_id := strdup(zend_pchar(ZEND_MODULE_BUILD_ID));
   {$ELSE}
-  php_delphi_module.build_id := DupStr(PAnsiChar(ZEND_MODULE_BUILD_ID));
+  php_delphi_module.build_id := DupStr(zend_pchar(ZEND_MODULE_BUILD_ID));
   {$ENDIF}
   {$ENDIF}
 
@@ -247,8 +247,8 @@ begin
       begin
         new(data);
         try
-          if zend_hash_find(ht, PAnsiChar(InfoBlock.VarList.Names[cnt]),
-          strlen(PAnsiChar(InfoBlock.VarList.Names[cnt])) + 1, data) = SUCCESS then
+          if zend_hash_find(ht, zend_pchar(InfoBlock.VarList.Names[cnt]),
+          strlen(zend_pchar(InfoBlock.VarList.Names[cnt])) + 1, data) = SUCCESS then
           case data^^^._type of
             IS_STRING : InfoBlock.VarList.Values[InfoBlock.VarList.Names[cnt]] := data^^^.value.str.val;
             IS_LONG,
@@ -263,7 +263,7 @@ begin
    end;
 end;
 
-function ExecutePHP(RequestID : integer; FileName : PAnsiChar) : integer; stdcall;
+function ExecutePHP(RequestID : integer; FileName : zend_pchar) : integer; stdcall;
 var
   file_handle : zend_file_handle;
   TSRMLS_D : pointer;
@@ -308,7 +308,7 @@ end;
 {$IFDEF PHP5}
 
 {PHP 5 only}
-function delphi_stream_reader (handle : pointer; buf : PAnsiChar; len : size_t; TSRMLS_DC : pointer) : size_t; cdecl;
+function delphi_stream_reader (handle : pointer; buf : zend_pchar; len : size_t; TSRMLS_DC : pointer) : size_t; cdecl;
 var
  MS : TMemoryStream;
 begin
@@ -375,12 +375,12 @@ end;
 
 
 {$IFDEF PHP4}
-function ExecuteCode(RequestID : integer; ACode : PAnsiChar) : integer; stdcall;
+function ExecuteCode(RequestID : integer; ACode : zend_pchar) : integer; stdcall;
 var
   file_handle : zend_file_handle;
   TSRMLS_D : pointer;
  _handles : array[0..1] of THandle;
- _code : AnsiString;
+ _code : zend_ustr;
  gl  : psapi_globals_struct;
 begin
   if RequestID <= 0 then
@@ -433,11 +433,11 @@ begin
   php_request_shutdown(nil);
 end;
 {$ELSE}
-function ExecuteCode(RequestID : integer; ACode : PAnsiChar) : integer; stdcall;
+function ExecuteCode(RequestID : integer; ACode : zend_pchar) : integer; stdcall;
 var
   file_handle : zend_file_handle;
   TSRMLS_D : pointer;
- _code : AnsiString;
+ _code : zend_ustr;
  gl  : psapi_globals_struct;
   ZendStream : TZendStream;
 begin
@@ -506,7 +506,7 @@ end;
 {$ENDIF}
 
 
-procedure RegisterVariable(RequestID : integer; AName : PAnsiChar; AValue : PAnsiChar); stdcall;
+procedure RegisterVariable(RequestID : integer; AName : zend_pchar; AValue : zend_pchar); stdcall;
 begin
   try
     TPHPInfoBlock(RequestID).VarList.Add(AName + '=' + AValue);
@@ -515,7 +515,7 @@ begin
 end;
 
 
-function  GetResultText(RequestID : integer; Buffer : PAnsiChar; BufLen : integer) : integer; stdcall;
+function  GetResultText(RequestID : integer; Buffer : zend_pchar; BufLen : integer) : integer; stdcall;
 var
  L : integer;
 begin
@@ -533,7 +533,7 @@ begin
        Exit;
      end;
 
-    StrLCopy(Buffer, PAnsiChar(TPHPInfoBlock(RequestID).FBuffer), BufLen -1);
+    StrLCopy(Buffer, zend_pchar(TPHPInfoBlock(RequestID).FBuffer), BufLen -1);
     TPHPInfoBlock(RequestID).FBuffer := '';
     Result := 0;
   except
@@ -559,7 +559,7 @@ begin
   end;
 end;
 
-procedure SaveToFile(RequestID : integer; AFileName : PAnsiChar);
+procedure SaveToFile(RequestID : integer; AFileName : zend_pchar);
 var
  L : integer;
  FS : TFileStream;
@@ -581,10 +581,10 @@ begin
   end;
 end;
 
-function  GetVariable(RequestID : integer; AName : PAnsiChar; Buffer : PAnsiChar; BufLen : integer) : integer; stdcall;
+function  GetVariable(RequestID : integer; AName : zend_pchar; Buffer : zend_pchar; BufLen : integer) : integer; stdcall;
 var
  L  : integer;
- St : AnsiString;
+ St : zend_ustr;
 begin
   if RequestID <= 0 then
    begin
@@ -606,17 +606,17 @@ begin
         Exit;
       end;
 
-    StrLCopy(Buffer, PAnsiChar(St), BufLen -1);
+    StrLCopy(Buffer, zend_pchar(St), BufLen -1);
     Result := 0;
   except
      Result := REQUEST_ID_NOT_FOUND;
   end;
 end;
 
-function  GetVariableSize(RequestID : integer; AName : PAnsiChar) : integer;
+function  GetVariableSize(RequestID : integer; AName : zend_pchar) : integer;
 var
  L  : integer;
- St : AnsiString;
+ St : zend_ustr;
 begin
   if RequestID <= 0 then
    begin
