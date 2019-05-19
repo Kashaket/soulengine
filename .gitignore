@@ -20,3 +20,7 @@ __history/
 /php5ts.dll
 *.exe
 trash/
+soulEngine.identcache
+soulEngine.stat
+*.identcache
+*.stat
