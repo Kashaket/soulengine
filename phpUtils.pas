@@ -46,22 +46,22 @@ end;
 
 procedure regConstL(Name: string; Value: integer);
 begin
-  REGISTER_MAIN_LONG_CONSTANT(zend_pchar(Name), Value, 0, ts_resource(0));
+  REGISTER_MAIN_LONG_CONSTANT(zend_pchar(zend_ustr(Name)), Value, 0, ts_resource(0));
 end;
 
 procedure regConstD(Name: string; Value: double);
 begin
-  REGISTER_MAIN_DOUBLE_CONSTANT(zend_pchar(Name), Value, 0, ts_resource(0));
+  REGISTER_MAIN_DOUBLE_CONSTANT(zend_pchar(zend_ustr(Name)), Value, 0, ts_resource(0));
 end;
 
 procedure regConstS(Name: string; Value: string);
 begin
-  REGISTER_MAIN_STRING_CONSTANT(zend_pchar(Name), zend_pchar(Value), 0, ts_resource(0));
+  REGISTER_MAIN_STRING_CONSTANT(zend_pchar(zend_ustr(Name)), zend_pchar(zend_ustr(Value)), 0, ts_resource(0));
 end;
 
 procedure evalCode(Code: string);
 begin
-  zend_eval_string(zend_pchar(Code), nil, 'eval code', ts_resource(0));
+  zend_eval_string(zend_pchar(zend_ustr(Code)), nil, 'eval code', ts_resource(0));
 end;
 
 

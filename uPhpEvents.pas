@@ -263,12 +263,13 @@ type
     MyData: zend_ustr;
     FsSuspended: Boolean;
     procedure Execute; override;
-    {$IFDEF SYSTEM.CLASSES.NOT_EDITED}
-    procedure Suspend; override;
-    procedure Resume; override;
-    {$ENDIF}
     procedure CallSyncFunc;
     constructor Create(Main: TScriptThread);
+  {$IFDEF SYSTEM.CLASSES.NOT_EDITED}
+  published
+    procedure Suspend;
+    procedure Resume;
+  {$ENDIF}
   end;
 
 {$M+}

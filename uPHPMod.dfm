@@ -36,20 +36,6 @@ object phpMOD: TphpMOD
         OnExecute = PHPLibraryFunctions3Execute
       end
       item
-        FunctionName = '__rtti_link'
-        Tag = 0
-        Parameters = <
-          item
-            Name = 'P1'
-            ParamType = tpUnknown
-          end
-          item
-            Name = 'P2'
-            ParamType = tpUnknown
-          end>
-        OnExecute = PHPLibraryFunctions8Execute
-      end
-      item
         FunctionName = '__rtti_class'
         Tag = 0
         Parameters = <

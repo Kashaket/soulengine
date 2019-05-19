@@ -40,65 +40,17 @@ procedure get_all_classes_u(arr: PWSDate);
 procedure RegisterClassesA(const AClasses: array of TPersistentClass);
 procedure RegisterClassA(AClass: TPersistentClass);
 procedure RegisterClassAliasA(AClass: TPersistentClass; Alias: string);
+procedure RegisterClassAliasesA(AClass: TPersistentClass; Classes: array of string);
 function GetConstructor(rType: TRttiType) : TRttiMethod;
 function LoadTypeLib(LibraryName: string) : Boolean;
 function LoadTypePackage(PackageName: string) : Boolean;
-type cPointer = class
-  private
-    FLinc : array of Pointer;
-    function lindex(v: Pointer): integer;
-  public
-    function Get(id: integer): Pointer; overload;
-    function Get(value: Pointer): integer; overload;
-    constructor Create();
-end;
+
 var Regs, TLLoads, BPLoads, Aliases, AliasesKeys: TWSDate;
 implementation
 type
   FindType = function(ClassName: string): TRttiType;
   LibModuleListAddres = function(): PLibModule;
-
-constructor cPointer.Create();
-begin
-  SetLength(FLinc, 0);
-end;
-function cPointer.Get(id: Integer): Pointer;
-begin
-    Result := @Null;
-    if (length(Flinc) = 0) or (id = -1) then Exit;
-
-   if FLinc[id] <> nil then
-      Result := FLinc[id];
-end;
-function cPointer.Get(value: Pointer): integer;
-begin
-  Result := -1;
-  if ( Length(Flinc) = 0 ) or (lindex(value)=-1) then
-  begin
-       SetLength(Flinc, Length(Flinc)+1);
-       FLinc[ High(FLinc) ] := value;
-       Result := Length(FLinc)-1;
-  end else Result:=lindex(value);
-end;
-function cPointer.lindex(v: Pointer): integer;
-var x: Pointer; I: integer;
-begin
-
-  Result := -1;
-  I := -1;
-    for x in FLinc do
-    begin
-    I := I + 1;
-    if x = v then
-      begin
-        Result := I;
-        Exit;
-      end;
-    end;
-
-end;
-  var uc: TUnitClass;
-      regpoints: cPointer;
+  //var uc: TUnitClass;
 {
 function gui_set_event(id: integer; value: string): Boolean;
 var hobj: TObject;
@@ -220,7 +172,14 @@ begin
      SetLength(Aliases, Length(Aliases)+1);
      Aliases[High(Aliases)] := AClass.UnitName + '.' + AClass.ClassName;
 end;
-
+procedure RegisterClassAliasesA(AClass: TPersistentClass; Classes: array of string);
+  var
+  I: Integer;
+begin
+  for I := Low(Classes) to High(Classes) do begin
+    RegisterClassAliasA(AClass, Classes[I]);
+  end;
+end;
 procedure get_all_classes(arr: PWSDate);
 var //x: TUnitType;
 s: String;
@@ -673,7 +632,7 @@ begin
             tkInteger:
               Result := v.AsInteger;
             tkEnumeration:
-              Result := zend_ustr(v.AsString);
+              Result := zend_ustr( v.ToString );
             tkInt64:
               Result := v.AsInt64;
             tkWChar:
@@ -689,7 +648,7 @@ begin
             tkClass:
               Result := integer( v.AsObject );
             tkPointer:
-              Result := regpoints.Get( v.AsType<Pointer> );
+              Result := integer( v.AsType<Pointer> );
             tkAnsiString:
               Result := zend_ustr(v.AsType<AnsiString>);
             tkWString:
@@ -720,13 +679,13 @@ begin
             tkUString:
               Result := Result.From<Utf8String>( zend_ustr(V) );
             tkPointer:
-              Result := regpoints.Get( integer( V ) );
+              Result := Pointer( integer( V ) );
             tkAnsiString:
               Result := Result.From<AnsiString>( AnsiString(zend_ustr(V)) );
             tkWString:
               Result := Result.From<WideString>( WideString(zend_ustr(V)) );
             tkEnumeration:
-              Result := Result.From<Integer>( integer(V) );
+              Result := Result.From<String>( zend_ustr(V) );
             tkVariant:
               Result := Result.FromVariant(V)
             end;
@@ -1282,8 +1241,5 @@ begin
         end;
         ctx.Free();
 end;
-initialization
-  regpoints := cPointer.Create;
-finalization
-  FreeAndNil( regpoints );
+
 end.

@@ -5,14 +5,14 @@ interface
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   CoolTrayIcon;
 
-function showBalloonTip(trayID: TCoolTrayIcon; TipTitle, TipInfo: string;
+function showBalloonTip(trayID: TCoolTrayIcon; TipTitle, TipInfo: AnsiString;
     flag: TBalloonHintIcon; timeout: integer): Boolean;
 function hideBalloonTip(trayID: TCoolTrayIcon): Boolean;
 
 
 implementation
 
-function showBalloonTip(trayID: TCoolTrayIcon; TipTitle, TipInfo: string;
+function showBalloonTip(trayID: TCoolTrayIcon; TipTitle, TipInfo: AnsiString;
     flag: TBalloonHintIcon; timeout: integer): Boolean;
 begin
   Result := trayID.ShowBalloonHint(TipTitle, TipInfo, flag, timeout);

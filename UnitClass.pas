@@ -55,10 +55,9 @@ var
   T: TPackageTypeInfo;
   Units: UnitArray;
   currUnit: Integer;
-  I, r, len, idx: Integer;
+  I, r, idx: Integer;
   typeIter: PPTypeInfo;
   typeName, tmp: string;
-  pb: PByte;
 begin
   T := LibModuleList^.TypeInfo^;
   TypeCount := T.TypeCount;
@@ -177,11 +176,11 @@ end;
 
 function TUnitClass.IsUnits(UnitName: string): Boolean;
 var
-  TUnitName: string;
+  TUnitName: UTF8String;
 begin
   UnitName := Lowercase(UnitName);
   for TUnitName in GetUnits do
-    if Lowercase(TUnitName) = UnitName then
+    if Lowercase(String(TUnitName)) = UnitName then
       exit(true);
   Result := false;
 end;

@@ -1,4 +1,4 @@
-{*******************************************************}
+﻿{*******************************************************}
 {                                                       }
 {            Delphi Visual Component Library            }
 {                                                       }
@@ -8,6 +8,8 @@
 {*******************************************************}
 
 unit dsCategoryButtons;
+{.$DEFINE LAZARUS}
+{.$MODE Delphi}
 
 interface
 
@@ -17,9 +19,9 @@ uses
 {$IF DEFINED(CLR)}
   WinUtils,
 {$ENDIF}
-  System.UITypes,
-  Winapi.Windows, Winapi.Messages, Vcl.ImgList, System.Classes, Vcl.Forms,
-  Vcl.Controls, Vcl.Graphics, Vcl.StdCtrls, Vcl.ExtCtrls, Vcl.GraphUtil, Vcl.ActnList, Vcl.Themes;
+  System.UITypes, Winapi.Windows, Winapi.Messages, Vcl.ImgList, System.Classes,
+  Vcl.Forms, Vcl.Graphics, Vcl.StdCtrls, Vcl.ExtCtrls,
+  Vcl.GraphUtil, Vcl.ActnList, Vcl.Themes, Controls;
 {$IFDEF VER230} {$DEFINE isVER230} {$ENDIF}
 {$IFDEF VER330} {$DEFINE isVER230} {$ENDIF}
 {$IFDEF VER320} {$DEFINE isVER230} {$ENDIF}
@@ -1684,7 +1686,11 @@ begin
   if FBorderStyle <> Value then
   begin
     FBorderStyle := Value;
+    {$IFDEF Lazarus}
+    RecreateWnd(Self); { *Перетворено з RecreateWnd* }
+    {$ELSE}
     RecreateWnd;
+    {$ENDIF}
   end;
 end;
 

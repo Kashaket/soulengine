@@ -217,7 +217,7 @@ type
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
     function Refresh: Boolean;
-    function ShowBalloonHint(Title, Text: String; IconType: TBalloonHintIcon;
+    function ShowBalloonHint(Title, Text: AnsiString; IconType: TBalloonHintIcon;
       TimeoutSecs: TBalloonHintTimeOut): Boolean;
     function ShowBalloonHintUnicode(Title, Text: WideString; IconType: TBalloonHintIcon;
       TimeoutSecs: TBalloonHintTimeOut): Boolean;
@@ -1232,7 +1232,7 @@ begin
     end;
     if (FHint <> '') and (FShowHint) then
     begin
-      AnsiStrings.StrLCopy(IconData.szTip, PAnsiChar(String(FHint)), SizeOf(IconData.szTip)-1);
+      AnsiStrings.StrLCopy(IconData.szTip, PAnsiChar(AnsiString(FHint)), SizeOf(IconData.szTip)-1);
       { StrLCopy must be used since szTip is only 128 bytes. }
       { From IE ver. 5 szTip is 128 chars, before that only 64 chars. I suppose
         I could use GetComCtlVersion to check the version and then truncate
@@ -1295,7 +1295,7 @@ begin
 end;
 
 
-function TCoolTrayIcon.ShowBalloonHint(Title, Text: String;
+function TCoolTrayIcon.ShowBalloonHint(Title, Text: AnsiString;
   IconType: TBalloonHintIcon; TimeoutSecs: TBalloonHintTimeOut): Boolean;
 // Show balloon hint. Return false if error.
 const

@@ -6,7 +6,7 @@ interface
 
 uses Forms, Dialogs, SysUtils, Windows, Classes, Controls, Buttons,
   Messages,              ZendTypes,
-  propertiesEngine,
+  propertiesEngine, dsExtraCtrls,
   StdCtrls, ComCtrls, Menus, ExtCtrls, Mask, Grids,
   Tabs, Graphics, MImage, mainLCL, uGuiScreen, cooltrayicon,
   GIFImage2, svgimage, svgimagelist, vcl.imaging.jpeg,
@@ -126,7 +126,7 @@ begin
   begin
     if (toObject(id) <> nil) then
       begin
-          Result := toObject(id).ClassName;
+          Result := zend_ustr(toObject(id).ClassName);
       end;
   end
 end;
@@ -135,7 +135,7 @@ function objectIs(id: integer; const aClass: zend_ustr): Boolean;
 var
   CL: TClass;
 begin
-  CL := GetClass(aClass);
+  CL := GetClass(string(aClass));
   Result := (CL <> NIL) and (id <> 0) and (toObject(id) is CL);
 end;
 
@@ -150,10 +150,9 @@ Result := 0;
       Owner := nil
     else
       Owner := TComponent(toObject(aOwner));
-    P := TComponentClass(GetClass(aClass));
+    P := TComponentClass(GetClass(string(aClass)));
     if (P <> nil) then
       Result := toID(TComponentClass(P).Create(Owner))
-
   except
   end;
 end;
@@ -285,7 +284,7 @@ end;
 
 procedure registerAdditional;
 begin
-  registerArr([TImage, TShape, TBevel, __TNoVisual
+  registerArr([TImage, dsExtraCtrls.TShape, TBevel, __TNoVisual
 
 {$IFDEF C_SIZECONTROL}
     , TSizeCtrl
@@ -326,7 +325,8 @@ procedure registerGraph;
 begin
   registerArr([TFont, TMImage, TGraphic,
   Graphics.TGraphicsObject, Graphics.TPen,
-    Graphics.TBrush, Graphics.TPicture, Graphics.TMetafileCanvas,
+    Graphics.TBrush, Graphics.TPicture,
+    Graphics.TCustomCanvas, Graphics.TCanvas,Graphics.TMetafileCanvas,
     Graphics.TBitmap, TPNGIMage, TJpegImage, TSVGGraphic,
     TSVGImage, TSVGImageList, TGIFImage, TGIFImagelist,
     Graphics.TMetafile, Graphics.TIcon]);
@@ -401,7 +401,8 @@ TNxTimePicker,
     sDialogs.TsColorDialog,
     {$ENDIF}
     {$IFDEF ADD_SYN}
-    TSynEdit, TSynPHPSyn,
+    TSynEdit, TSynPHPSyn, TSynForm, TSynBaseCompletionProposal,
+     TSynBaseCompletionProposalForm,
     {$IFDEF ADD_SYN_OPT}
      TSynGeneralSyn, TSynCppSyn, TSynCssSyn, TSynHTMLSyn, TSynSQLSyn,
     TSynJScriptSyn, TSynXMLSyn, TSynEiffelSyn,

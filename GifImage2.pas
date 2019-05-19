@@ -1385,7 +1385,7 @@ begin
     begin
       dec(size, b);
       WriteByte(Stream, b);
-      Stream.Write(PAnsiChar(s)^, b);
+      Stream.Write(PAnsiChar(AnsiString(s))^, b);
       delete(s, 1, b);
       if (b > size) then
         b := size;

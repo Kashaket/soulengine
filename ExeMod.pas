@@ -130,7 +130,7 @@ procedure TExeStream.String2File(FileName: zend_ustr);
 begin
   SetCurrentDir(ExtractFilePath(_MainExeName));
 
-  SS.SaveToFile(FileName);
+  SS.SaveToFile(String(FileName));
 
 end;
 
@@ -338,12 +338,12 @@ var
 begin
   if String2BeSaved = '' then
     Exit;
-  SetCurrentDir(ExtractFilePath(Filename));
+  SetCurrentDir(ExtractFilePath(String(Filename)));
   MyStream := TMemoryStream.Create;
   try
     MyStream.WriteBuffer(pointer(String2BeSaved)^, Length(String2BeSaved));
 
-    MyStream.SaveToFile(FileName);
+    MyStream.SaveToFile(String(FileName));
   finally
     MyStream.Destroy;
   end;
@@ -375,7 +375,7 @@ var
 begin
   MyStream := TMemoryStream.Create;
   try
-    MyStream.LoadFromFile(FileName);
+    MyStream.LoadFromFile(String(FileName));
     MyStream.Position := 0;
     SetLength(Result, MyStream.Size);
     MyStream.ReadBuffer(pointer(Result)^, MyStream.Size);

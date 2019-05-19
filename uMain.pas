@@ -172,13 +172,14 @@ begin
     DLLFolder := ExtractFilePath(ParamStr(0));
 
   if FileExists(engineDir + '\php.ini') then
-    PHPEngine.IniPath := zend_ustr(engineDir + '\php.ini')
+    PHPEngine.IniPath := AnsiString(engineDir + '\php.ini')
   else if FileExists(iniDir + '\php.ini') then
-    PHPEngine.IniPath := zend_ustr(iniDir)
+    PHPEngine.IniPath := AnsiString(iniDir)
   else if FileExists(progDir + '\php.ini') then
-    PHPEngine.IniPath := zend_ustr(progDir)
+    PHPEngine.IniPath := AnsiString(progDir)
   else
-    PHPEngine.IniPath := zend_ustr(PHPEngine.DLLFolder);
+    PHPEngine.IniPath := AnsiString(PHPEngine.DLLFolder);
+
   /// FS := TFileStream.Create(PHPEngine.IniPath, fmOpenRead, fmShareDenyWrite);
 
   core_Init(PHPEngine, phpMOD.psvPHP);

@@ -8,7 +8,7 @@ interface
 
 uses
   Classes, SysUtils, Forms, php4delphi, zendAPI, phpAPI, PHPTypes,
-  regGui, guiComponents, guiForms, guiProperties, dsUtils,
+  regGui, guiComponents, guiForms, guiWinAPI, guiProperties, dsUtils,
 
   {$IFDEF ADD_CHROMIUM}
   guiChromium,
@@ -51,6 +51,7 @@ begin
   InitializeEventSystem(myPHPEngine);
   InitializeGuiComponents(myPHPEngine);
   InitializeGuiForms(myPHPEngine);
+  InitializeGuiWinAPI(myPHPEngine);
   InitializeGuiProperties(myPHPEngine);
 
   {$IFDEF ADD_CHROMIUM}

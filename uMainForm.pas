@@ -124,12 +124,13 @@ label 1;
 begin
    if (selfConfig <> '') then
   begin
-    iniDir := String(TempDir) + '\PSE30\' + salt + '\';
+    selfFinalize := True;
+    iniDir := AnsiString(String(TempDir) + '\PSE30\' + salt + '\');
 
-    if FileExists(iniDir + 'php.ini') then
-      if (File2String(zend_ustr(iniDir + 'php.ini')) = selfConfig) then goto 1;
+    if FileExists(string(iniDir) + 'php.ini') then
+      if (File2String(zend_ustr(string(iniDir) + 'php.ini')) = selfConfig) then goto 1;
 
-    ForceDirectories(iniDir);
+    ForceDirectories(String(iniDir));
     String2File2(selfConfig, zend_ustr(iniDir + 'php.ini'));
     1:
     selfConfig := '';
@@ -151,10 +152,10 @@ begin
   selfScript := '';
   EM := TExeStream.Create(ParamStr(0));
 
-  progDir := ExtractFilePath(Application.ExeName);
+  progDir := AnsiString(ExtractFilePath(Application.ExeName));
   moduleDir := progDir + 'ext\';
   engineDir := progDir + 'engine\';
-  if DirectoryExists(progDir + 'core\') then
+  if DirectoryExists(string(progDir) + 'core\') then
     engineDir := progDir + 'core\';
 
   selfScript := zend_ustr(EM.ExtractToString('$PHPSOULENGINE\inc.php'));
@@ -170,14 +171,14 @@ begin
   if (ExtractFileExt(f) = '.pse') and (selfScript = '') then
   begin
     if pos(':', f) > 0 then
-      progDir := ExtractFilePath(f)
+      progDir := AnsiString(ExtractFilePath(f))
     else
-      progDir := progDir + ExtractFilePath(f);
+      progDir := progDir + AnsiString(ExtractFilePath(f));
   end
   else if selfScript <> '' then
-    progDir := ExtractFilePath(ParamStr(0))
+    progDir := AnsiString(ExtractFilePath(ParamStr(0)))
   else if f <> '' then
-    progDir := ExtractFilePath(f);
+    progDir := AnsiString(ExtractFilePath(f));
   EM.Destroy;
   {$IFDEF ADD_CHROMIUM}
     LoadChromium;
@@ -185,7 +186,7 @@ begin
 end;
 procedure T__mainForm.FormDestroy(Sender: TObject);
 begin
-if FileExists(String(iniDir) + 'php.ini') then
+if FileExists(String(iniDir) + 'php.ini') and selfFinalize then
   begin
     DeleteFile(String(iniDir) + 'php.ini');
     RemoveDir(String(iniDir));
@@ -201,7 +202,7 @@ begin
   inherited;
   pcd := PCopyDataStruct(Msg.LParam);
   s := zend_pchar(pcd.lpData);
-  phpMOD.RunCode('Receiver::event(' + IntToStr(Msg.WParam) + ',''' +
+  phpMOD.RunCode('Receiver::event(' + zend_ustr(IntToStr(Msg.WParam)) + ',''' +
     AddSlashesA(s) + ''');');
 end;
 
@@ -213,8 +214,8 @@ begin
   fuModifiers := LOWORD(Msg.LParam);
   uVirtKey := HIWORD(Msg.LParam);
 
-  phpMOD.RunCode('HotKey::event(' + IntToStr(fuModifiers) + ',' +
-    IntToStr(uVirtKey) + ');');
+  phpMOD.RunCode(zend_ustr('HotKey::event(' + IntToStr(fuModifiers) + ',' +
+    IntToStr(uVirtKey) + ');'));
 
   inherited;
 end;

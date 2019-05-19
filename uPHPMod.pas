@@ -149,9 +149,6 @@ type
     procedure winApiFunctions1Execute(Sender: TObject;
       Parameters: TFunctionParams; var ReturnValue: variant;
       ZendVar: TZendVariable; TSRMLS_DC: Pointer);
-    procedure PHPLibraryFunctions8Execute(Sender: TObject;
-      Parameters: TFunctionParams; var ReturnValue: variant;
-      ZendVar: TZendVariable; TSRMLS_DC: Pointer);
     procedure TStringsLibFunctions0Execute(Sender: TObject;
       Parameters: TFunctionParams; var ReturnValue: variant;
       ZendVar: TZendVariable; TSRMLS_DC: Pointer);
@@ -1219,10 +1216,10 @@ var
   dict: TVarDict;
   tmpST: TStream;
 
-  progDir: string;
-  moduleDir: string;
-  engineDir: string;
-  iniDir: string;
+  progDir:   AnsiString;
+  moduleDir: AnsiString;
+  engineDir: AnsiString;
+  iniDir:    AnsiString;
   CEFStarted: boolean = false;
   MyHotKey: integer = 0;
 
@@ -1433,12 +1430,12 @@ end;
 
 procedure addVar(aName, aValue: variant; PSV: TpsvPHP = nil);
 begin
-  aValue := StringReplace(aValue, '\', '\\', [rfReplaceAll]);
+  aValue := zend_ustr(StringReplace(string(zend_ustr(aValue)), '\', '\\', [rfReplaceAll]));
   if PSV = nil then
-    phpMOD.RunCode(zend_ustr('$GLOBALS["' + aName + '"]= ''' + AddSlashes(aValue)
+    phpMOD.RunCode(zend_ustr('$GLOBALS["' + aName + '"]= ''' + AddSlashesA(aValue)
       + '''; ?>'))
   else
-    PSV.RunCode(zend_ustr('$GLOBALS["' + aName + '"]= ''' + AddSlashes(aValue) +
+    PSV.RunCode(zend_ustr('$GLOBALS["' + aName + '"]= ''' + AddSlashesA(aValue) +
       '''; ?>'));
 end;
 
@@ -2561,14 +2558,6 @@ begin
     { on e: Exception do
       ShowMessage(e.Message); }
   end;
-end;
-
-procedure TphpMOD.PHPLibraryFunctions8Execute(Sender: TObject;
-  Parameters: TFunctionParams; var ReturnValue: variant; ZendVar: TZendVariable;
-  TSRMLS_DC: Pointer);
-begin
-  ReturnValue := integer(ToObj(TypInfo.GetPropValue(ToObj(Parameters, 0),
-    Parameters[1].Value)));
 end;
 
 procedure TphpMOD.TImageListFunctions4Execute(Sender: TObject;

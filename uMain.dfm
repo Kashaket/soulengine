@@ -79,14 +79,6 @@ object __fMain: T__fMain
     Font.Pitch = fpFixed
     Font.Style = []
     TabOrder = 2
-    CodeFolding.GutterShapeSize = 11
-    CodeFolding.CollapsedLineColor = clGrayText
-    CodeFolding.FolderBarLinesColor = clGrayText
-    CodeFolding.IndentGuidesColor = clGray
-    CodeFolding.IndentGuides = True
-    CodeFolding.ShowCollapsedLine = False
-    CodeFolding.ShowHintMark = True
-    UseCodeFolding = False
     BorderStyle = bsNone
     Gutter.AutoSize = True
     Gutter.BorderStyle = gbsRight
