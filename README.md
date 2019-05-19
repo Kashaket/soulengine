@@ -27,3 +27,5 @@ Rewrited and Decompiled by Kashaket Corporation
 6) EXEMod rewrited by Andrew Zenin
 7) uNonVisual fix by Andrew Zenin
 8) CategoryButtons update by Andrew Zenin
+9) TSizeCtrl update by Andrew Zenin
+10) TShape update by Andrew Zenin
