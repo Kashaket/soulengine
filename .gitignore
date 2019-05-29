@@ -24,3 +24,5 @@ soulEngine.identcache
 soulEngine.stat
 *.identcache
 *.stat
+soulEngine.stat
+soulEngine.identcache
