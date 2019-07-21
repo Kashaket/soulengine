@@ -9,6 +9,7 @@ interface
 uses
   Classes,
   SysUtils,
+  {$IFDEF PHP7} hzend_types, {$ENDIF}
   zendTypes,
   ZENDAPI,
   PHPAPI,
@@ -40,6 +41,9 @@ procedure gui_class_propList(ht: integer; return_value: pzval;
   TSRMLS_DC: pointer); cdecl;
   //Получение списка свойств класса
 procedure gui_class_propArray(ht: integer; return_value: pzval;
+  return_value_ptr: pzval; this_ptr: pzval; return_value_used: integer;
+  TSRMLS_DC: pointer); cdecl;
+procedure gui_get_recordInfo(ht: integer; return_value: pzval;
   return_value_ptr: pzval; this_ptr: pzval; return_value_used: integer;
   TSRMLS_DC: pointer); cdecl;
   //Получение массива свойств класса
@@ -96,8 +100,6 @@ procedure gpreadable(ht: integer; return_value: pzval; return_value_ptr: pzval;
   this_ptr: pzval; return_value_used: integer; TSRMLS_DC: pointer); cdecl;
 procedure gpwritable(ht: integer; return_value: pzval; return_value_ptr: pzval;
   this_ptr: pzval; return_value_used: integer; TSRMLS_DC: pointer); cdecl;
-procedure gui_form_fixdwm(ht: integer; return_value: pzval; return_value_ptr: pzval;
-  this_ptr: pzval; return_value_used: integer; TSRMLS_DC: pointer); cdecl;
 implementation
 
 procedure gui_propGet;
@@ -113,7 +115,11 @@ begin
 
 
   zend_get_parameters_my(ht, p, TSRMLS_DC);//Получение параметров функцией дим-са
+ {$IFDEF PHP7}
+ if(p[1]^.u1.v._type = IS_STRING) THEN
+ {$ELSE}
  if(p[1]^._type = IS_STRING) THEN //Если тип второго аргумента/параметра - строка, то
+ {$ENDIF}
       begin
       //Вызываем функцию получения значения свойства и возвращаем результат
         variant2zval(getProperty(integer(Z_LVAL(p[0]^)),Z_STRVAL(p[1]^)), return_value);
@@ -224,7 +230,11 @@ begin
   zend_get_parameters_my(ht, p, TSRMLS_DC);
    ctx := TRttiContext.Create;
   ZVAL_LONG(return_value, -1);
-  if p[0]^^._type = IS_LONG then
+  {$IFDEF PHP7}
+    if p[0]^^.u1.v._type = IS_LONG then
+  {$ELSE}
+    if p[0]^^._type = IS_LONG then
+  {$ENDIF}
   begin
         c   := TObject(integer(Z_LVAL(p[0]^)));
         if not Assigned(c) then goto ex1;
@@ -296,13 +306,21 @@ begin
       zval_TVALUE(callMethod(Z_LVAL(p[0]^), Z_STRVAL(p[1]^), []), return_value);
     end;
     3: begin
+    {$IFDEF PHP7}
+      if p[2]^.u1.v._type <> IS_ARRAY then
+    {$ELSE}
       if p[2]^._type <> IS_ARRAY then
+    {$ENDIF}
       //если нам передали массив(единственное, что можно передать ._.)
        begin
         zend_wrong_param_count(TSRMLS_DC);
         goto ex1;
        end;
+      {$IFDEF PHP7}
+      HashToArray(p[2]^.value.arr, ar);//превращаем его из хэш-таблицы в массив
+      {$ELSE}
       HashToArray(p[2]^.value.ht, ar);//превращаем его из хэш-таблицы в массив
+      {$ENDIF}
       if (Length(ar) = 0) then //если длина массива равна нулю (если он пустой)
       begin
         //Возвращаем результат вызова функции/метода с передачей пустого массива аргументов.
@@ -474,7 +492,11 @@ begin
     Exit;
   end;
   zend_get_parameters_my(ht, p, TSRMLS_DC);
+    {$IFDEF PHP7}
+    if p[0]^^.u1.v._type <> IS_NULL then
+    {$ELSE}
     if p[0]^^._type <> IS_NULL then
+    {$ENDIF}
     begin
       ZVAL_BOOL(return_value,
       setProperty(Z_LVAL(p[0]^), Z_STRVAL(p[1]^), zval2variant(p[2]^^)));
@@ -484,7 +506,23 @@ begin
 
   dispose_pzval_array(p);
 end;
+procedure gui_get_RecordInfo;
+var
+  p: pzval_array;
+  arrn, arrv: TWSDate;
+begin
+  if ht <> 2 then
+  begin
+    zend_wrong_param_count(TSRMLS_DC);
+    Exit;
+  end;
+  zend_get_parameters_my(ht, p, TSRMLS_DC);
 
+  getEnumPropValues( Z_STRVAL(p[0]^), Z_STRVAL(p[1]^), @arrn, @arrv);
+  ZVAL_ARRAYWS(return_value, arrn, arrv);
+
+  dispose_pzval_array(p);
+end;
 procedure gui_get_evt_paramss;
 var
   p: pzval_array;
@@ -495,8 +533,11 @@ begin
     Exit;
   end;
   zend_get_parameters_my(ht, p, TSRMLS_DC);
-
+  {$IFDEF PHP7}
+  if (p[0]^^.u1.v._type = IS_LONG) and (p[1]^^.u1.v._type = IS_STRING) then
+  {$ELSE}
   if (p[0]^^._type = IS_LONG) and (p[1]^^._type = IS_STRING) then
+  {$ENDIF}
   begin
     ZVAL_STRINGW(return_value, PWideChar(
     evt_params( Z_LVAL(p[0]^), Z_STRVAL(p[1]^) )
@@ -708,19 +749,6 @@ begin
   dispose_pzval_array(p);
 end;
 
-procedure gui_form_fixdwm;
-var
-  p: pzval_array;
-begin
-if ht <> 1 then
-  begin
-    zend_wrong_param_count(TSRMLS_DC);
-    Exit;
-  end;
-  zend_get_parameters_my(ht, p, TSRMLS_DC);
-  form_fixwm(THandle(Z_STRVAL(p[0]^)));
-  dispose_pzval_array(p);
-end;
 procedure InitializeGuiProperties(PHPEngine: TPHPEngine);
 begin
   PHPEngine.AddFunction('gui_propGet', @gui_propGet);
@@ -744,7 +772,7 @@ begin
   PHPEngine.AddFunction('gui_get_all_unitsclasses', @gui_get_all_unitsclasses);
   PHPEngine.AddFunction('gui_class_prop_isreadable', @gpreadable);
   PHPEngine.AddFunction('gui_class_prop_iswritable', @gpwritable);
-  PHPEngine.AddFunction('gui_form_fixdwm', @gui_form_fixdwm);
+  PHPEngine.AddFunction('gui_get_RecordInfo', @gui_get_RecordInfo);
 
   PHPEngine.AddFunction('ldtl', @ldl);
   PHPEngine.AddFunction('lbpl', @lbpll);

@@ -9,6 +9,7 @@ interface
 
 uses
   Classes, SysUtils, phpUtils, Forms, regGUI, Controls,
+  {$IFDEF PHP7} hzend_types, {$ENDIF}
   zendTypes,
   ZENDAPI,
   phpTypes,
@@ -77,7 +78,7 @@ var
   p: pzval_array;
   i: integer;
   tmp: ^ppzval;
-  arr: PHashTable;
+  arr: {$IFDEF PHP7}Pzend_array{$ELSE}PHashTable{$ENDIF};
 begin
   if ht < 1 then
   begin
@@ -88,8 +89,10 @@ begin
 
   AllowedCall.Clear;
 
-  if p[0]^^._type = IS_ARRAY then
-    arr := p[0]^^.Value.ht
+  if
+   {$IFDEF PHP7}p[0]^^.u1.v._type{$ELSE}p[0]^^._type{$ENDIF}
+    = IS_ARRAY then
+    arr := {$IFDEF PHP7}p[0]^^.Value.arr{$ELSE}p[0]^^.Value.ht{$ENDIF}
   else
     arr := nil;
 
@@ -135,7 +138,7 @@ end;
 
 function ZVAL_V8(arg: pzval): ICefv8Value;
 begin
-  case arg._type of
+  case {$IFDEF PHP7}arg.u1.v._type{$ELSE}arg._type{$ENDIF} of
     IS_LONG: Result := TCefv8ValueRef.NewInt(arg.Value.lval);
     IS_DOUBLE: Result := TCefv8ValueRef.NewDouble(arg.Value.dval);
     IS_BOOL: Result := TCefv8ValueRef.NewBool(boolean(arg.Value.lval));
@@ -151,7 +154,10 @@ function TExtension.Execute(const Name: ustring; const obj: ICefv8Value;
   label ex1;
   var
   S: zend_ustr;
-  Args: pzval_array_ex;
+  {$IFDEF PHP7}
+  tmp: pzval;
+  {$ENDIF}
+  Args: {$IFDEF PHP7}pzval{$ELSE}pzval_array_ex{$ENDIF};
   Return, Func: pzval;
   i: integer;
 begin
@@ -178,14 +184,41 @@ begin
 
 
       ZVAL_STRING(Func, zend_pchar(S), True);
-
+      {$IFDEF PHP7}
+      args.value.arr.nNumOfElements := length(arguments)-1;
+      for i := 0 to (length(arguments)-1) do
+      begin
+        tmp := MAKE_STD_ZVAL;
+        V8_ZVAL(arguments[i + 1], tmp);
+        _zend_hash_index_add(args.value.arr, i, tmp);
+      end;
+      {$ELSE}
       SetLength(args, length(arguments) - 1);
       for i := 0 to high(args) do
       begin
         args[i] := MAKE_STD_ZVAL;
         V8_ZVAL(arguments[i + 1], args[i]);
       end;
-
+      {$ENDIF}
+      {$IFDEF PHP7}
+      {$IFDEF P_CUT}
+      call_user_function(
+        Func,
+        Args,
+        Args.value.arr.nNumOfElements
+        );
+      {$ELSE}
+      call_user_function(
+        GetExecutorGlobals.function_table.value.arr,
+        nil,
+        Func,
+        Return,
+        Args.value.arr.nNumOfElements,
+        Args.value.arr,
+        phpMOD.psvPHP.TSRMLS_D
+        );
+        {$ENDIF}
+      {$ELSE}
       call_user_function(
         GetExecutorGlobals.function_table,
         nil,
@@ -195,11 +228,18 @@ begin
         Args,
         phpMOD.psvPHP.TSRMLS_D
         );
-
+      {$ENDIF}
+      {$IFDEF PHP7}
+      for i := 0 to (args.value.arr.nNumOfElements-1) do
+      begin
+        _zval_dtor( zend_hash_index_findZval(args, i), nil, 0);
+      end;
+      {$ELSE}
       for i := 0 to high(args) do
       begin
         _zval_dtor(args[0], nil, 0);
       end;
+      {$ENDIF}
 
       retval := ZVAL_V8(Return);
       Result := True;

@@ -26,7 +26,7 @@ end;
 procedure php_info_module(zend_module : Pzend_module_entry; TSRMLS_DC : pointer); cdecl;
 begin
   php_info_print_table_start();
-  php_info_print_table_row(2, PAnsiChar('php squall'), PAnsiChar('enabled'));
+  php_info_print_table_row(2, zend_pchar('php squall'), PAnsiChar('enabled'));
   php_info_print_table_end();
 end;
 

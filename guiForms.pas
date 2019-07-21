@@ -1,6 +1,6 @@
 {$I PHP.inc}
 unit guiForms;
-
+{$I PHP.inc}
 {$ifdef fpc}
 {$mode delphi}{$H+}
 {$endif}
@@ -13,7 +13,7 @@ uses
   {$ifdef fpc}
   LCLType,
   {$endif}
-
+  {$IFDEF PHP7} hzend_types, {$ENDIF}
   zendTypes,
   ZENDAPI,
   phpTypes,

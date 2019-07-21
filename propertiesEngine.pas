@@ -44,7 +44,7 @@ procedure RegisterClassAliasesA(AClass: TPersistentClass; Classes: array of stri
 function GetConstructor(rType: TRttiType) : TRttiMethod;
 function LoadTypeLib(LibraryName: string) : Boolean;
 function LoadTypePackage(PackageName: string) : Boolean;
-
+procedure getEnumPropValues(classname, prop: string; arr1, arr2: PWSDate);
 var Regs, TLLoads, BPLoads, Aliases, AliasesKeys: TWSDate;
 implementation
 type
@@ -955,7 +955,6 @@ begin
 Result := False;
 o := TObject(id);
 if not Assigned(o) then Exit;
-
   try
 
     inf := TypInfo.GetPropInfo(o, prop);
@@ -1010,7 +1009,59 @@ begin
       o := nil;
   end;
 end;
+procedure getEnumPropValues(classname, prop: string; arr1, arr2: PWSDate);
+var a:  TRttiOrdinalType;
+ab: PTypeInfo;
+e: TRttiField;
+var i: integer;
+  ctx: TRttiContext;
+  p: TRttiProperty;
+begin
+    SetLength(arr1^, 0);
+    SetLength(arr2^, 0);
+    ctx :=  TRttiContext.Create();
+    p := ctx.GetType(GetClass(classname)).GetProperty(prop);
+   if p <> nil then
+   begin
+     if Assigned(p.PropertyType) then
+     begin
+      if p.PropertyType.IsOrdinal then
+      begin
+        a := p.PropertyType.AsOrdinal;
+        for I := a.MinValue to a.MaxValue do
+        begin
+          SetLength(arr1^, Length(arr1^) + 1);
+          SetLength(arr2^, Length(arr2^) + 1);
+          arr1^[High(arr1^)] := GetEnumName( a.Handle, I );
+          arr2^[High(arr2^)] := inttostr(I);
+        end;
+      end
+      else if p.PropertyType.IsSet then
+      begin
+        ab := p.PropertyType.AsSet.Handle.TypeData.CompType^;
+        for I:= ab.TypeData.MinValue to ab.TypeData.MaxValue do
+        begin
+          SetLength(arr1^, Length(arr1^) + 1);
+          SetLength(arr2^, Length(arr2^) + 1);
+          arr1^[High(arr1^)] := GetSetElementName(ab, I);
+          arr2^[High(arr2^)] := IntToStr(I);
+        end;
+      end else if p.PropertyType.IsRecord then
+      begin
+        for e in p.PropertyType.AsRecord.GetFields do
+        begin
+          SetLength(arr1^, Length(arr1^) + 1);
+          SetLength(arr2^, Length(arr2^) + 1);
+          arr1^[High(arr1^)] := e.Name;
+          arr2^[High(arr2^)] := inttostr(integer(e.FieldType.TypeKind));
+        end;
+      end;
 
+     end;
+      p.Free;
+   end;
+   ctx.Free;
+end;
 function getPropertyType(id: integer; prop: string): integer;
 var
   o: TObject;

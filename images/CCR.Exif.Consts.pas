@@ -20,6 +20,8 @@
 
 unit CCR.Exif.Consts;
 
+{$MODE Delphi}
+
 interface
 
 const

@@ -13,7 +13,7 @@ uses
   {$ifdef fpc}
   LCLType,
   {$endif}
-
+  {$IFDEF PHP7} hzend_types, {$ENDIF}
   zendTypes,
   ZENDAPI,
   phpTypes,
@@ -90,7 +90,7 @@ end;
 procedure clipboard_setFiles;
   var p: pzval_array;
   FileList: String;
-  arr: PHashTable;
+  arr: {$IFDEF PHP7}Pzend_array{$ELSE}PHashTable{$ENDIF};
   tmp: ^ppzval;
    i, cnt: integer;
 begin
@@ -98,9 +98,17 @@ begin
   zend_get_parameters_ex(ht, p);
 
   FileList := '';
+  {$IFDEF PHP7}
+  if p[0]^.u1.v._type = IS_ARRAY then
+  {$ELSE}
   if p[0]^._type = IS_ARRAY then
+  {$ENDIF}
   begin
+    {$IFDEF PHP7}
+     arr := p[0]^.value.arr;
+    {$ELSE}
      arr := p[0]^.value.ht;
+    {$ENDIF}
      cnt := zend_hash_num_elements(arr);
      New(tmp);
      for i := 0 to cnt - 1 do
@@ -153,8 +161,11 @@ procedure clipboard_assign;
 begin
   if ht < 1 then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
   zend_get_parameters_ex(ht, p);
-
+{$IFDEF PHP7}
+if (ht > 1) and (p[1]^.u1.v._type <> IS_NULL) then
+{$ELSE}
 if (ht > 1) and (p[1]^._type <> IS_NULL) then
+{$ENDIF}
 begin
   Pic := TPicture.Create;
   M := TMemoryStream.Create;

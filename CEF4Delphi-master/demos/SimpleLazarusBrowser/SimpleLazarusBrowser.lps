@@ -2,16 +2,16 @@
 <CONFIG>
   <ProjectSession>
     <PathDelim Value="\"/>
-    <Version Value="10"/>
+    <Version Value="11"/>
     <BuildModes Active="Default"/>
     <Units Count="38">
       <Unit0>
         <Filename Value="SimpleLazarusBrowser.lpr"/>
         <IsPartOfProject Value="True"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="5"/>
-        <CursorPos X="43" Y="5"/>
+        <TopLine Value="10"/>
+        <CursorPos Y="13"/>
         <UsageCount Value="38"/>
+        <Loaded Value="True"/>
       </Unit0>
       <Unit1>
         <Filename Value="usimplelazarusbrowser.pas"/>
@@ -20,11 +20,13 @@
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="uSimpleLazarusBrowser"/>
-        <EditorIndex Value="-1"/>
-        <WindowIndex Value="-1"/>
+        <IsVisibleTab Value="True"/>
+        <EditorIndex Value="1"/>
         <TopLine Value="73"/>
-        <CursorPos X="53" Y="69"/>
+        <CursorPos X="24" Y="83"/>
         <UsageCount Value="38"/>
+        <Loaded Value="True"/>
+        <LoadedDesigner Value="True"/>
       </Unit1>
       <Unit2>
         <Filename Value="..\..\source\uCEFChromium.pas"/>
@@ -274,38 +276,39 @@
       </Unit34>
       <Unit35>
         <Filename Value="..\..\source\uCEFLinkedWindowParent.pas"/>
+        <EditorIndex Value="-1"/>
         <TopLine Value="31"/>
-        <CursorPos X="28" Y="38"/>
+        <CursorPos Y="38"/>
         <UsageCount Value="10"/>
-        <Loaded Value="True"/>
       </Unit35>
       <Unit36>
         <Filename Value="..\..\source\uCEFWriteHandler.pas"/>
-        <IsVisibleTab Value="True"/>
-        <EditorIndex Value="1"/>
+        <EditorIndex Value="-1"/>
         <TopLine Value="336"/>
         <CursorPos Y="358"/>
         <UsageCount Value="10"/>
-        <Loaded Value="True"/>
       </Unit36>
       <Unit37>
         <Filename Value="C:\lazarus\fpc\3.0.4\source\rtl\objpas\math.pp"/>
-        <EditorIndex Value="2"/>
+        <EditorIndex Value="-1"/>
         <TopLine Value="158"/>
         <CursorPos X="10" Y="180"/>
         <UsageCount Value="10"/>
-        <Loaded Value="True"/>
       </Unit37>
     </Units>
     <JumpHistory Count="2" HistoryIndex="1">
       <Position1>
-        <Filename Value="..\..\source\uCEFLinkedWindowParent.pas"/>
-        <Caret Line="38" Column="28" TopLine="31"/>
+        <Filename Value="SimpleLazarusBrowser.lpr"/>
+        <Caret Line="13" TopLine="11"/>
       </Position1>
       <Position2>
-        <Filename Value="..\..\source\uCEFWriteHandler.pas"/>
-        <Caret Line="353" Column="19" TopLine="321"/>
+        <Filename Value="usimplelazarusbrowser.pas"/>
+        <Caret Line="95" Column="3" TopLine="72"/>
       </Position2>
     </JumpHistory>
+    <RunParams>
+      <FormatVersion Value="2"/>
+      <Modes Count="0" ActiveMode="default"/>
+    </RunParams>
   </ProjectSession>
 </CONFIG>

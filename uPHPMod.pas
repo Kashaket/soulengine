@@ -9,6 +9,7 @@ uses
   phpLibrary,
   PHPCommon,
   php4delphi,
+  {$IFDEF PHP7} hzend_types, {$ENDIF}
   ZendTypes,
   ZendAPI,
   PHPTypes,
@@ -1300,7 +1301,11 @@ function ZendToVariant(const Value: pppzval): variant;
 var
   S: zend_ustr;
 begin
+  {$IFDEF PHP7}
+   case Value^^^.u1.v._type of
+  {$ELSE}
   case Value^^^._type of
+  {$ENDIF}
     1:
       Result := Value^^^.Value.lval;
     2:
@@ -1315,7 +1320,7 @@ begin
   end;
 end;
 
-procedure HashToArray(HT: PHashTable; var AR: TArrayVariant); overload;
+procedure HashToArray(HT: {$IFDEF PHP7}Pzend_array{$ELSE}PHashTable{$ENDIF}; var AR: TArrayVariant); overload;
 var
   Len, I: integer;
   tmp: pppzval;
@@ -1333,8 +1338,13 @@ end;
 
 procedure HashToArray(ZV: TZendVariable; var AR: TArrayVariant); overload;
 begin
+  {$IFDEF PHP7}
+  if ZV.AsZendVariable.u1.v._type = IS_ARRAY then
+    HashToArray(ZV.AsZendVariable.Value.arr, AR)
+  {$ELSE}
   if ZV.AsZendVariable._type = IS_ARRAY then
     HashToArray(ZV.AsZendVariable.Value.HT, AR)
+  {$ENDIF}
   else
     SetLength(AR, 0);
 end;

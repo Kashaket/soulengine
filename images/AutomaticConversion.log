@@ -1,0 +1,10 @@
+CCR.Exif.BaseUtils.pas Note: Відновлення включених файлівCCR.Exif.inc
+CCR.Exif.BaseUtils.pas Note: Замінений модуль "Windows" на "LCLIntf, LCLType, LMessages" в секції uses.
+CCR.Exif.BaseUtils.pas(22,25) Note: Після назви модуля додано модифікатор синтаксису MODE Delphi.
+ : 
+CCR.Exif.Consts.pas(21,22) Note: Після назви модуля додано модифікатор синтаксису MODE Delphi.
+ : 
+CCR.Exif.IPTC.pas Note: Відновлення включених файлівCCR.Exif.inc
+CCR.Exif.IPTC.pas Note: Модуль "Jpeg" вилучено з розділу uses.
+CCR.Exif.IPTC.pas(22,20) Note: Після назви модуля додано модифікатор синтаксису MODE Delphi.
+ Fatal: Перетворення перервано.

@@ -54,7 +54,7 @@ uses
   {$IFDEF DELPHI16_UP}
     {$IFDEF MSWINDOWS}WinApi.Windows,{$ENDIF} System.Math,
   {$ELSE}
-    {$IFDEF MSWINDOWS}Windows,{$ENDIF} Math,
+    {$IFNDEF FPC}{$IFDEF MSWINDOWS}Windows,{$ENDIF} Math,{$ENDIF}
   {$ENDIF}
   uCEFTypes;
 

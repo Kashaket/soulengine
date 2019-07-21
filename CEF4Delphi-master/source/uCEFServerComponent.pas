@@ -55,11 +55,12 @@ uses
     {$IFDEF MSWINDOWS}WinApi.Windows, WinApi.Messages, WinApi.ActiveX,{$ENDIF}
     System.Classes, Vcl.Controls, Vcl.Graphics, Vcl.Forms, System.Math,
   {$ELSE}
-    {$IFDEF MSWINDOWS}Windows,{$ENDIF} Classes, Forms, Controls, Graphics, ActiveX, Math,
+    Classes, Forms, Controls, Graphics, Math,
     {$IFDEF FPC}
-    LCLProc, LCLType, LCLIntf, LResources, LMessages, InterfaceBase,
+    LCLProc, LCLType, LCLIntf, LResources,
     {$ELSE}
-    Messages,
+  {$IFDEF MSWINDOWS}Windows, {$ENDIF}
+    Messages, ActiveX, LMessages, InterfaceBase,
     {$ENDIF}
   {$ENDIF}
   uCEFTypes, uCEFInterfaces, uCEFServer, uCEFServerEvents, uCEFServerHandler;

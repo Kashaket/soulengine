@@ -1,6 +1,9 @@
 unit guiWinApi;
+{$I PHP.inc}
 interface
-uses   Winapi.Windows, zendTypes,
+uses   Winapi.Windows,
+  {$IFDEF PHP7} hzend_types, {$ENDIF}
+  zendTypes,
   ZENDAPI,
   phpTypes,
   PHPAPI,

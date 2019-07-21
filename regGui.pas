@@ -8,10 +8,10 @@ uses Forms, Dialogs, SysUtils, Windows, Classes, Controls, Buttons,
   Messages,              ZendTypes,
   propertiesEngine, dsExtraCtrls,
   StdCtrls, ComCtrls, Menus, ExtCtrls, Mask, Grids,
-  Tabs, Graphics, MImage, mainLCL, uGuiScreen, cooltrayicon,
-  GIFImage2, svgimage, svgimagelist, vcl.imaging.jpeg,
+  Tabs, Graphics,  mainLCL, uGuiScreen, cooltrayicon,
+  MImage, GIFImage2, svgimage, svgimagelist, vcl.imaging.jpeg,
  { uFreeImageImage, uAnimatedJPEG, uTiffImage, uRawImage, }
-  dsStdCtrl {, rkSmartTabs}
+  dsStdCtrl, dsCustomControls {, rkSmartTabs}
   {$IFDEF ADD_AC}, sDialogs  {$ENDIF}
 
 {$IFDEF ADD_CHROMIUM}
@@ -284,8 +284,7 @@ end;
 
 procedure registerAdditional;
 begin
-  registerArr([TImage, dsExtraCtrls.TShape, TBevel, __TNoVisual
-
+  registerArr([TImage, dsExtraCtrls.TShape, dsCustomControls.TGraphControl, TBevel, __TNoVisual
 {$IFDEF C_SIZECONTROL}
     , TSizeCtrl
 {$ENDIF}
@@ -308,7 +307,7 @@ begin
     TTrackBar, TRichEdit, TTabSheet, TUpDown, THotKey, TAnimate,
     TDateTimePicker, TMonthCalendar, TTreeView, TTreeNode, TTreeNodes,
     THeaderControl, THeader, TToolBar, TCoolBar, TPageScroller, TComboBoxEx,
-    TListView, TListItems, TListItem, TListColumn, TListColumns,
+    TListView, TIconOptions, TListItems, TListItem, TListColumn, TListColumns,
 {$ENDIF}
     TProgressBar, TStatusBar, TToolBar, TPageScroller]);
 end;
@@ -327,9 +326,10 @@ begin
   Graphics.TGraphicsObject, Graphics.TPen,
     Graphics.TBrush, Graphics.TPicture,
     Graphics.TCustomCanvas, Graphics.TCanvas,Graphics.TMetafileCanvas,
-    Graphics.TBitmap, TPNGIMage, TJpegImage, TSVGGraphic,
+    Graphics.TBitmap, TPNGImage, TJpegImage, TSVGGraphic,
     TSVGImage, TSVGImageList, TGIFImage, TGIFImagelist,
-    Graphics.TMetafile, Graphics.TIcon]);
+    Graphics.TMetafile, Graphics.TMetafileCanvas,
+    Graphics.TIcon]);
 end;
 
 procedure registerSamples;

@@ -7,12 +7,19 @@
 
   The new component will be created into the Samples group!!
 }
+{$I 'sDef.inc'}
 unit MImage;
 
 interface
 
 uses
-  Windows, Messages, SysUtils, Classes, Controls, ExtCtrls, Graphics;
+  Windows, Messages, SysUtils, Classes, Controls, ExtCtrls, Graphics,
+  GIFImage2, svgimage, vcl.imaging.jpeg,
+  {$IFDEF ADD_SKINS}
+  acPNG
+  {$ELSE}
+  vcl.imaging.pngimage
+  {$ENDIF};
 {$M+}
 {$TypeInfo On}
 type
@@ -27,6 +34,7 @@ type
     FDrawing: boolean;
     FProportional: boolean;
     fMosaic: boolean;
+    function GetImageCanvas: TCanvas;
     function GetCanvas: TCanvas;
     procedure PictureChanged(Sender: TObject);
     procedure SetCenter(Value: boolean);
@@ -45,9 +53,10 @@ type
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
-    property Canvas: TCanvas read GetCanvas;
   published
     property Align;
+    property ImageCanvas: TCanvas read GetImageCanvas;
+    property Canvas: TCanvas read GetCanvas;
     property Anchors;
     property AutoSize;
     property Center: boolean read FCenter write SetCenter default False;
@@ -249,6 +258,11 @@ begin
 end;
 
 function TMImage.GetCanvas: TCanvas;
+begin
+  Result := inherited Canvas;
+end;
+
+function TMImage.GetImageCanvas: TCanvas;
 var
   Bitmap: TBitmap;
 begin
@@ -265,6 +279,14 @@ begin
   end;
   if Picture.Graphic is TBitmap then
     Result := TBitmap(Picture.Graphic).Canvas
+  else if Picture.Graphic is TSVGGraphic then
+    Result := TSVGGraphic(Picture.Graphic).Canvas
+  else if Picture.Graphic is TJPEGImage then
+    Result := TJPEGImage(Picture.Graphic).Canvas
+  else if Picture.Graphic is TPngImage then
+    Result := TPngImage(Picture.Graphic).Canvas
+  else if Picture.Graphic is GIFImage2.TGIFImage then
+    Result := GIFImage2.TGIFImage(Picture.Graphic).Bitmap.Canvas
   else
     raise EInvalidOperation.Create(SImageCanvasNeedsBitmap);
 end;

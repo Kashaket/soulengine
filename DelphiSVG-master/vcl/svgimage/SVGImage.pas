@@ -96,7 +96,7 @@ type
   strict private
     FSVGImage: TSVG;
     FStream: TMemoryStream;
-
+    FCanvas: TCanvas;
     FOpacity: Byte;
     FFileName: TFileName;
 
@@ -119,7 +119,7 @@ type
     constructor Create; override;
     destructor Destroy; override;
     procedure Clear;
-
+    property Canvas:TCanvas read FCanvas;
     procedure Assign(Source: TPersistent); override;
     procedure AssignTo(Dest: TPersistent); override;
 
@@ -554,6 +554,7 @@ procedure TSVGGraphic.Draw(ACanvas: TCanvas; const Rect: TRect);
 var
   Bounds: TGPRectF;
 begin
+  fCanvas := ACanvas;
   if Empty then
     Exit;
 

@@ -1,6 +1,7 @@
 unit uPhpEvents;
-{$I PHP.inc}
-{$I 'sDef.inc'}
+{$I sDef.inc}
+{$I PHP.inc}
+
 {$ifdef fpc}
 {$mode delphi}
 {$endif}
@@ -9,9 +10,13 @@ interface
 
 uses
   Windows,
-  Classes, SysUtils, typinfo, ExtCtrls, StdCtrls, ComCtrls, SizeControl,
+  Classes, SysUtils, typinfo, dsCustomControls,
+  Graphics,
+  ExtCtrls, StdCtrls, ComCtrls, SizeControl,
   Forms, Dialogs, Buttons, Controls,
-  dwsHashtables, zendAPI, phpApi, ZENDTypes, php4delphi
+  dwsHashtables, zendAPI, phpApi,
+  {$IFDEF PHP7} hzend_types, {$ENDIF}
+   ZENDTypes, php4delphi
   {$IFDEF PHP_UNICE}, WideStrUtils{$ENDIF}
 {$IFDEF ADD_CHROMIUM}
     , uCefApplication, uCefChromium,  uCefChromiumOptions,
@@ -183,6 +188,8 @@ const frame: ICefFrame; httpStatusCode: Integer);
 
     procedure OnChromiumLibLoad(Sender: TObject);
 {$ENDIF}
+    procedure OnBrushSet(Sender:TObject; Value:TBrush; var Co: boolean);
+    procedure OnPenSet(Sender:TObject; Value:TPen; var Co: boolean);
     procedure SafeOnTimer(Sender: TObject);
   end;
 
@@ -228,8 +235,8 @@ type
   TPHPScriptEventHandler = class(TScriptEventHandler)
   protected
     TSRMLS_DC: Pointer;
-    Args: pzval_array_ex;
-    AddArgs: pzval_array_ex;
+    Args: {$IFDEF PHP7}pzval{$ELSE}pzval_array_ex{$ENDIF};
+    AddArgs: {$IFDEF PHP7}pzval{$ELSE}pzval_array_ex{$ENDIF};
 
     function GetCallback(Data: Pointer): Pointer; override;
     procedure Execute(Data: Pointer); override;
@@ -382,8 +389,13 @@ procedure zval_copy(var dest: pzval; src: pzval);
 var
   tmp: Pointer;
 begin
+  {$IFDEF PHP7}
+  dest.u1.v._type := src.u1.v._type;
+  case src.u1.v._type of
+  {$ELSE}
   dest._type := src._type;
   case src._type of
+  {$ENDIF}
     IS_LONG, IS_BOOL:
       dest.Value.lval := src.Value.lval;
     IS_DOUBLE:
@@ -395,11 +407,20 @@ begin
     IS_ARRAY:
       begin
         tmp := nil;
+        {$IFDEF PHP7}
+        zend_hash_copy(dest.Value.arr, src.Value.arr, @zend_addref_p, tmp,
+          sizeof(pzval));
+        {$ELSE}
         zend_hash_copy(dest.Value.ht, src.Value.ht, @zend_addref_p, tmp,
           sizeof(pzval));
+        {$ENDIF}
       end;
   else
+    {$IFDEF PHP7}
+    dest.u1.v._type := IS_NULL;
+    {$ELSE}
     dest._type := IS_NULL;
+    {$ENDIF}
   end;
 end;
 
@@ -619,9 +640,11 @@ procedure event_args(ht: integer; return_value: pzval; return_value_ptr: pzval;
   this_ptr: pzval; return_value_used: integer; TSRMLS_DC: Pointer); cdecl;
 var
   param: pzval_array;
-  Arr: PHashTable;
+  Arr: {$IFDEF PHP7}Pzend_array{$ELSE}PHashTable{$ENDIF};
   Obj: TObject;
+  {$IFNDEF PHP7}
   tmp: ^ppzval;
+  {$ENDIF}
   i: integer;
 begin
   if zend_get_parameters_ex(ht, param) <> SUCCESS then
@@ -634,8 +657,13 @@ begin
   if Obj <> nil then
     with GetEventController(Obj, TSRMLS_DC) do
     begin
-      if param[2]^^._type = IS_ARRAY then
+    {$IFDEF PHP7}
+    if param[2]^^.u1.v._type = IS_ARRAY then
+        Arr := param[2]^^.Value.arr
+    {$ELSE}
+    if param[2]^^._type = IS_ARRAY then
         Arr := param[2]^^.Value.ht
+    {$ENDIF}
       else
         Arr := nil;
 
@@ -643,15 +671,29 @@ begin
       begin
         with GetEventController(Obj, TSRMLS_DC).GetEvent(Z_STRVAL(param[1]^)) do
         begin
+          {$IFDEF PHP7}
+          Args.value.arr.gc.refcount := zend_hash_num_elements(Arr);
+          {$ELSE}
           SetLength(Args, zend_hash_num_elements(Arr));
+          {$ENDIF}
           ClearAddArg;
+          {$IFNDEF PHP7}
           New(tmp);
+          {$ENDIF}
+          {$IFDEF PHP7}
+          for i := 0 to (Args.value.arr.nNumOfElements - 1)do
+          begin
+            AddArg(zend_hash_index_find(Arr, i));
+          {$ELSE}
           for i := 0 to High(Args) do
           begin
             zend_hash_index_find(Arr, i, tmp);
             AddArg(tmp^^);
+            {$ENDIF}
           end;
+          {$IFNDEF PHP7}
           Dispose(tmp);
+          {$ENDIF}
         end;
 
       end;
@@ -665,10 +707,12 @@ procedure event_run(ht: integer; return_value: pzval; return_value_ptr: pzval;
   this_ptr: pzval; return_value_used: integer; TSRMLS_DC: Pointer); cdecl;
 var
   param: pzval_array;
-  Arr: PHashTable;
+  Arr: {$IFDEF PHP7}Pzend_array{$ELSE}PHashTable{$ENDIF};
   Obj: TObject;
   Args: array of TVarRec;
+  {$IFNDEF PHP7}
   tmp: ^ppzval;
+  {$ENDIF}
   i: integer;
 begin
   if zend_get_parameters_ex(ht, param) <> SUCCESS then
@@ -681,8 +725,13 @@ begin
   if Obj <> nil then
     with GetEventController(Obj, TSRMLS_DC) do
     begin
+    {$IFDEF PHP7}
+      if param[2]^^.u1.v._type = IS_ARRAY then
+        Arr := param[2]^^.value.arr
+    {$ELSE}
       if param[2]^^._type = IS_ARRAY then
         Arr := param[2]^^.Value.ht
+    {$ENDIF}
       else
         Arr := nil;
 
@@ -690,14 +739,21 @@ begin
       begin
 
         SetLength(Args, zend_hash_num_elements(Arr));
+        {$IFNDEF PHP7}
         New(tmp);
+        {$ENDIF}
         for i := 0 to High(Args) do
         begin
+        {$IFDEF PHP7}
+          Args[i] := Z_VARREC(zend_hash_index_find(Arr, i));
+        {$ELSE}
           zend_hash_index_find(Arr, i, tmp);
           Args[i] := Z_VARREC(tmp^^);
+        {$ENDIF}
         end;
+        {$IFNDEF PHP7}
         Dispose(tmp);
-
+        {$ENDIF}
       end;
 
       EventRun(Obj, Z_STRVAL(param[1]^), Args);
@@ -753,8 +809,11 @@ begin
     with GetEventController(Obj, TSRMLS_DC) do
     begin
       ZVAL_FALSE(return_value);
-
+      {$IFDEF PHP7}
+      if param[2]^^.u1.v._type = IS_NULL then
+      {$ELSE}
       if param[2]^^._type = IS_NULL then
+      {$ENDIF}
       begin
         if EventExists(Obj, Z_STRVAL(param[1]^)) then
         begin
@@ -895,35 +954,29 @@ begin
     TCategoryButtons);
 {$ENDIF}
 {$IFDEF ADD_CHROMIUM}
-  EventAddNewType('OnBeforePopup', @THandlerFuncs.OnChromiumBeforePopup,
-    TChromium);
-  EventAddNewType('OnBeforeBrowse', @THandlerFuncs.onChromiumBeforeBrowse,
-    TChromium);
-  EventAddNewType('OnBeforeMenu', @THandlerFuncs.OnChromiumBeforeMenu,
-    TChromium);
+  EventAddNewType('OnBeforePopup', @THandlerFuncs.OnChromiumBeforePopup);
+  EventAddNewType('OnBeforeBrowse', @THandlerFuncs.onChromiumBeforeBrowse);
+  EventAddNewType('OnBeforeMenu', @THandlerFuncs.OnChromiumBeforeMenu);
 
-  EventAddNewType('OnAuthCredentials', @THandlerFuncs.OnAuthCredentials,
-    TChromium);
-  EventAddNewType('OnGetDownloadHandler', @THandlerFuncs.OnGetDownloadHandler,
-    TChromium);
-  EventAddNewType('OnConsoleMessage', @THandlerFuncs.OnConsoleMessage,
-    TChromium);
+  EventAddNewType('OnAuthCredentials', @THandlerFuncs.OnAuthCredentials);
+  EventAddNewType('OnGetDownloadHandler', @THandlerFuncs.OnGetDownloadHandler);
+  EventAddNewType('OnConsoleMessage', @THandlerFuncs.OnConsoleMessage);
 
-  EventAddNewType('OnLoadStart', @THandlerFuncs.OnLoadStart, TChromium);
-  EventAddNewType('OnLoadEnd', @THandlerFuncs.OnLoadEnd, TChromium);
-  EventAddNewType('OnLoadError', @THandlerFuncs.OnLoadError, TChromium);
+  EventAddNewType('OnLoadStart', @THandlerFuncs.OnLoadStart);
+  EventAddNewType('OnLoadEnd', @THandlerFuncs.OnLoadEnd);
+  EventAddNewType('OnLoadError', @THandlerFuncs.OnLoadError);
 
-  EventAddNewType('OnStatusMessage', @THandlerFuncs.OnStatusMessage, TChromium);
+  EventAddNewType('OnStatusMessage', @THandlerFuncs.OnStatusMessage);
 
-  EventAddNewType('OnAddressChange', @THandlerFuncs.OnAddressChange, TChromium);
-  EventAddNewType('OnTitleChange', @THandlerFuncs.OnTitleChange, TChromium);
-  EventAddNewType('OnTooltip', @THandlerFuncs.OnTooltip, TChromium);
-  EventAddNewType('OnContentsSizeChange', @THandlerFuncs.OnContentsSizeChange,
-    TChromium);
+  EventAddNewType('OnAddressChange', @THandlerFuncs.OnAddressChange);
+  EventAddNewType('OnTitleChange', @THandlerFuncs.OnTitleChange);
+  EventAddNewType('OnTooltip', @THandlerFuncs.OnTooltip);
+  EventAddNewType('OnContentsSizeChange', @THandlerFuncs.OnContentsSizeChange);
 
-  EventAddNewType('OnChromiumLibLoad', @THandlerFuncs.OnChromiumLibLoad,
-    TChromium);
+  EventAddNewType('OnChromiumLibLoad', @THandlerFuncs.OnChromiumLibLoad, TChromium);
 {$ENDIF}
+  EventAddNewType('OnBrushSet', @THandlerFuncs.OnBrushSet);
+  EventAddNewType('OnPenSet', @THandlerFuncs.OnPenSet);
   EventAddNewType('OnTimer', @THandlerFuncs.onTimer);
 
   SafeCommand := TList.Create;
@@ -1039,22 +1092,44 @@ procedure TPHPScriptEventHandler.ClearAddArg;
 var
   i: integer;
 begin
+{$IFDEF PHP7}
+  for i := 0 to (AddArgs.value.arr.nNumOfElements-1) do
+    zval_dtor_func(zend_hash_index_findZval(AddArgs, i));
+{$ELSE}
   for i := 0 to Length(AddArgs) - 1 do
     zval_dtor_func(AddArgs[i]);
+{$ENDIF}
 end;
 
 procedure TPHPScriptEventHandler.ClearArgs;
 var
   i, Cnt: integer;
+  {$IFDEF PHP7}
+  tmp: pzval;
+  {$ENDIF}
 begin
-  Cnt := Length(Args);
-  for i := 0 to Cnt - 1 do
+{$IFDEF PHP7}
+  Cnt := Args.value.arr.nNumOfElements - 1;
+{$ELSE}
+  Cnt := Length(Args) - 1;
+{$ENDIF}
+  for i := 0 to Cnt do
   begin
+    {$IFDEF PHP7}
+    tmp := zend_hash_index_findZval(Args, i);
+    if tmp <> nil then
+      zval_dtor_func(tmp);
+    {$ELSE}
     if Args[i] <> nil then
       // ZVAL_EMPTY_STRING(Args[i]);
       zval_dtor_func(Args[i]);
+    {$ENDIF}
   end;
+  {$IFDEF PHP7}
+  zend_hash_clean(Args.value.arr);
+  {$ELSE}
   SetLength(Args, 0);
+  {$ENDIF}
 end;
 
 constructor TPHPScriptEventHandler.Create;
@@ -1063,7 +1138,11 @@ begin
   Return := MAKE_STD_ZVAL;
 
   Self.TSRMLS_DC := TSRMLS_DC;
+  {$IFDEF PHP7}
+  Args.value.arr.gc.refcount := 0;
+  {$ELSE}
   SetLength(Args, 0);
+  {$ENDIF}
 end;
 
 procedure TPHPScriptEventHandler.Execute;
@@ -1071,7 +1150,7 @@ var
   eg: pzend_executor_globals;
   cg: Pzend_compiler_globals;
 
-  lastConstants, lastFunctions, lastClasses: PHashTable;
+  lastConstants, lastFunctions, lastClasses: {$IFDEF PHP7}pzval{$ELSE}PHashTable{$ENDIF};
 begin
   if IsThread then
   begin
@@ -1108,8 +1187,12 @@ begin
         psv.RunCode('if (class_exists("TThread")) TThread::__init();');
 
         try
+        {$IFDEF PHP7} call_user_function(cg.function_table, nil, Data, pzval(Return),
+            Args.value.arr.nNumOfElements, Args);
+        {$ELSE}
           call_user_function(cg.function_table, nil, Data, pzval(Return),
             Length(Args), Args, psv.TSRMLS_D);
+        {$ENDIF}
         except
 
         end;
@@ -1142,8 +1225,13 @@ begin
   else
   begin
     try
+    {$IFDEF PHP7}
+    call_user_function(GetExecutorGlobals.function_table.value.arr, nil, Data,
+        pzval(Return), Args.value.arr.nNumOfElements, Args);
+    {$ELSE}
       call_user_function(GetExecutorGlobals.function_table, nil, Data,
         pzval(Return), Length(Args), Args, TSRMLS_DC);
+    {$ENDIF}
     except
       // ShowMessage(Z_STRVAL(Data));
     end;
@@ -1157,16 +1245,27 @@ var
 begin
   M := Data;
   Return := MAKE_STD_ZVAL;
-
+  {$IFDEF PHP7}
+  case M.u1.v._type of
+  {$ELSE}
   case M._type of
+  {$ENDIF}
     IS_ARRAY:
       begin
         tmp := nil;
+        {$IFDEF PHP7}
+        _array_init(Return, 0);
+        Return.u1.v._type := IS_ARRAY;
+        zend_hash_init(Return.Value.arr, 0, nil, @_zval_dtor_func, False);
+        zend_hash_copy(Return.Value.arr, M.Value.arr, @zend_addref_p, tmp,
+          sizeof(zval));
+        {$ELSE}
         _array_init(Return, nil, 0);
         Return._type := IS_ARRAY;
         zend_hash_init(Return.Value.ht, 0, nil, @_zval_dtor_func, False);
         zend_hash_copy(Return.Value.ht, M.Value.ht, @zend_addref_p, tmp,
           sizeof(zval));
+        {$ENDIF}
       end;
     IS_STRING:
       begin
@@ -1174,7 +1273,11 @@ begin
       end;
     IS_OBJECT:
       begin
-        Return._type := IS_OBJECT;
+        {$IFDEF PHP7}
+          Return.u1.v._type := IS_OBJECT;
+        {$ELSE}
+          Return._type := IS_OBJECT;
+        {$ENDIF}
         Return.Value.Obj := M.Value.Obj;
         zend_objects_store_add_ref(M, TSRMLS_DC);
       end;
@@ -1184,8 +1287,13 @@ end;
 
 function TPHPScriptEventHandler.ParamBool(Index: integer): boolean;
 begin
+  {$IFDEF PHP7}
+  if Index < Args.value.arr.nNumOfElements then
+    Result := Z_BVAL( zend_hash_index_findZval(Args, Index))
+  {$ELSE}
   if Index < Length(Args) then
     Result := Z_BVAL(Args[index])
+  {$ENDIF}
   else
     Result := False;
 end;
@@ -1194,7 +1302,11 @@ function TPHPScriptEventHandler.ParamChar(Index: integer): zend_uchar;
 var
   S: zend_ustr;
 begin
-  S := Z_STRVAL(Args[index]);
+  {$IFDEF PHP7}
+    S := Z_STRVAL( zend_hash_index_findZval(Args, Index) );
+  {$ELSE}
+    S := Z_STRVAL(Args[index]);
+  {$ENDIF}
   if Length(S) > 0 then
     Result := {$IFDEF PHP_UNICE}zend_uchar(S[1]){$ELSE}S[1]{$ENDIF}
   else
@@ -1203,35 +1315,54 @@ end;
 
 function TPHPScriptEventHandler.ParamDouble(Index: integer): double;
 begin
-  Result := Z_DVAL(Args[index]);
+  {$IFDEF PHP7}
+    Result := Z_DVAL( zend_hash_index_findZval(Args, Index) );
+  {$ELSE}
+    Result := Z_DVAL(Args[index]);
+  {$ENDIF}
 end;
 
 function TPHPScriptEventHandler.ParamInt(Index: integer): integer;
 begin
-  Result := Z_LVAL(Args[index]);
+    {$IFDEF PHP7}
+    Result := Z_LVAL( zend_hash_index_findZval(Args, Index) );
+  {$ELSE}
+    Result := Z_LVAL(Args[index]);
+  {$ENDIF}
 end;
 
 function TPHPScriptEventHandler.ParamPtr(Index: integer): Pointer;
 begin
-  Result := Pointer(Z_LVAL(Args[index]));
+    {$IFDEF PHP7}
+    Result := Pointer(Z_LVAL( zend_hash_index_findZval(Args, Index) ));
+  {$ELSE}
+    Result := Pointer(Z_LVAL(Args[index]));
+  {$ENDIF}
 end;
 
 function TPHPScriptEventHandler.ParamString(Index: integer): zend_ustr;
 begin
-  Result := Z_STRVAL(Args[index]);
+  {$IFDEF PHP7}
+    Result := Z_STRVAL( zend_hash_index_findZval(Args, Index) );
+  {$ELSE}
+    Result := Z_STRVAL(Args[index]);
+  {$ENDIF}
 end;
 
 procedure TPHPScriptEventHandler.CopyVal(dest: integer; src: pzval);
 begin
+  {$IFDEF PHP7}
+  _zend_hash_index_add_or_update(args.value.arr, dest, src, 0);
+  {$ELSE}
   if Self.Args[dest] = nil then
   begin
-    {$IFNDEF PHP7}
+
     Self.Args[dest] := ALLOC_ZVAL;
-    {$ENDIF}
     INIT_PZVAL(Self.Args[dest]);
   end;
 
   zval_copy(Self.Args[dest], src);
+  {$ENDIF}
 end;
 
 function CharToAnsiChar(Ch: AnsiChar): AnsiChar; inline;
@@ -1313,104 +1444,129 @@ procedure TPHPScriptEventHandler.Run(Args: array of const);
 var
   Cnt, i: integer;
   S: zend_ustr;
+  {$IFDEF PHP7} tmp: pzval; {$ENDIF}
 begin
   Cnt := Length(Args);
+  {$IFDEF PHP7}
+  Self.Args.value.arr.nNumOfElements :=  Cnt + 1 + AddArgs.value.arr.nNumOfElements;
+  {$ELSE}
   SetLength(Self.Args, Cnt + 1 + Length(AddArgs));
+  {$ENDIF}
 //тут может быть нужна проверочка была, аможет быть и нет
 //ну вы если увидете, то передайте зайцеву привет
+{$IFDEF PHP7}
+  if zend_hash_index_findZval(Self.Args, 0) = nil then
+  begin
+    tmp := MAKE_STD_ZVAL;
+  end else tmp := zend_hash_index_findZval(Self.Args, 0);
+  ZVAL_LONG(tmp, integer(This));
+  _zend_hash_index_add_or_update(Self.Args.value.arr, 0, tmp, 0);
+{$ELSE}
   if Self.Args[0]  = nil then
   begin
-  {$IFNDEF PHP7}
     Self.Args[0] := ALLOC_ZVAL;
-  {$ENDIF}
     INIT_PZVAL(Self.Args[0]);
   end;
   ZVAL_LONG(Self.Args[0], integer(This));
-
+{$ENDIF}
   for i := 1 to Cnt do
   begin
+    {$IFDEF PHP7}
+    if zend_hash_index_findZval(Self.Args, i) = nil then
+    begin
+      tmp := MAKE_STD_ZVAL;
+    end else tmp := zend_hash_index_findZval(Self.Args, i);
+    {$ELSE}
     if Self.Args[i] = nil then
     begin
-    {$IFNDEF PHP7}
       Self.Args[i] := ALLOC_ZVAL;
-    {$ENDIF}
       INIT_PZVAL(Self.Args[i]);
     end;
+    {$ENDIF}
 
     case Args[i - 1].vtype of
       vtInteger:
-        ZVAL_LONG(Self.Args[i], Args[i - 1].VInteger);
+        ZVAL_LONG({$IFDEF PHP7}tmp{$ELSE}Self.Args[i]{$ENDIF}, Args[i - 1].VInteger);
       vtObject:
       begin
       {$IFDEF VS_EDITOR}
         if TPersistent(Args[i - 1].VPointer) is TUnicodeStrings then
         begin
-         ZVAL_ARRAY(Self.Args[i], TUnicodeStrings(TPersistent(Args[i - 1].VPointer)).text.split([#10]) );
+         ZVAL_ARRAY({$IFDEF PHP7}tmp{$ELSE}Self.Args[i]{$ENDIF}, TUnicodeStrings(TPersistent(Args[i - 1].VPointer)).text.split([#10]) );
         end else
       {$ENDIF}
-          ZVAL_LONG(Self.Args[i], integer(Args[i - 1].VPointer));
+          ZVAL_LONG({$IFDEF PHP7}tmp{$ELSE}Self.Args[i]{$ENDIF}, integer(Args[i - 1].VPointer));
       end;
       vtPointer:
       begin
-        ZVAL_LONG(Self.Args[i], integer(Args[i - 1].VPointer));
+        ZVAL_LONG({$IFDEF PHP7}tmp{$ELSE}Self.Args[i]{$ENDIF}, integer(Args[i - 1].VPointer));
       end;
       vtInt64:
-        ZVAL_DOUBLE(Self.Args[i], Args[i - 1].VInt64^);
+        ZVAL_DOUBLE({$IFDEF PHP7}tmp{$ELSE}Self.Args[i]{$ENDIF}, Args[i - 1].VInt64^);
       vtExtended:
-        ZVAL_DOUBLE(Self.Args[i], Args[i - 1].VExtended^);
+        ZVAL_DOUBLE({$IFDEF PHP7}tmp{$ELSE}Self.Args[i]{$ENDIF}, Args[i - 1].VExtended^);
       vtBoolean:
-        ZVAL_BOOL(Self.Args[i], Args[i - 1].VBoolean);
+        ZVAL_BOOL({$IFDEF PHP7}tmp{$ELSE}Self.Args[i]{$ENDIF}, Args[i - 1].VBoolean);
       vtString:
-        ZVAL_STRINGL(Self.Args[i], @(Args[i - 1].VString^[0]),
+        ZVAL_STRINGL({$IFDEF PHP7}tmp{$ELSE}Self.Args[i]{$ENDIF}, @(Args[i - 1].VString^[0]),
           Length(Args[i - 1].VString^), True);
       vtAnsiString:
         begin
           if Args[i - 1].VAnsiString = nil then
-            ZVAL_EMPTY_STRING(Self.Args[i])
+            ZVAL_EMPTY_STRING({$IFDEF PHP7}tmp{$ELSE}Self.Args[i]{$ENDIF})
           else
-            ZVAL_STRINGL(Self.Args[i], zend_pchar(zend_uchar(Args[i - 1].VAnsiString)),
+            ZVAL_STRINGL({$IFDEF PHP7}tmp{$ELSE}Self.Args[i]{$ENDIF}, zend_pchar(zend_uchar(Args[i - 1].VAnsiString)),
               Length(ansistring(Args[i - 1].VAnsiString)), True);
         end;
       vtWideString:
         begin
           if Args[i - 1].VWideString = nil then
-            ZVAL_EMPTY_STRING(Self.Args[i])
+            ZVAL_EMPTY_STRING({$IFDEF PHP7}tmp{$ELSE}Self.Args[i]{$ENDIF})
           else
-            ZVAL_STRINGLW(Self.Args[i], PWideChar(Args[i - 1].VWideString),
+            ZVAL_STRINGLW({$IFDEF PHP7}tmp{$ELSE}Self.Args[i]{$ENDIF}, PWideChar(Args[i - 1].VWideString),
               Length(WideString(Args[i - 1].VWideString)), True);
         end;
       vtUnicodeString:
         begin
           if Args[i - 1].VUnicodeString = nil then
-            ZVAL_EMPTY_STRING(Self.Args[i])
+            ZVAL_EMPTY_STRING({$IFDEF PHP7}tmp{$ELSE}Self.Args[i]{$ENDIF})
           else
-            ZVAL_STRINGLW(Self.Args[i], PWideChar(Args[i - 1].VUnicodeString),
+            ZVAL_STRINGLW({$IFDEF PHP7}tmp{$ELSE}Self.Args[i]{$ENDIF}, PWideChar(Args[i - 1].VUnicodeString),
               Length(unicodestring(Args[i - 1].VUnicodeString)), True);
         end;
       vtWideChar:
         begin
           S := tvarrectoansistring(Args[i - 1]);
-          ZVAL_STRINGL(Self.Args[i], zend_pchar(S), 1, True);
+          ZVAL_STRINGL({$IFDEF PHP7}tmp{$ELSE}Self.Args[i]{$ENDIF}, zend_pchar(S), 1, True);
         end;
       vtCurrency:
-        ZVAL_DOUBLE(Self.Args[i], double(Args[i - 1].VCurrency^));
+        ZVAL_DOUBLE({$IFDEF PHP7}tmp{$ELSE}Self.Args[i]{$ENDIF}, double(Args[i - 1].VCurrency^));
       vtChar:
         begin
           S := Args[i - 1].VChar;
-          ZVAL_STRINGL(Self.Args[i], zend_pchar(S), 1, True);
+          ZVAL_STRINGL({$IFDEF PHP7}tmp{$ELSE}Self.Args[i]{$ENDIF}, zend_pchar(S), 1, True);
         end
     else
       begin
         ShowMessage('Реализовать : ' + inttostr(ord(Args[i - 1].vtype)));
-        ZVAL_NULL(Self.Args[i]);
+        ZVAL_NULL({$IFDEF PHP7}tmp{$ELSE}Self.Args[i]{$ENDIF});
       end;
     end;
+    {$IFDEF PHP7}
+      _zend_hash_index_add_or_update(Self.Args.value.arr, i, tmp, 0);
+    {$ENDIF}
   end;
-
+  {$IFDEF PHP7}
+  for i := Cnt + 1 to Cnt + AddArgs.value.arr.nNumOfElements do
+  begin
+    Self.CopyVal(i, zend_hash_index_findZval(Self.Args, i - Cnt - 1));
+  end;
+  {$ELSE}
   for i := Cnt + 1 to Cnt + Length(AddArgs) do
   begin
     Self.CopyVal(i, AddArgs[i - Cnt - 1]);
   end;
+  {$ENDIF}
 
   ZVAL_BOOL(Return, True);
   for i := 0 to CallBack.Count - 1 do
@@ -1431,9 +1587,13 @@ begin
   {$ENDIF}
   INIT_PZVAL(val);
   zval_copy(val, arg);
-
-  SetLength(AddArgs, Length(AddArgs) + 1);
-  AddArgs[High(AddArgs)] := val;
+  {$IFDEF PHP7}
+    Inc(AddArgs.value.arr.nNumOfElements);
+    _zend_hash_index_add(AddArgs.value.arr,AddArgs.value.arr.nNumOfElements-1, val);
+  {$ELSE}
+    SetLength(AddArgs, Length(AddArgs) + 1);
+    AddArgs[High(AddArgs)] := val;
+  {$ENDIF}
 end;
 
 procedure TPHPScriptEventHandler.Clear;
@@ -1441,24 +1601,43 @@ var
   i: integer;
   M: pzval;
 begin
-
-  for i := 0 to High(Args) do
-  begin
-    if Args[i] = nil then
-      continue;
-    // ZVAL_EMPTY_STRING(Args[i]);
-    zval_dtor_func(Args[i]);
-    Args[i] := nil;
-  end;
+  {$IFDEF PHP7}
+    for i := 0 to Args.value.arr.nNumOfElements - 1 do
+    begin
+      M := zend_hash_index_findZval(Args, i);
+      if  M = nil then
+        continue;
+       zval_dtor_func(M);
+       M := nil;
+       zend_hash_index_del(Args.value.arr, i);
+    end;
+  {$ELSE}
+    for i := 0 to High(Args) do
+    begin
+      if Args[i] = nil then
+        continue;
+      zval_dtor_func(Args[i]);
+      Args[i] := nil;
+    end;
+  {$ENDIF}
 
   for i := 0 to CallBack.Count - 1 do
   begin
     M := CallBack[i];
+    {$IFDEF PHP7}
+    case M.u1.v._type of
+    {$ELSE}
     case M._type of
+    {$ENDIF}
       IS_ARRAY:
         begin
+        {$IFDEF PHP7}
+          zend_hash_clean(M.Value.arr);
+          zend_hash_destroy(M.Value.arr);
+        {$ELSE}
           zend_hash_clean(M.Value.ht);
           zend_hash_destroy(M.Value.ht);
+        {$ENDIF}
         end;
       IS_STRING:
         begin
@@ -1471,9 +1650,11 @@ begin
     end;
     zval_dtor_func(M);
   end;
-
-  SetLength(Args, 0);
-
+  {$IFDEF PHP7}
+    Args.value.arr.nNumOfElements := 0;
+  {$ELSE}
+    SetLength(Args, 0);
+  {$ENDIF}
   inherited;
 end;
 
@@ -2221,6 +2402,29 @@ begin
   EventRun(Sender, 'OnChromiumLibLoad');
 end;
 
+procedure THandlerFuncs.OnBrushSet(Sender: TObject; Value: TBrush; var Co: Boolean);
+var
+  H: TPHPScriptEventHandler;
+begin
+  H := EventRun(Sender, 'OnBrushSet', [integer(TBrush), Co]);
+  if H <> nil then
+  begin
+    Co := not H.ParamBool(3);
+    H.ClearArgs;
+  end;
+end;
+
+procedure THandlerFuncs.OnPenSet(Sender: TObject; Value: TPen; var Co: Boolean);
+var
+  H: TPHPScriptEventHandler;
+begin
+  H := EventRun(Sender, 'OnPenSet', [integer(TPen), Co]);
+  if H <> nil then
+  begin
+    Co := not H.ParamBool(3);
+    H.ClearArgs;
+  end;
+end;
 {$ENDIF}
 
 procedure THandlerFuncs.SafeOnTimer(Sender: TObject);
@@ -2380,14 +2584,28 @@ end;
 
 procedure TScriptThreadHelper.CallSyncFunc;
 var
+  {$IFNDEF PHP7}
   Args: pzval_array_ex;
+  {$ELSE} Args, tmp, tmp1, {$ENDIF}
   Return, Func: pzval;
 begin
   Return := MAKE_STD_ZVAL;
   Func := MAKE_STD_ZVAL;
 
   ZVAL_STRINGL(Func, zend_pchar(Data), Length(Data), True);
-
+  {$IFDEF PHP7}
+  Args.value.arr.nNumOfElements := 2;
+  tmp := MAKE_STD_ZVAL;
+  ZVAL_LONG(tmp, integer(Self.Main));
+  _zend_hash_index_add(Args.value.arr, 0, tmp);
+  tmp1 := MAKE_STD_ZVAL;
+  ZVAL_STRINGL(tmp1, zend_pchar(MyData), Length(MyData), True);
+  _zend_hash_index_add(Args.value.arr, 1, tmp1);
+  call_user_function(GetExecutorGlobals.function_table.value.arr, nil, Func, Return, 2,
+    Args);
+  zval_dtor_func(tmp);
+  zval_dtor_func(tmp1);
+  {$ELSE}
   SetLength(Args, 2);
   Args[0] := MAKE_STD_ZVAL;
   ZVAL_LONG(Args[0], integer(Self.Main));
@@ -2397,9 +2615,9 @@ begin
 
   call_user_function(GetExecutorGlobals.function_table, nil, Func, Return, 2,
     Args, getPsvPHP().TSRMLS_D);
-
   zval_dtor_func(Args[1]);
   zval_dtor_func(Args[0]);
+  {$ENDIF}
   zval_dtor_func(Return);
   zval_dtor_func(Func);
 end;

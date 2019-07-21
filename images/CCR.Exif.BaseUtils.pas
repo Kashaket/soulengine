@@ -21,6 +21,8 @@
 {$I CCR.Exif.inc}
 unit CCR.Exif.BaseUtils;
 
+{$MODE Delphi}
+
 interface
 
 uses
@@ -545,7 +547,7 @@ const
 implementation
 
 uses
-  {$IFDEF MSWINDOWS}Windows,{$ENDIF}{$IFDEF POSIX}Posix.Unistd,{$ENDIF}
+  {$IFDEF MSWINDOWS}LCLIntf, LCLType, LMessages,{$ENDIF}{$IFDEF POSIX}Posix.Unistd,{$ENDIF}
   {$IFDEF HasIOUtils}IOUtils,{$ENDIF}Math, RTLConsts, Contnrs,
   CCR.Exif.Consts, CCR.Exif.TagIDs;
 
