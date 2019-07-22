@@ -2363,15 +2363,13 @@ begin
   with ClientRect do
   begin
     Inspector := TNxCustomInspector(Item.FItems.Owner);
-    case Inspector.ButtonsStyle of
-      btCustom:
+    if Assigned(Inspector.Glyphs)  and (Inspector.Glyphs.Count>0) then
       begin
-        if Item.Expanded then Btn := Inspector.CollapseGlyph else Btn := Inspector.ExpandGlyph;
-        X := spaMargin div 2 - btn.Width div 2;
-        Y := Top + (Bottom - Top) div 2 - btn.Height div 2;
-        TDrawProvider.ApplyBitmap(Canvas, X, Y, Btn)
-      end;
-      btAuto:
+        X := spaMargin div 2 - Inspector.Glyphs.Width div 2;
+        Y := Top + (Bottom - Top) div 2 - Inspector.Glyphs.Height div 2;
+        Inspector.Glyphs.Draw(Canvas,X,Y,Integer(Item.Expanded));
+      end
+      else
       begin
         X := Item.Indent + spaMarginToPlusBtn;
         Y := (Top - 1) + (((Bottom - Top) div 2) - (sizPlusBtnHeight div 2));
@@ -2394,7 +2392,6 @@ begin
           end;
         end;
       end;
-    end;
   end;
 end;
 
@@ -2430,15 +2427,13 @@ begin
   with ClientRect do
   begin
     Inspector := TNxCustomInspector(Item.FItems.Owner);
-    case Inspector.ButtonsStyle of
-      btCustom:
+    if Assigned(Inspector.Glyphs) and (Inspector.Glyphs.Count>0) then
       begin
-        if not Item.Minimized then Btn := Inspector.CollapseGlyph else Btn := Inspector.ExpandGlyph;
-        X := CaptionRight + spaMargin div 2 - btn.Width div 2;
+        X := CaptionRight + spaMargin div 2 - Inspector.Glyphs.Width div 2;
         Y := CaptionBottom;
-        TDrawProvider.ApplyBitmap(Canvas, X, Y, Btn)
-      end;
-      btAuto:
+        Inspector.Glyphs.Draw(Canvas,X,Y,Integer(Item.Expanded));
+      end
+      else
       begin
         X := CaptionRight + Item.Indent + spaMarginToPlusBtn;
         Y := CaptionBottom;
@@ -2459,7 +2454,6 @@ begin
             TDrawProvider.ApplyBitmap(Canvas, BtnRect.Left, BtnRect.Top, Btn);
             Btn.Free;
           end;
-        end;
       end;
     end;
   end;

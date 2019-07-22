@@ -24,7 +24,6 @@ uses
 
 type
   TNxCustomInspector = class;
-  TButtonsStyle = (btAuto, btCustom);
   TInspectorAppearanceOptions = set of (iaLockedButtons, iaHideSelection,
     iaStyleCategories, iaStyleColors);
   TInspectorPropertyOptions = set of (poGrid, poEnterSelectNext, poImages,
@@ -58,16 +57,13 @@ type
     FAssociate: TPersistent;
     FAutoExpand: Boolean;
     FBorderStyle: TBorderStyle;
-    FButtonsStyle: TButtonsStyle;
     FCapturedItem: TNxPropertyItem;
     FCategoriesColor: TColor;
-    FCollapseGlyph: TBitmap;
     FDownItem: TNxPropertyItem;
     FDownPoint: TPoint;
     FEditingItem: TNxPropertyItem;
     FEnableVisualStyles: Boolean;
     FEscapePressed: Boolean;
-    FExpandGlyph: TBitmap;
     FFirstItem: Integer;
     FGridColor: TColor;
     FHideTopLevel: Boolean;
@@ -77,7 +73,7 @@ type
     FHintTimer: TTimer;
     FHintWindow: THintWindow;
     FHoverItem: TNxPropertyItem;
-    FImages: TImageList;
+    FImages, FGlyphs: TImageList;
     FIsMouseDown: Boolean;
     FItems: TNxPropertyItems;
     FItemsArrange: TItemsArrange;
@@ -120,17 +116,15 @@ type
     procedure SetAppearanceOptions(const Value: TInspectorAppearanceOptions);
     procedure SetAssociate(const Value: TPersistent);
     procedure SetBorderStyle(const Value: TBorderStyle);
-    procedure SetButtonsStyle(const Value: TButtonsStyle);
     procedure SetCategoriesColor(const Value: TColor);
-    procedure SetCollapseGlyph(const Value: TBitmap);
     procedure SetDownItem(const Value: TNxPropertyItem);
     procedure SetEnableVisualStyles(const Value: Boolean);
-    procedure SetExpandGlyph(const Value: TBitmap);
     procedure SetGridColor(const Value: TColor);
     procedure SetHideTopLevel(const Value: Boolean);
     procedure SetHighlightTextColor(const Value: TColor);
     procedure SetHoverItem(const Value: TNxPropertyItem);
     procedure SetImages(const Value: TImageList);
+    procedure SetGlyphs(const Value: TImageList);
     procedure SetItemsArrange(const Value: TItemsArrange);
     procedure SetMarginColor(const Value: TColor);
     procedure SetOptions(const Value: TInspectorPropertyOptions);
@@ -274,16 +268,12 @@ type
       default False;
     property BorderStyle: TBorderStyle read FBorderStyle write SetBorderStyle
       default bsSingle;
-    property ButtonsStyle: TButtonsStyle read FButtonsStyle
-      write SetButtonsStyle default btAuto;
     property Canvas;
     property CategoriesColor: TColor read FCategoriesColor
       write SetCategoriesColor default clBtnFace;
-    property CollapseGlyph: TBitmap read FCollapseGlyph write SetCollapseGlyph;
     property EditingItem: TNxPropertyItem read FEditingItem;
     property EnableVisualStyles: Boolean read FEnableVisualStyles
       write SetEnableVisualStyles default False;
-    property ExpandGlyph: TBitmap read FExpandGlyph write SetExpandGlyph;
     property FirstItem: Integer read FFirstItem;
     property Font;
     property GridColor: TColor read FGridColor write SetGridColor
@@ -293,6 +283,7 @@ type
     property HighlightTextColor: TColor read FHighlightTextColor
       write SetHighlightTextColor default clHighlightText;
     property Images: TImageList read FImages write SetImages;
+    property Glyphs: TImageList read FGlyphs write SetGlyphs;
     property ItemCount: Integer read GetItemCount;
     property Items: TNxPropertyItems read FItems;
     property ItemsArrange: TItemsArrange read FItemsArrange
@@ -351,16 +342,13 @@ type
     property Associate;
     property BiDiMode;
     property BorderStyle;
-    property ButtonsStyle;
     property CategoriesColor;
-    property CollapseGlyph;
     property Constraints;
     property Color;
     property Ctl3D;
     property GridColor;
     property Enabled;
     property EnableVisualStyles;
-    property ExpandGlyph;
     property Font;
     property HideTopLevel;
     property HighlightTextColor;
@@ -504,15 +492,12 @@ begin
   FAppearanceOptions := [iaStyleCategories, iaStyleColors];
   FAutoExpand := False;
   FBorderStyle := bsSingle;
-  FButtonsStyle := btAuto;
   FEditingItem := nil;
   FGridColor := clBtnFace;
   FIsMouseDown := False;
   FCategoriesColor := clBtnFace;
-  FCollapseGlyph := TBitmap.Create;
   FDownPoint := Point(-1, -1);
   FEnableVisualStyles := False;
-  FExpandGlyph := TBitmap.Create;
   FEscapePressed := False;
   FHighlightTextColor := clHighlightText;
   FHintHideTimer := TTimer.Create(Self);
@@ -562,8 +547,6 @@ end;
 
 destructor TNxCustomInspector.Destroy;
 begin
-  FreeAndNil(FCollapseGlyph);
-  FreeAndNil(FExpandGlyph);
   FreeAndNil(FHintHideTimer);
   FreeAndNil(FHintTimer);
   FreeAndNil(FHintWindow);
@@ -1381,12 +1364,6 @@ begin
   RecreateWnd;
 end;
 
-procedure TNxCustomInspector.SetButtonsStyle(const Value: TButtonsStyle);
-begin
-  FButtonsStyle := Value;
-  Invalidate;
-end;
-
 procedure TNxCustomInspector.SetDownItem(const Value: TNxPropertyItem);
 begin
   if Value = FDownItem then
@@ -1409,15 +1386,6 @@ end;
 procedure TNxCustomInspector.SetEnableVisualStyles(const Value: Boolean);
 begin
   FEnableVisualStyles := Value;
-  Invalidate;
-end;
-
-procedure TNxCustomInspector.SetExpandGlyph(const Value: TBitmap);
-begin
-  FExpandGlyph.Assign(Value);
-  FExpandGlyph.Transparent := True;
-  FExpandGlyph.TransparentColor := FExpandGlyph.Canvas.Pixels
-    [0, FExpandGlyph.Height - 1];
   Invalidate;
 end;
 
@@ -1496,6 +1464,17 @@ begin
   end;
 end;
 
+procedure TNxCustomInspector.SetGlyphs(const Value: TImageList);
+begin
+  if FGlyphs <> Value then
+  begin
+    FGlyphs := Value;
+    if Assigned(FGlyphs) then
+      FGlyphs.FreeNotification(Self);
+    Refresh;
+  end;
+end;
+
 procedure TNxCustomInspector.SetItemsArrange(const Value: TItemsArrange);
 begin
   FItemsArrange := Value;
@@ -1506,15 +1485,6 @@ end;
 procedure TNxCustomInspector.SetCategoriesColor(const Value: TColor);
 begin
   FCategoriesColor := Value;
-  Invalidate;
-end;
-
-procedure TNxCustomInspector.SetCollapseGlyph(const Value: TBitmap);
-begin
-  FCollapseGlyph.Assign(Value);
-  FCollapseGlyph.Transparent := True;
-  FCollapseGlyph.TransparentColor := FCollapseGlyph.Canvas.Pixels
-    [0, FCollapseGlyph.Height - 1];
   Invalidate;
 end;
 
@@ -2427,6 +2397,8 @@ begin
   inherited;
   if (Operation = opRemove) and (AComponent = FImages) then
     Images := nil;
+  if (Operation = opRemove) and (AComponent = FGlyphs) then
+    Glyphs := nil;
   if (Operation = opRemove) and (AComponent = FAssociate) then
     Associate := nil;
 end;
