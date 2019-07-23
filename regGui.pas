@@ -326,7 +326,7 @@ begin
   Graphics.TGraphicsObject, Graphics.TPen,
     Graphics.TBrush, Graphics.TPicture,
     Graphics.TCustomCanvas, Graphics.TCanvas,Graphics.TMetafileCanvas,
-    Graphics.TBitmap, TPNGImage, TJpegImage, TSVGGraphic,
+    Graphics.TBitmap, TWICImage, TPNGImage, TJpegImage, TSVGGraphic,
     TSVGImage, TSVGImageList, TGIFImage, TGIFImagelist,
     Graphics.TMetafile, Graphics.TMetafileCanvas,
     Graphics.TIcon]);

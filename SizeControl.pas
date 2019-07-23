@@ -223,56 +223,38 @@ type
     procedure ReconfButtons;
   end;
   TSizeCtrlTags = record
-  private
-    var
-    fMove, fNMove,   //Move  --/ /-- fTopLeft
-    fmMove, fnmMove,   //Multi-Move
-    fResize, fnResize,  //Resize  --/ /-- fHeightWidth
-    fMResize, fNMResize,  //Multi-Resize
-     fChange, fnChange,    //Any change
-     fMChange, fnMChange,   //Any change in selected group
-     fNoSel, //Deny selection!
-     { x; y; w; h; }
-    fLeft, fTop, fWidth, fHeight,
-      { x, h; x, w; }
-    fLeftHeight, fLeftWidth,
-      { y, h; y, w; }
-    fTopHeight, fTopWidth,
-      { x, y, w, h; x, y, w; x, y, h; }
-    fTLWH, fTLW, fTLH: int64;
-  public
     //ChangeTopLeft: integer read fnTopLeft write fnTopLeft;
-    property DenySelect: int64 read fNoSel write fNoSel;
-    property AllowMove: int64 read fMove write fMove;
-    property DenyMove:  int64  read fNMove write fNMove;
-    property AllowMultiMove:  int64  read fMMove write fMMove;
-    property DenyMultiMove:  int64  read fNMMove write fNMMove;
+    DenySelect: int64;
+    AllowMove: int64;
+    DenyMove:  int64;
+    AllowMultiMove:  int64;
+    DenyMultiMove:  int64;
 
-    property AllowChange:  int64  read fChange write fChange;
-    property DenyChange:  int64  read fNChange write fNChange;
-    property AllowMultiChange:  int64  read fmChange write fmChange;
-    property DenyMultiChange:  int64  read fnMChange write fnMChange;
+    AllowChange:  int64;
+    DenyChange:  int64;
+    AllowMultiChange:  int64;
+    DenyMultiChange:  int64;
 
-    property ChangeTop:  int64  read fTop write fTop;
-    property ChangeLeft:  int64  read fLeft write fLeft;
-    property ChangeWidth:  int64  read fWidth write fWidth;
-    property ChangeHeight:  int64  read fHeight write fHeight;
+    ChangeTop:  int64;
+    ChangeLeft:  int64;
+    ChangeWidth:  int64;
+    ChangeHeight:  int64;
 
-    property ChangeTopHeight:  int64  read fTopHeight write fTopHeight;
-    property ChangeTopWidth:  int64  read fTopWidth write fTopWidth;
-    property ChangeLeftHeight:  int64  read fLeftHeight write fLeftHeight;
-    property ChangeLeftWidth:  int64  read fLeftWidth write fLeftWidth;
+    ChangeTopHeight:  int64;
+    ChangeTopWidth:  int64;
+    ChangeLeftHeight:  int64;
+    ChangeLeftWidth:  int64;
 
-    property ChangeTopLeftWidth:  int64  read fTLW write fTLW;
-    property ChangeTopLeftHeight:  int64  read fTLH write fTLH;
-    property ChangeTopLeftWidthHeight:  int64  read fTLWH write fTLWH;
+    ChangeTopLeftWidth:  int64;
+    ChangeTopLeftHeight:  int64;
+    ChangeTopLeftWidthHeight:  int64;
 
     // ChangeHeightWidth:  int64  read fnHeightWidth write fnHeightWidth;
-    property AllowResize:   int64  read fResize write fResize;
-    property DenyResize:  int64  read fNResize write fNResize;
+    AllowResize:   int64;
+    DenyResize:  int64;
 
-    property AllowMultiResize:  int64  read fMResize write fMResize;
-    property DenyMultiResize:  int64  read fNMResize write fNMresize;
+    AllowMultiResize:  int64;
+    DenyMultiResize:  int64;
   end;
   {$IFDEF FPC}
   TSizeCtrl = class(TForm)
@@ -1911,7 +1893,7 @@ begin
   fLastBtn := bpBottomLeft;
   fEditParent := False;
 
-  fTags.DenySelect := 2012;
+  fTags.DenySelect := 2003;
   fTags.AllowMove        := fTags.DenySelect + 1;
   fTags.AllowResize      := fTags.DenySelect + 2;
   fTags.AllowMultiResize := fTags.DenySelect + 3;

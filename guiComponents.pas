@@ -148,22 +148,6 @@ procedure gui_threadDataUnset(ht: integer; return_value: pzval;
   return_value_ptr: pzval; this_ptr: pzval; return_value_used: integer;
   TSRMLS_DC: pointer); cdecl;
 
-procedure gui_btnPNGLoadStr(ht: integer; return_value: pzval;
-  return_value_ptr: pzval; this_ptr: pzval; return_value_used: integer;
-  TSRMLS_DC: pointer); cdecl;
-procedure gui_btnPNGLoadFile(ht: integer; return_value: pzval;
-  return_value_ptr: pzval; this_ptr: pzval; return_value_used: integer;
-  TSRMLS_DC: pointer); cdecl;
-procedure gui_btnPNGGetStr(ht: integer; return_value: pzval;
-  return_value_ptr: pzval; this_ptr: pzval; return_value_used: integer;
-  TSRMLS_DC: pointer); cdecl;
-procedure gui_btnPNGAssign(ht: integer; return_value: pzval;
-  return_value_ptr: pzval; this_ptr: pzval; return_value_used: integer;
-  TSRMLS_DC: pointer); cdecl;
-procedure gui_btnPngIsEmpty(ht: integer; return_value: pzval;
-  return_value_ptr: pzval; this_ptr: pzval; return_value_used: integer;
-  TSRMLS_DC: pointer); cdecl;
-
 implementation
 
 procedure gui_registerSuperGlobal;
@@ -171,7 +155,7 @@ var
   p: pzval_array;
   Name: zend_ustr;
 begin
-  if ht < 1 then
+  if ht <> 2 then
   begin
     zend_wrong_param_count(TSRMLS_DC);
     Exit;
@@ -181,7 +165,7 @@ begin
   Name := Z_STRVAL(p[0]^);
 
   ZVAL_LONG(return_value, zend_register_auto_global(zend_pchar(Name),
-    Length(Name), nil, nil));
+    Length(Name), Z_BVAL(p[1]^), nil, TSRMLS_DC));
 
   dispose_pzval_array(p);
 end;
@@ -965,195 +949,6 @@ begin
   dispose_pzval_array(p);
 end;
 
-
-procedure gui_btnPNGLoadStr;
-var
-  p: pzval_array;
-  O: TObject;
-  M: TStringStream;
-begin
-  if ht < 2 then
-  begin
-    zend_wrong_param_count(TSRMLS_DC);
-    Exit;
-  end;
-  zend_get_parameters_my(ht, p, TSRMLS_DC);
-
-  O := TObject(Z_LVAL(p[0]^));
-  if O <> nil then
-  begin
-    M := TStringStream.Create(Z_STRVAL(p[1]^));
-        {$IFDEF ADD_SKINS}
-        if O is TsSpeedButton then
-          TsSpeedButton(O).Glyph.LoadFromStream(M)
-        else if O is TsBitBtn then
-          TsBitBtn(O).Glyph.LoadFromStream(M)
-        else
-        {$ENDIF}
-        if O is TSpeedButton then
-          TSpeedButton(O).Glyph.LoadFromStream(M)
-        else if O is TBitBtn then
-          TBitBtn(O).Glyph.LoadFromStream(M);
-    M.Free;
-  end;
-  dispose_pzval_array(p);
-end;
-
-procedure gui_btnPNGLoadFile;
-var
-  p: pzval_array;
-  O: TObject;
-  S: string;
-begin
-  if ht < 2 then
-  begin
-    zend_wrong_param_count(TSRMLS_DC);
-    Exit;
-  end;
-  zend_get_parameters_my(ht, p, TSRMLS_DC);
-
-  O := TObject(Z_LVAL(p[0]^));
-  S := Z_STRVAL(p[1]^);
-
-  if O <> nil then
-  begin
-        {$IFDEF ADD_SKINS}
-        if O is TsSpeedButton then
-          TsSpeedButton(O).Glyph.LoadFromFile(S)
-        else if O is TsBitBtn then
-          TsBitBtn(O).Glyph.LoadFromFile(S)
-        else
-        {$ENDIF}
-        if O is TSpeedButton then
-          TSpeedButton(O).Glyph.LoadFromFile(S)
-        else if O is TBitBtn then
-          TBitBtn(O).Glyph.LoadFromFile(S);
-  end;
-  dispose_pzval_array(p);
-end;
-
-procedure gui_btnPNGGetStr;
-var
-  p: pzval_array;
-  O: TObject;
-  S: TStringStream;
-begin
-  if ht < 1 then
-  begin
-    zend_wrong_param_count(TSRMLS_DC);
-    Exit;
-  end;
-  zend_get_parameters_my(ht, p, TSRMLS_DC);
-
-  O := TObject(Z_LVAL(p[0]^));
-  S := TStringStream.Create(#0);
-  if O <> nil then
-  begin
-        {$IFDEF ADD_SKINS}
-        if O is TsSpeedButton then
-          TsSpeedButton(O).Glyph.SaveToStream(S)
-        else if O is TsBitBtn then
-          TsBitBtn(O).Glyph.SaveToStream(S)
-        else
-        {$ENDIF}
-        if O is TSpeedButton then
-          TSpeedButton(O).Glyph.SaveToStream(S)
-        else if O is TBitBtn then
-          TBitBtn(O).Glyph.SaveToStream(S);
-  end;
-
-  ZVAL_STRINGL(return_value, zend_pchar(zend_ustr(S.DataString)), S.Size, True);
-  S.Free;
-  dispose_pzval_array(p);
-end;
-
-procedure gui_btnPngIsEmpty;
-var
-  p: pzval_array;
-  O: TObject;
-begin
-  if ht < 1 then
-  begin
-    zend_wrong_param_count(TSRMLS_DC);
-    Exit;
-  end;
-  zend_get_parameters_my(ht, p, TSRMLS_DC);
-
-  O := TObject(Z_LVAL(p[0]^));
-  ZVAL_BOOL(return_value, False);
-
-  if O <> nil then
-  begin
-        {$IFDEF ADD_SKINS}
-        if O is TsSpeedButton then
-          ZVAL_BOOL(Return_value, not TsSpeedButton(O).Glyph.Empty)
-        else if O is TsBitBtn then
-          ZVAL_BOOL(Return_value, not TsBitBtn(O).Glyph.Empty)
-        else
-        {$ENDIF}
-        if O is TSpeedButton then
-          ZVAL_BOOL(Return_value, not TSpeedButton(O).Glyph.Empty)
-        else if O is TBitBtn then
-          ZVAL_BOOL(Return_value, not TBitBtn(O).Glyph.Empty);
-  end;
-
-  dispose_pzval_array(p);
-end;
-
-
-
-procedure gui_btnPNGAssign;
-var
-  p: pzval_array;
-  O, D: TObject;
-label
-  _exit;
-begin
-  if ht < 2 then
-  begin
-    zend_wrong_param_count(TSRMLS_DC);
-    Exit;
-  end;
-  zend_get_parameters_my(ht, p, TSRMLS_DC);
-
-  O := TObject(Z_LVAL(p[0]^));
-  D := TObject(Z_LVAL(p[1]^));
-
-  if (O <> nil) and (D <> nil) then
-  begin
-    if D is TPicture then
-    begin
-      if TPicture(D).Graphic is TPNGIMage then
-      begin
-              {$IFDEF ADD_SKINS}
-        if O is TsSpeedButton then
-              begin
-                 TsSpeedButton(O).Glyph.Assign( TPicture(D).Graphic );
-                 TsSpeedButton(O).Refresh;
-              end
-              else if O is TsBitBtn then
-                 TsBitBtn(O).Glyph.Assign( TPicture(D).Graphic )
-        else
-        {$ENDIF}
-              if O is TSpeedButton then
-              begin
-                 TSpeedButton(O).Glyph.Assign( TPicture(D).Graphic );
-                 TSpeedButton(O).Refresh;
-              end
-              else if O is TBitBtn then
-                 TBitBtn(O).Glyph.Assign( TPicture(D).Graphic );
-
-        ZVAL_TRUE(return_value);
-        goto _exit;
-      end;
-    end;
-  end;
-  ZVAL_FALSE(return_value);
-
-  _exit:
-    dispose_pzval_array(p);
-end;
-
 procedure InitializeGuiComponents(PHPEngine: TPHPEngine);
 begin
 {$IFDEF testeh2k}
@@ -1187,12 +982,6 @@ begin
 
   PHPEngine.AddFunction('gui_listSetColor', @gui_listSetColor);
   PHPEngine.AddFunction('gui_listGetColor', @gui_listGetColor);
-
-  PHPEngine.AddFunction('gui_btnPngIsEmpty', @gui_btnPngIsEmpty);
-  PHPEngine.AddFunction('gui_btnPNGAssign', @gui_btnPNGAssign);
-  PHPEngine.AddFunction('gui_btnPNGGetStr', @gui_btnPNGGetStr);
-  PHPEngine.AddFunction('gui_btnPNGLoadFile', @gui_btnPNGLoadFile);
-  PHPEngine.AddFunction('gui_btnPNGLoadStr', @gui_btnPNGLoadStr);
 
   PHPEngine.AddFunction('gui_criticalCreate', @gui_threadCriticalCreate);
   PHPEngine.AddFunction('gui_criticalEnter', @gui_threadCriticalEnter);
