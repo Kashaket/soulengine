@@ -16,6 +16,7 @@ interface
 {$WARN UNIT_PLATFORM OFF}
 
 uses
+  NxThemesSupport,
 {$IF DEFINED(CLR)}
   WinUtils,
 {$ENDIF}
@@ -139,6 +140,7 @@ type
     FBorderStyle: TBorderStyle;
     FSelectedItem: TBaseItem;
     FFocusedItem: TBaseItem;
+    FStyle: Boolean;
     FMouseInControl: Boolean;
     FScrollBarShown: Boolean;
     FBackgroundGradientColor: TColor;
@@ -231,6 +233,7 @@ type
     procedure SetExpandGlyph(Value:TImage);
     procedure SetCollapseGlyph(Value:TImage);
     procedure FSetArrowShadow(Value:TColor);
+    procedure FSetStyle(Value:Boolean);
     procedure FSetArrowColor(Value:TColor);
     procedure SetGlyphOpacity(Value:Byte);
     procedure BeginAutoDrag; override;
@@ -305,6 +308,7 @@ type
     property DragImageList: TDragImageList read FDragImageList;
     property SelectedItem: TBaseItem read FSelectedItem write SetSelectedItem;
     property FocusedItem: TBaseItem read FFocusedItem write SetFocusedItem;
+    property Style: Boolean read FStyle write FSetStyle;
     property ArrowColor: TColor read FArrowColor write FsetArrowColor;
     property ArrowShadow: TColor read FArrowShadow write FsetArrowShadow;
     property ExpandGlyph: TImage read FExpandGlyph write SetExpandGlyph;
@@ -1234,6 +1238,10 @@ begin
   if (FSelectedItem <> Category) and
      ((boGradientFill in FButtonOptions) or IsStyleEnabled) then
   begin
+   if FStyle then
+    ThemeRect(Parent.Handle, Canvas.Handle, CategoryRealBounds, 'rebar', 0, 1)
+   else
+   begin
     if IsStyleEnabled then
     begin
       LDetails := LStyle.GetElementDetails(tcbCategoryNormal);
@@ -1252,9 +1260,13 @@ begin
 
     GradientFillCanvas(Canvas, SourceColor, GradientColor, CategoryRealBounds,
       FGradientDirection);
+   end;
   end
   else
   begin
+    if FStyle then
+      ThemeRect(Parent.Handle, Canvas.Handle, CategoryRealBounds, 'rebar', 0, 2)
+    Else
     if TStyleManager.IsCustomStyleActive and (seClient in StyleElements) and
        LStyle.GetElementColor(LDetails, ecGradientColor2, LColor) and (LColor <> clNone) then
       GradientFillCanvas(Canvas, SourceColor, LColor, CategoryRealBounds, FGradientDirection)
@@ -1396,6 +1408,8 @@ begin
     CaptionRect.Top := CategoryBounds.Bottom - CapLeft;
     Canvas.Font.Orientation := 900;
   end;
+  if (not FCollapseGlyph.Picture.Graphic.Empty) and (not FExpandGlyph.Picture.Graphic.Empty) then
+  CaptionRect.Left := CaptionRect.Left + 5;
 
   CaptionRect.Right := CaptionRect.Left + CatHeight;
   CaptionRect.Bottom := CaptionRect.Top + Canvas.TextHeight(Caption);
@@ -2154,7 +2168,6 @@ procedure TCategoryButtons.SetCollapseGlyph(Value: TImage);
 begin
   FCollapseGlyph := Value;
   FCollapseGlyph.Transparent := True;
-  //FCollapseGlyph.Center := True;
   Invalidate;
 end;
 
@@ -2173,6 +2186,12 @@ end;
 procedure TCategoryButtons.FSetArrowColor(Value:TColor);
 begin
   FArrowColor:= Value;
+  Invalidate;
+end;
+
+procedure TCategoryButtons.FSetStyle(Value:Boolean);
+begin
+  FStyle := Value;
   Invalidate;
 end;
 

@@ -9,7 +9,9 @@ interface
 uses
   Classes, SysUtils, Forms, php4delphi, zendAPI, phpAPI, PHPTypes,
   regGui, guiComponents, guiForms, guiWinAPI, guiProperties, dsUtils,
-
+  {$IFDEF EXT_WINCALL}
+  php_WinCall_ext,
+  {$ENDIF}
   {$IFDEF ADD_CHROMIUM}
   guiChromium,
   {$ENDIF}
@@ -58,8 +60,13 @@ begin
   InitializeGuiChromium(myPHPEngine);
   {$ENDIF}
   InitializeDsUtils(myPHPEngine);
-
+  {$IFDEF EXT_WINCALL}
+  myPHPEngine.AddModule( php_WinCall_ext.get_module );
+  {$ENDIF}
   myPHPEngine.StartupEngine;
+  {$IFDEF EXT_WINCALL}
+  php_WinCall_ext.Init( aPsvPHP );
+  {$ENDIF}
 end;
 
 

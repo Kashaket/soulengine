@@ -79,7 +79,6 @@ TShape = class(TGraphicControl)
     property OnStartDock;
     property OnStartDrag;
   end;
-TTransientPanel = class(TGraphicControl);
 
 procedure BlendBit(src1, src2, dst: tbitmap; amount: extended);
 implementation

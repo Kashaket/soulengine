@@ -16,8 +16,7 @@ uses
   PHPAPI,
   php4delphi,
   uPhpEvents,
-  vcl.imaging.pngimage, {$IFDEF ADD_SKINS}sBitBtn, sButton, sSpeedButton,{$ENDIF}
-  Graphics, dsStdCtrl, vcl.dialogs, vcl.buttons {$IFDEF testeh2k}, eh2k{$ENDIF};
+  Graphics, dsStdCtrl{$IFDEF testeh2k}, eh2k{$ENDIF};
 
 procedure InitializeGuiComponents(PHPEngine: TPHPEngine);
 
@@ -73,21 +72,6 @@ procedure gui_toFront(ht: integer; return_value: pzval; return_value_ptr: pzval;
 procedure gui_doubleBuffer(ht: integer; return_value: pzval;
   return_value_ptr: pzval; this_ptr: pzval; return_value_used: integer;
   TSRMLS_DC: pointer); cdecl;
-procedure gui_listGetFont(ht: integer; return_value: pzval;
-  return_value_ptr: pzval; this_ptr: pzval; return_value_used: integer;
-  TSRMLS_DC: pointer); cdecl;
-procedure gui_listClearFont(ht: integer; return_value: pzval;
-  return_value_ptr: pzval; this_ptr: pzval; return_value_used: integer;
-  TSRMLS_DC: pointer); cdecl;
-
-procedure gui_listSetColor(ht: integer; return_value: pzval;
-  return_value_ptr: pzval; this_ptr: pzval; return_value_used: integer;
-  TSRMLS_DC: pointer); cdecl;
-procedure gui_listGetColor(ht: integer; return_value: pzval;
-  return_value_ptr: pzval; this_ptr: pzval; return_value_used: integer;
-  TSRMLS_DC: pointer); cdecl;
-
-
 
 procedure gui_threadCriticalCreate(ht: integer; return_value: pzval;
   return_value_ptr: pzval; this_ptr: pzval; return_value_used: integer;
@@ -164,7 +148,7 @@ begin
 
   Name := Z_STRVAL(p[0]^);
 
-  ZVAL_LONG(return_value, zend_register_auto_global(zend_pchar(Name),
+  ZVALVAL(return_value, zend_register_auto_global(zend_pchar(Name),
     Length(Name), Z_BVAL(p[1]^), nil, TSRMLS_DC));
 
   dispose_pzval_array(p);
@@ -214,10 +198,10 @@ begin
   begin
     FreeEventController(TObject(id));
     TObject(id).Free;
-    ZVAL_BOOL(return_value, True);
+    ZVALVAL(return_value, True);
   end
   else
-    ZVAL_BOOL(return_value, False);
+    ZVALVAL(return_value, False);
 
   dispose_pzval_array(p);
 end;
@@ -238,10 +222,10 @@ begin
   if (id <> 0) then
   begin
     TScriptSafeCommand_Destroy.Create(TObject(ID));
-    ZVAL_BOOL(return_value, True);
+    ZVALVAL(return_value, True);
   end
   else
-    ZVAL_BOOL(return_value, False);
+    ZVALVAL(return_value, False);
 
   dispose_pzval_array(p);
 end;
@@ -257,7 +241,7 @@ begin
   end;
   zend_get_parameters_my(ht, p, TSRMLS_DC);
 
-  variant2zval(regGUI.createComponent(Z_STRVAL(p[0]^), Z_LVAL(p[1]^)), return_value);
+  VariantToZend(regGUI.createComponent(Z_STRVAL(p[0]^), Z_LVAL(p[1]^)), return_value);
 
   dispose_pzval_array(p);
 end;
@@ -273,7 +257,7 @@ begin
   end;
   zend_get_parameters_my(ht, p, TSRMLS_DC);
 
-  variant2zval(regGUI.parentControl(Z_LVAL(p[0]^), Z_LVAL(p[1]^)), return_value);
+  VariantToZend(regGUI.parentControl(Z_LVAL(p[0]^), Z_LVAL(p[1]^)), return_value);
 
   dispose_pzval_array(p);
 end;
@@ -289,7 +273,7 @@ begin
   end;
   zend_get_parameters_my(ht, p, TSRMLS_DC);
 
-  variant2zval(regGUI.ownerComponent(Z_LVAL(p[0]^)), return_value);
+  VariantToZend(regGUI.ownerComponent(Z_LVAL(p[0]^)), return_value);
 
   dispose_pzval_array(p);
 end;
@@ -308,9 +292,9 @@ begin
 
   id := Z_LVAL(p[0]^);
   if TObject(id) is TWinControl then
-    ZVAL_LONG(return_value, TWinControl(id).Handle)
+    ZVALVAL(return_value, TWinControl(id).Handle)
   else
-    ZVAL_LONG(return_value, 0);
+    ZVALVAL(return_value, 0);
 
   dispose_pzval_array(p);
 end;
@@ -326,7 +310,7 @@ begin
   end;
   zend_get_parameters_my(ht, p, TSRMLS_DC);
 
-  variant2zval(regGUI.objectClass(Z_LVAL(p[0]^)), return_value);
+  VariantToZend(regGUI.objectClass(Z_LVAL(p[0]^)), return_value);
 
   dispose_pzval_array(P);
 end;
@@ -341,10 +325,7 @@ begin
     Exit;
   end;
   zend_get_parameters_my(ht, p, TSRMLS_DC);
-
-
-  variant2zval(regGUI.objectIs(Z_LVAL(p[0]^), Z_STRVAL(p[1]^)), return_value);
-
+  ZVALVAL(return_value,regGUI.objectIs(Z_LVAL(p[0]^), Z_STRVAL(p[1]^)));
   dispose_pzval_array(P);
 end;
 
@@ -360,7 +341,7 @@ begin
   end;
   zend_get_parameters_my(ht, p, TSRMLS_DC);
 
-  variant2zval(regGUI.ComponentToStringProc(Z_LVAL(p[0]^)), return_value);
+  VariantToZend(regGUI.ComponentToStringProc(Z_LVAL(p[0]^)), return_value);
 
   dispose_pzval_array(p);
 end;
@@ -451,13 +432,13 @@ begin
   begin
     if TObject(ID) is TForm then
     begin
-      ZVAL_BOOL(return_value, TForm(TObject(ID)).Focused);
+      ZVALVAL(return_value, TForm(TObject(ID)).Focused);
     end
     else
-      ZVAL_BOOL(return_value, TWinControl(Pointer(ID)).Focused);
+      ZVALVAL(return_value, TWinControl(Pointer(ID)).Focused);
   end
   else
-    ZVAL_NULL(return_value);
+    ZVALVAL(return_value);
 
   dispose_pzval_array(p);
 end;
@@ -516,102 +497,13 @@ begin
   if (ID <> 0) and (TObject(ID) is TWinControl) then
   begin
     if ht = 1 then
-      ZVAL_BOOL(return_value, TWinControl(ID).DoubleBuffered)
+      ZVALVAL(return_value, TWinControl(ID).DoubleBuffered)
     else
       TWinControl(ID).DoubleBuffered := Z_BVAL(p[1]^);
   end;
 
   dispose_pzval_array(p);
 end;
-
-procedure gui_listSetColor;
-var
-  p: pzval_array;
-  ID: integer;
-begin
-  if ht < 3 then
-  begin
-    zend_wrong_param_count(TSRMLS_DC);
-    Exit;
-  end;
-  zend_get_parameters_my(ht, p, TSRMLS_DC);
-
-  ID := Z_LVAL(p[0]^);
-  if (ID <> 0) and (TObject(ID) is TWinControl) then
-  begin
-    dsStdCtrl.TListBox(ID).SetColor(Z_LVAL(p[1]^), TColor(Z_LVAL(p[2]^)));
-  end;
-
-  dispose_pzval_array(p);
-end;
-
-
-
-procedure gui_listGetColor;
-var
-  p: pzval_array;
-  ID: integer;
-begin
-  if ht < 2 then
-  begin
-    zend_wrong_param_count(TSRMLS_DC);
-    Exit;
-  end;
-  zend_get_parameters_my(ht, p, TSRMLS_DC);
-
-  ID := Z_LVAL(p[0]^);
-  if (ID <> 0) and (TObject(ID) is TWinControl) then
-  begin
-    ZVAL_LONG(return_value, integer(dsStdCtrl.TListBox(ID).GetColor(Z_LVAL(p[1]^))));
-  end;
-
-  dispose_pzval_array(p);
-end;
-
-procedure gui_listGetFont;
-var
-  p: pzval_array;
-  ID: integer;
-begin
-  if ht < 2 then
-  begin
-    zend_wrong_param_count(TSRMLS_DC);
-    Exit;
-  end;
-  zend_get_parameters_my(ht, p, TSRMLS_DC);
-
-  ID := Z_LVAL(p[0]^);
-  if (ID <> 0) and (TObject(ID) is TWinControl) then
-  begin
-    ZVAL_LONG(return_value, integer(dsStdCtrl.TListBox(ID).GetFont(Z_LVAL(p[1]^))));
-  end;
-
-  dispose_pzval_array(p);
-end;
-
-procedure gui_listClearFont;
-var
-  p: pzval_array;
-  ID: integer;
-begin
-  if ht < 2 then
-  begin
-    zend_wrong_param_count(TSRMLS_DC);
-    Exit;
-  end;
-  zend_get_parameters_my(ht, p, TSRMLS_DC);
-
-  ID := Z_LVAL(p[0]^);
-  if (ID <> 0) and (TObject(ID) is TWinControl) then
-  begin
-    dsStdCtrl.TListBox(ID).ClearFont(Z_LVAL(p[1]^));
-  end;
-
-  dispose_pzval_array(p);
-end;
-
-
-
 
 procedure gui_threadCriticalCreate;
 var
@@ -628,7 +520,7 @@ begin
   New(C);
   InitializeCriticalSection(C^);
 
-  ZVAL_LONG(return_value, integer(C));
+  ZVALVAL(return_value, integer(C));
 
   dispose_pzval_array(p);
 end;
@@ -699,17 +591,17 @@ end;
 
 procedure gui_threadCreate;
 begin
-  ZVAL_LONG(return_value, integer(ScriptThreadCreate()));
+  ZVALVAL(return_value, integer(ScriptThreadCreate()));
 end;
 
 procedure gui_threadGetCount;
 begin
-  ZVAL_LONG(return_value, GetCntThreads);
+  ZVALVAL(return_value, GetCntThreads);
 end;
 
 procedure gui_threadGetMax;
 begin
-  ZVAL_LONG(return_value, GetMaxCntThreads);
+  ZVALVAL(return_value, GetMaxCntThreads);
 end;
 
 procedure gui_threadSetMax;
@@ -747,7 +639,7 @@ begin
       TScriptThread(ID).FThread.Priority := TThreadPriority(Z_LVAL(p[1]^))
     else
     begin
-      ZVAL_LONG(return_value, integer(TScriptThread(ID).FThread.Priority));
+      ZVALVAL(return_value, integer(TScriptThread(ID).FThread.Priority));
     end;
   end;
 
@@ -855,7 +747,7 @@ begin
   ID := Z_LVAL(p[0]^);
   if (ID <> 0) and (TObject(ID) is TScriptThread) then
   begin
-    ZVAL_BOOL(return_value, TScriptThread(ID).addDATA.HasKey(Z_STRVAL(p[1]^)));
+    ZVALVAL(return_value, TScriptThread(ID).addDATA.HasKey(Z_STRVAL(p[1]^)));
   end;
 
   dispose_pzval_array(p);
@@ -874,10 +766,10 @@ begin
   zend_get_parameters_my(ht, p, TSRMLS_DC);
 
   ID := Z_LVAL(p[0]^);
-  ZVAL_BOOL(return_value, False);
+  ZVALVAL(return_value, False);
   if (ID <> 0) and (TObject(ID) is TScriptThread) then
   begin
-    ZVAL_BOOL(return_value, True);
+    ZVALVAL(return_value, True);
     TScriptThread(ID).addDATA.RemoveKey(Z_STRVAL(p[1]^));
   end;
 
@@ -976,12 +868,6 @@ begin
   PHPEngine.AddFunction('gui_toBack', @gui_toBack);
 
   PHPEngine.AddFunction('gui_doubleBuffer', @gui_doubleBuffer);
-
-  PHPEngine.AddFunction('gui_listGetFont', @gui_listGetFont);
-  PHPEngine.AddFunction('gui_listClearFont', @gui_listClearFont);
-
-  PHPEngine.AddFunction('gui_listSetColor', @gui_listSetColor);
-  PHPEngine.AddFunction('gui_listGetColor', @gui_listGetColor);
 
   PHPEngine.AddFunction('gui_criticalCreate', @gui_threadCriticalCreate);
   PHPEngine.AddFunction('gui_criticalEnter', @gui_threadCriticalEnter);

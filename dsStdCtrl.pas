@@ -35,11 +35,16 @@ type
     FrealHeight: integer;
     FrealWidth: integer;
     FCaption: string;
+    FTop, FLeft: integer;
+    fc: TNOTifyEvent;
     FLabelDblClick: TNotifyEvent;
+    fa: TComponent;
     // FLabelClick: TNotifyEvent;
     procedure SetfileName(const Value: string);
     procedure SetrealHeight(const Value: integer);
     procedure SetrealWidth(const Value: integer);
+    procedure FSetLEft(const Value: integer);
+    procedure FSetFTop(const Value: integer);
     procedure SetCaption(const Value: string);
   protected
     procedure SetName(const Value: TComponentName); override;
@@ -53,10 +58,14 @@ type
     destructor Destroy; override;
     procedure loadFromFile(fileName: string);
   published
+    property Assoc: TComponent read fa write fa;
     property __iconName: string read FfileName write SetfileName;
     property realWidth: integer read FrealWidth write SetrealWidth default 24;
     property realHeight: integer read FrealHeight write SetrealHeight
       default 24;
+    property Left: integer read FLeft write FSetlEft;
+    property Top: integer read fTop write FSetFtop;
+    property onMove:TNOTifyEvent read fc write fc;
     property Caption: string read FCaption write SetCaption;
     property OnDblClick: TNotifyEvent read FLabelDblClick write FLabelDblClick;
     property Font;
@@ -74,8 +83,6 @@ type
   published
   procedure hOnDrop(Sender: TObject; ShiftState: TShiftState;
     APoint: TPoint; var Effect: Longint);
-    procedure TestOnDrop(Sender: TObject; Files: TUnicodeStrings; X: integer;
-    Y: integer);
     procedure setOnDropFiles(AEvent: TDropFilesEvent);
     constructor Create(AOwner: TComponent); override;
     property OnDropFiles: TDropFilesEvent read FOnDropFiles write SetOnDropFiles;
@@ -281,18 +288,6 @@ type
     property OnFocus: TNotifyEvent read FOnFocus write FOnFocus;
     property OnBlur: TNotifyEvent read FOnBlur write FOnBlur;
   end;
-type
-   TTransparentPanel = class(TPanel)
-private
-  procedure WMEraseBkGnd(Var Message: TWMEraseBkGnd); message WM_EraseBkGnd;
-protected
-  procedure SetParent(AParent: TWinControl); override;
-  procedure CreateParams(Var Params: TCreateParams); override;
-  procedure Paint; override;
-published
-  constructor Create(AOwner: TComponent); override;
-  procedure Invalidate; override;
-end;
 
 implementation
 { TEdit }
@@ -838,56 +833,6 @@ Value := Boolean(Message.WParam);
     inherited;
 end;
 
-{ TTransparentPanel }
-
-constructor TTransparentPanel.Create(AOwner: TComponent);
-begin
-  Inherited Create(AOwner);
-  ControlStyle := ControlStyle - [csOpaque];
-end;
-
-procedure TTransparentPanel.CreateParams(Var Params: TCreateParams);
-begin
-  Inherited CreateParams(Params);
-  Params.ExStyle := Params.ExStyle or WS_EX_TRANSPARENT;
-end;
-
-procedure TTransparentPanel.WMEraseBkGnd(Var Message: TWMEraseBkGnd);
-begin
-    {Do Nothing}
-    Message.Result := 1;
-end;
-procedure TTransparentPanel.Paint;
-Begin
-Canvas.Brush.Style := bsClear;
-end;
-
-procedure TTransparentPanel.SetParent(AParent: TWinControl);
-begin
-  Inherited SetParent(AParent);
-  {The trick needed to make it all work! I don't know if changing the parent's
-  style is a good idea, but it only removes the WS_CLIPCHILDREN style which
-  shouldn't cause any problems.}
-  if Parent <> Nil then
-    SetWindowLong(
-      Parent.Handle,
-      GWL_STYLE,
-      GetWindowLong(Parent.Handle, GWL_STYLE) And Not WS_ClipChildren
-    );
-end;
-
-procedure TTransparentPanel.Invalidate;
-var
-  Rect:TRect;
-begin
-  Rect := BoundsRect;
-    if (Parent <> Nil) and Parent.HandleAllocated then
-      InvalidateRect(Parent.Handle, @Rect, True)
-    else
-      Inherited Invalidate;
-end;
-{ TForm }
-
 { TDropFilesInfo }
 {
 constructor TDropFilesInfo.Create;
@@ -928,11 +873,6 @@ procedure TDropFilesTarget.setOnDropFiles(AEvent: TDropFilesEvent);
 begin
   FOnDropFiles := AEvent;
 end;
-procedure TDropFilesTarget.TestOnDrop(Sender: TObject; Files: TUnicodeStrings; X: integer;
-    Y: integer);
-begin
-  ShowMessage('It works!');
-end;
 procedure TDropFilesTarget.hOnDrop(Sender: TObject; ShiftState: TShiftState;
     APoint: TPoint; var Effect: Longint);
 Begin
@@ -942,162 +882,6 @@ Begin
    FOnDropFiles(Sender, Files, APoint.X, APoint.Y);
   end;
 End;
-{
-destructor TDropFilesTarget.Destroy;
-begin
-  TargetControl := nil; // This detaches any attached control
-  inherited;
-end;
-
-procedure TDropFilesTarget.Notification(AComponent: TComponent;
-  Operation: TOperation);
-begin
-  inherited;
-
-  if Operation = opRemove then
-    if AComponent = FTargetControl then
-      TargetControl := nil;
-end;
-
-{ Do the dropping. Note that DragFinish is called in the window
-  procedure and not here.
-}    {
-procedure TDropFilesTarget.DropFiles(hDrop: hDrop);
-var
-  Info: TDropFilesInfo;
-  Count, Index, Len: integer;
-  fileName: PChar;
-begin
-  Info := TDropFilesInfo.Create;
-  try
-    Info.FStamp := Now;
-    Info.FControl := FTargetControl;
-    DragQueryPoint(hDrop, Info.FPoint);
-
-    Count := DragQueryFile(hDrop, $FFFFFFFF, nil, 0);
-    for Index := 0 to Count - 1 do
-    begin
-      Len := DragQueryFile(hDrop, Index, nil, 0);
-      fileName := AllocMem(Len + 1);
-      try
-        DragQueryFile(hDrop, Index, fileName, Len + 1);
-        TStringList(Info.FFiles).Add(StrPas(fileName));
-      finally
-        FreeMem(fileName);
-      end;
-    end;
-
-    FOnDropFiles(Self, Info.FFiles, Info.Point.X, Info.Point.Y);
-  finally
-    Info.Free;
-  end;
-end;
-
-{ The new Window procedure for the attached drop target control.
-}     {
-procedure TDropFilesTarget.NewWndProc(var Msg: TMessage);
-begin
-  if Msg.Msg = WM_DROPFILES then
-  begin
-    try
-      if Assigned(FOnDropFiles) then
-        DropFiles(Msg.WParam);
-    finally
-      DragFinish(Msg.WParam);
-    end;
-    Msg.Result := 0;
-  end
-  else
-  begin
-    if Msg.Msg = WM_DESTROY then
-      if FAcceptingWindow <> 0 then
-        // Don't clear FAcceptingWindow
-        DragAcceptFiles(FAcceptingWindow, False);
-
-    FOldWndProc(Msg);
-
-    if Msg.Msg = WM_CREATE then
-      // Make it believe the window handle must be refreshed
-      FAcceptingWindow := 0;
-
-    if FTargetControl.HandleAllocated then
-      if FAcceptingWindow <> FTargetControl.Handle then
-      begin
-        FAcceptingWindow := FTargetControl.Handle;
-        DragAcceptFiles(FAcceptingWindow, True);
-      end;
-  end;
-end;
-
-{ Attach to FTargetControl: subclass, force a window handle and call
-  DragAcceptFiles with Accept=true.
-}      {
-procedure TDropFilesTarget.AttachControl;
-begin
-  if [csDesigning, csDestroying] * ComponentState <> [] then
-    exit;
-
-  if (FTargetControl = nil) or (not FEnabled) then
-    exit;
-
-  if [csDesigning, csDestroying] * FTargetControl.ComponentState <> [] then
-    exit;
-
-  FOldWndProc := FTargetControl.WindowProc;
-  FTargetControl.WindowProc := NewWndProc;
-
-  // Note: If we don't force a handle here we get problems with controls
-  // that call ReCreateWnd before they even got a handle (-> RichEdit).
-  FTargetControl.HandleNeeded;
-  FAcceptingWindow := FTargetControl.Handle;
-  DragAcceptFiles(FAcceptingWindow, True);
-end;
-
-{ Detach from FTargetControl: call DragAcceptFiles with Accept=false and
-  remove subclassing.
-}       {
-procedure TDropFilesTarget.DetachControl;
-begin
-  if FAcceptingWindow <> 0 then
-  begin
-    DragAcceptFiles(FAcceptingWindow, False);
-    FAcceptingWindow := 0;
-  end;
-
-  if @FOldWndProc <> nil then
-  begin
-    FTargetControl.WindowProc := FOldWndProc;
-    FOldWndProc := nil;
-  end;
-end;
-
-procedure TDropFilesTarget.SetEnabled(AEnabled: boolean);
-begin
-  if FEnabled <> AEnabled then
-  begin
-    DetachControl;
-    FEnabled := AEnabled;
-    AttachControl;
-  end;
-end;
-
-procedure TDropFilesTarget.SetTargetControl(AControl: TWinControl);
-begin
-  if FTargetControl <> AControl then
-  begin
-    DetachControl;
-
-    if FTargetControl <> nil then
-      FTargetControl.RemoveFreeNotification(Self);
-
-    FTargetControl := AControl;
-
-    if FTargetControl <> nil then
-      FTargetControl.FreeNotification(Self);
-
-    AttachControl;
-  end;
-end;
 
 { TComponentLabel }
 
@@ -1193,6 +977,7 @@ begin
 end;
 
 procedure __TNoVisual.Paint;
+var stext: string;
 begin
   // if not Visible then exit;
   inherited;
@@ -1206,9 +991,13 @@ begin
 
   if FLabel <> nil then
   begin
-    FLabel.Caption := Name;
+    if Assoc <> nil then
+      stext := Assoc.Name
+    else
+      stext := Name;
+    FLabel.Caption := stext;
     FLabel.Left := Round(Left + (realWidth / 2) -
-      (Canvas.TextWidth(Name) / 2) - 1);
+      (Canvas.TextWidth(stext) / 2) - 1);
     FLabel.Top := Top + Height + 3;
     FLabel.Paint;
   end;
@@ -1267,6 +1056,20 @@ begin
   Constraints.MaxWidth := Value;
 end;
 
+procedure __TNoVisual.FSetLEft(const Value: integer);
+begin
+  FLeft := Value;
+  inherited Left := Value;
+  if Assigned(fc) then
+    fc(Self as TObject);
+end;
+procedure __TNoVisual.FSetFTop(const Value: integer);
+begin
+  FTop := Value;
+  inherited Top := Value;
+  if Assigned(fc) then
+    fc(Self as TObject);
+end;
 procedure __TNoVisual.WMMove(var Msg: TWMMove);
 begin
   inherited;

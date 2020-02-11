@@ -279,7 +279,7 @@ begin
         {$IFDEF VS_EDITOR}
   RegisterClassA({[TDragDockObjectCep,} TCustomDockFormCep{]});
         {$ENDIF}
-  RegisterClassA(dsStdCtrl.TTransparentPanel);
+  RegisterClassAliasA(dsCustomControls.TGraphControl, 'TTransparentPanel');
 end;
 
 procedure registerAdditional;
@@ -343,19 +343,21 @@ end;
 
 procedure registerForms;
 begin
-  registerArr([TControl, TWinControl, TForm, TCustomForm,
-    TApplication,
+  registerArr([TControl, TWinControl, Forms.TCustomFrame, Forms.TCustomForm,
+  Forms.TCustomActiveForm,Forms.TForm,
+    Forms.TApplication,
 {$IFDEF NOT_LITE}
-    TFrame, TCustomFrame,
+    TFrame,
     TColorDialog, TCommonDialog,
     TDataModule,
     TFontDialog,
     Forms.TControlScrollBar, Forms.TScrollingWinControl,
-    Forms.TCustomActiveForm, Forms.TScreen, TScreenEx, TOpenDialog, TSaveDialog
+    Forms.TScreen, TScreenEx, TOpenDialog, TSaveDialog
     , Dialogs.TPrinterSetupDialog, Dialogs.TPrintDialog,
     Dialogs.TPageSetupDialog, Dialogs.TFindDialog, Dialogs.TReplaceDialog
 {$ENDIF}
     ]);
+  RegisterClassAliasA(Forms.TForm, 'TForm');
 {$IFDEF NOT_LITE}
   RegisterClassA(Forms.TScrollBox);
   UnRegisterClass(Forms.TScrollBox);
@@ -422,8 +424,8 @@ TNxTimePicker,
     {$ENDIF}
     TSynCompletionProposal, TSynHighlighterAttributes,
     {$ENDIF}
-    TButtonCategory, TButtonCategories, TButtonItem, TCategoryButtons
-
+    TButtonCategory, TButtonCategories, TButtonItem, TCategoryButtons,
+    TButtonCollection
     ]);
 {$ENDIF}
 {$IFDEF ADD_AC}

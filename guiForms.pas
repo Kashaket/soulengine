@@ -50,9 +50,9 @@ begin
     zend_wrong_param_count(TSRMLS_DC);
     Exit;
   end;
-  zend_get_parameters_ex(ht, p);
+  zend_get_parameters_my(ht, p, TSRMLS_DC);
 
-  variant2zval(Form_ShowModal(Z_LVAL(p[0]^)), return_value);
+  VariantToZend(Form_ShowModal(Z_LVAL(p[0]^)), return_value);
   dispose_pzval_array(p);
 end;
 
@@ -77,12 +77,12 @@ begin
     zend_wrong_param_count(TSRMLS_DC);
     Exit;
   end;
-  zend_get_parameters_ex(ht, p);
+  zend_get_parameters_my(ht, p, TSRMLS_DC);
 
   obj := toObject(Z_LVAL(p[0]^));
   if (obj = nil) or not (obj is TForm) then
   begin
-    ZVAL_BOOL(return_value, False);
+    ZVALVAL(return_value, False);
   end
   else
   begin
@@ -100,7 +100,7 @@ begin
     zend_wrong_param_count(TSRMLS_DC);
     Exit;
   end;
-  zend_get_parameters_ex(ht, p);
+  zend_get_parameters_my(ht, p, TSRMLS_DC);
 
   ShowMessage( Z_STRVAL(p[0]^) );
 
@@ -117,7 +117,7 @@ begin
     zend_wrong_param_count(TSRMLS_DC);
     Exit;
   end;
-  zend_get_parameters_ex(ht, p);
+  zend_get_parameters_my(ht, p, TSRMLS_DC);
 
   New(Msg);
   Msg^ := Z_STRVAL(p[0]^);

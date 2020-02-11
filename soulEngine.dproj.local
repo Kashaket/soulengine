@@ -1,12 +1,2 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<BorlandProject>
-	<Transactions>
-    <Transaction>1899.12.30 00:00:00.000.006,C:\Users\User\Desktop\soulengine-5554e3db061d08b94f439be26ed071a74c30071c\soulEngine.dproj=C:\Users\User\Desktop\soulengine-5554e3db061d08b94f439be26ed071a74c30071c\soulEngine.dproj</Transaction>
-    <Transaction>1899.12.30 00:00:00.000.711,C:\Users\user1\Desktop\Новая папка (18)\soulEngine.dproj=C:\Users\user1\Desktop\Новая папка (18)\soulEngine.dproj</Transaction>
-    <Transaction>1899.12.30 00:00:00.000.290,C:\DevelStudio 3.0 beta\Новая папка (3)\soulEngine.dproj=C:\DevelStudio 3.0 beta\Новая папка (3)\soulEngine.dproj</Transaction>
-    <Transaction>1899.12.30 00:00:00.000.706,C:\Users\User\Desktop\soulengine-5554e3db061d08b94f439be26ed071a74c30071c\soulEngine.dproj=C:\Users\User\Desktop\soulengine-5554e3db061d08b94f439be26ed071a74c30071c\soulEngine.dproj</Transaction>
-    <Transaction>1899.12.30 00:00:00.000.939,C:\Users\User\Desktop\soulengine-5554e3db061d08b94f439be26ed071a74c30071c\soulEngine.dproj=C:\Users\User\Desktop\soulengine-5554e3db061d08b94f439be26ed071a74c30071c\soulEngine.dproj</Transaction>
-    <Transaction>1899.12.30 00:00:00.000.276,C:\Users\User\Desktop\soulengine-5554e3db061d08b94f439be26ed071a74c30071c\soulEngine.dproj=C:\Users\User\Desktop\soulengine-5554e3db061d08b94f439be26ed071a74c30071c\soulEngine.dproj</Transaction>
-    <Transaction>1899.12.30 00:00:00.000.547,C:\Users\User\Desktop\soulengine-5554e3db061d08b94f439be26ed071a74c30071c\soulEngine.dproj=C:\Users\User\Desktop\soulengine-5554e3db061d08b94f439be26ed071a74c30071c\soulEngine.dproj</Transaction>
-  </Transactions>
-</BorlandProject>
+<BorlandProject/>

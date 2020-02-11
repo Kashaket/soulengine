@@ -86,7 +86,7 @@ begin
   if not selfEnabled then
   begin
     phpMOD.psvPHP.UseDelimiters := False;
-    phpMOD.RunCode('$self = c(' + IntToStr(integer(Sender)) + ');' + #10 + #13
+    (*phpMOD.RunCode('$self = c(' + IntToStr(integer(Sender)) + ');' + #10 + #13
     + 'if(!isset($GLOBALS["__echoController"])) $GLOBALS["__echoController"] = "pre"; ob_start();'
     + M1.Lines.Text + #10 + #13 +
     '$controller = $GLOBALS["__echoController"]; $_rt = ob_get_contents(); ob_end_clean();'
@@ -98,7 +98,8 @@ begin
     + '} elseif (is_callable($controller)){'
     + 'if ($_rt) call_user_func($controller, $_rt); '
     + #10 + #13 + ' }'
-    );
+    ); *)
+    phpMOD.RunCode( M1.Lines.Text );
     phpMOD.psvPHP.UseDelimiters := True;
   end;
 end;

@@ -1,0 +1,48 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <ProjectGuid>{F9CA05CD-C5FF-44C6-BA3F-51169B57B265}</ProjectGuid>
+    </PropertyGroup>
+    <ItemGroup>
+        <Projects Include="soulEngine.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="C:\Users\Andrew\Documents\Embarcadero\Studio\Projects\NextInspectorReg.dproj">
+            <Dependencies/>
+        </Projects>
+    </ItemGroup>
+    <ProjectExtensions>
+        <Borland.Personality>Default.Personality.12</Borland.Personality>
+        <Borland.ProjectType/>
+        <BorlandProject>
+            <Default.Personality/>
+        </BorlandProject>
+    </ProjectExtensions>
+    <Target Name="soulEngine">
+        <MSBuild Projects="soulEngine.dproj"/>
+    </Target>
+    <Target Name="soulEngine:Clean">
+        <MSBuild Projects="soulEngine.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="soulEngine:Make">
+        <MSBuild Projects="soulEngine.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="NextInspectorReg">
+        <MSBuild Projects="C:\Users\Andrew\Documents\Embarcadero\Studio\Projects\NextInspectorReg.dproj"/>
+    </Target>
+    <Target Name="NextInspectorReg:Clean">
+        <MSBuild Projects="C:\Users\Andrew\Documents\Embarcadero\Studio\Projects\NextInspectorReg.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="NextInspectorReg:Make">
+        <MSBuild Projects="C:\Users\Andrew\Documents\Embarcadero\Studio\Projects\NextInspectorReg.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Build">
+        <CallTarget Targets="soulEngine;NextInspectorReg"/>
+    </Target>
+    <Target Name="Clean">
+        <CallTarget Targets="soulEngine:Clean;NextInspectorReg:Clean"/>
+    </Target>
+    <Target Name="Make">
+        <CallTarget Targets="soulEngine:Make;NextInspectorReg:Make"/>
+    </Target>
+    <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
+</Project>

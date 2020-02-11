@@ -14,7 +14,7 @@ uses
   Graphics,
   ExtCtrls, StdCtrls, ComCtrls, SizeControl,
   Forms, Dialogs, Buttons, Controls,
-  dwsHashtables, zendAPI, phpApi,
+  dwsHashtables, zendAPI, phpApi, dsStdCtrl,
   {$IFDEF PHP7} hzend_types, {$ENDIF}
    ZENDTypes, php4delphi
   {$IFDEF PHP_UNICE}, WideStrUtils{$ENDIF}
@@ -147,7 +147,6 @@ type
      const frame: ICefFrame; const params: ICefContextMenuParams;
      const model: ICefMenuModel);
 
-
     procedure onChromiumBeforeBrowse(Sender: TObject; const browser: ICefBrowser;
      const frame: ICefFrame; const request: ICefRequest; user_gesture, isRedirect: Boolean;
      out Result: Boolean);
@@ -188,8 +187,15 @@ const frame: ICefFrame; httpStatusCode: Integer);
 
     procedure OnChromiumLibLoad(Sender: TObject);
 {$ENDIF}
+    procedure OnCreate(Sender:TObject);
+    procedure OnDestroy(Sender:TObject);
     procedure OnBrushSet(Sender:TObject; Value:TBrush; var Co: boolean);
+    procedure OnFontSet(Sender:TObject; Value:TFont; var Co: boolean);
     procedure OnPenSet(Sender:TObject; Value:TPen; var Co: boolean);
+    procedure OnBrushChange(Sender:TObject);
+    procedure OnFontChange(Sender:TObject);
+    procedure OnPenChange(Sender:TObject);
+    procedure OnHitTest(Sender:TObject; var HitResult:integer);
     procedure SafeOnTimer(Sender: TObject);
   end;
 
@@ -573,7 +579,7 @@ begin
 
   EventClassType.Add(TypeClass);
   EventTypesThread.Add(Pointer(IsThread));
-  EventTypes.AddObject(Event, TObject(handler));
+  EventTypes.AddObject(LowerCase(Event), TObject(handler));
 end;
 
 // return true/false -
@@ -586,7 +592,7 @@ begin
 
   for i := EventTypes.Count - 1 downto 0 do
   begin
-    if LowerCase(EventTypes[i]) = Event then
+    if EventTypes[i] = Event then
       if (EventClassType[i] = nil) or (Obj.InheritsFrom(EventClassType[i])) then
         exit;
   end;
@@ -605,7 +611,7 @@ begin
   ID := -1;
   for i := EventTypes.Count - 1 downto 0 do
   begin
-    if LowerCase(EventTypes[i]) = Event then
+    if EventTypes[i] = Event then
       if (EventClassType[i] = nil) or (Obj.InheritsFrom(EventClassType[i])) then
       begin
         ID := i;
@@ -639,7 +645,7 @@ end;
 procedure event_args(ht: integer; return_value: pzval; return_value_ptr: pzval;
   this_ptr: pzval; return_value_used: integer; TSRMLS_DC: Pointer); cdecl;
 var
-  param: pzval_array;
+  p: pzval_array;
   Arr: {$IFDEF PHP7}Pzend_array{$ELSE}PHashTable{$ENDIF};
   Obj: TObject;
   {$IFNDEF PHP7}
@@ -647,29 +653,29 @@ var
   {$ENDIF}
   i: integer;
 begin
-  if zend_get_parameters_ex(ht, param) <> SUCCESS then
+  if zend_get_parameters_my(ht, p, TSRMLS_DC) <> SUCCESS then
   begin
     zend_wrong_param_count(TSRMLS_DC);
     exit;
   end;
 
-  Obj := TObject(Z_LVAL(param[0]^));
+  Obj := TObject(Z_LVAL(p[0]^));
   if Obj <> nil then
     with GetEventController(Obj, TSRMLS_DC) do
     begin
     {$IFDEF PHP7}
     if param[2]^^.u1.v._type = IS_ARRAY then
-        Arr := param[2]^^.Value.arr
+        Arr := p[2]^^.Value.arr
     {$ELSE}
-    if param[2]^^._type = IS_ARRAY then
-        Arr := param[2]^^.Value.ht
+    if p[2]^^._type = IS_ARRAY then
+        Arr := p[2]^^.Value.ht
     {$ENDIF}
       else
         Arr := nil;
 
       if Arr <> nil then
       begin
-        with GetEventController(Obj, TSRMLS_DC).GetEvent(Z_STRVAL(param[1]^)) do
+        with GetEventController(Obj, TSRMLS_DC).GetEvent(Z_STRVAL(p[1]^)) do
         begin
           {$IFDEF PHP7}
           Args.value.arr.gc.refcount := zend_hash_num_elements(Arr);
@@ -700,13 +706,13 @@ begin
 
     end;
 
-  dispose_pzval_array(param);
+  dispose_pzval_array(p);
 end;
 
 procedure event_run(ht: integer; return_value: pzval; return_value_ptr: pzval;
   this_ptr: pzval; return_value_used: integer; TSRMLS_DC: Pointer); cdecl;
 var
-  param: pzval_array;
+  p: pzval_array;
   Arr: {$IFDEF PHP7}Pzend_array{$ELSE}PHashTable{$ENDIF};
   Obj: TObject;
   Args: array of TVarRec;
@@ -715,22 +721,22 @@ var
   {$ENDIF}
   i: integer;
 begin
-  if zend_get_parameters_ex(ht, param) <> SUCCESS then
+  if zend_get_parameters_my(ht, p, TSRMLS_DC) <> SUCCESS then
   begin
     zend_wrong_param_count(TSRMLS_DC);
     exit;
   end;
 
-  Obj := TObject(Z_LVAL(param[0]^));
+  Obj := TObject(Z_LVAL(p[0]^));
   if Obj <> nil then
     with GetEventController(Obj, TSRMLS_DC) do
     begin
     {$IFDEF PHP7}
-      if param[2]^^.u1.v._type = IS_ARRAY then
-        Arr := param[2]^^.value.arr
+      if p[2]^^.u1.v._type = IS_ARRAY then
+        Arr := p[2]^^.value.arr
     {$ELSE}
-      if param[2]^^._type = IS_ARRAY then
-        Arr := param[2]^^.Value.ht
+      if p[2]^^._type = IS_ARRAY then
+        Arr := p[2]^^.Value.ht
     {$ENDIF}
       else
         Arr := nil;
@@ -756,112 +762,112 @@ begin
         {$ENDIF}
       end;
 
-      EventRun(Obj, Z_STRVAL(param[1]^), Args);
+      EventRun(Obj, Z_STRVAL(p[1]^), Args);
     end;
 
-  dispose_pzval_array(param);
+  dispose_pzval_array(p);
 end;
 
 procedure event_add(ht: integer; return_value: pzval; return_value_ptr: pzval;
   this_ptr: pzval; return_value_used: integer; TSRMLS_DC: Pointer); cdecl;
 var
-  param: pzval_array;
+  p: pzval_array;
   Obj: TObject;
 begin
-  if zend_get_parameters_ex(ht, param) <> SUCCESS then
+  if zend_get_parameters_my(ht, p, TSRMLS_DC) <> SUCCESS then
   begin
     zend_wrong_param_count(TSRMLS_DC);
     exit;
   end;
 
-  Obj := TObject(Z_LVAL(param[0]^));
+  Obj := TObject(Z_LVAL(p[0]^));
 
   if Obj <> nil then
     with GetEventController(Obj, TSRMLS_DC) do
     begin
-      ZVAL_FALSE(return_value);
+      ZVALVAL(return_value,FALSE);
 
-      if (EventSet(Obj, Z_STRVAL(param[1]^))) then
+      if (EventSet(Obj, Z_STRVAL(p[1]^))) then
       begin
-        AddEvent(Z_STRVAL(param[1]^), param[2]^);
-        ZVAL_TRUE(return_value);
+        AddEvent(Z_STRVAL(p[1]^), p[2]^);
+        ZVALVAL(return_value,TRUE);
       end;
 
     end;
 
-  dispose_pzval_array(param);
+  dispose_pzval_array(p);
 end;
 
 procedure event_set(ht: integer; return_value: pzval; return_value_ptr: pzval;
   this_ptr: pzval; return_value_used: integer; TSRMLS_DC: Pointer); cdecl;
 var
-  param: pzval_array;
+  p: pzval_array;
   Obj: TObject;
 begin
-  if zend_get_parameters_ex(ht, param) <> SUCCESS then
+  if zend_get_parameters_my(ht, p, TSRMLS_DC) <> SUCCESS then
   begin
     zend_wrong_param_count(TSRMLS_DC);
     exit;
   end;
-  Obj := TObject(Z_LVAL(param[0]^));
+  Obj := TObject(Z_LVAL(p[0]^));
   if Obj <> nil then
 
     with GetEventController(Obj, TSRMLS_DC) do
     begin
-      ZVAL_FALSE(return_value);
+      ZVALVAL(return_value,FALSE);
       {$IFDEF PHP7}
-      if param[2]^^.u1.v._type = IS_NULL then
+      if p[2]^^.u1.v._type = IS_NULL then
       {$ELSE}
-      if param[2]^^._type = IS_NULL then
+      if p[2]^^._type = IS_NULL then
       {$ENDIF}
       begin
-        if EventExists(Obj, Z_STRVAL(param[1]^)) then
+        if EventExists(Obj, Z_STRVAL(p[1]^)) then
         begin
-          ClearEvent(Z_STRVAL(param[1]^));
-          ZVAL_TRUE(return_value);
+          ClearEvent(Z_STRVAL(p[1]^));
+          ZVALVAL(return_value,TRUE);
         end;
       end
       else
       begin
 
-        if EventSet(Obj, Z_STRVAL(param[1]^)) then
+        if EventSet(Obj, Z_STRVAL(p[1]^)) then
         begin
-          SetEvent(Z_STRVAL(param[1]^), param[2]^);
-          ZVAL_TRUE(return_value);
+          SetEvent(Z_STRVAL(p[1]^), p[2]^);
+          ZVALVAL(return_value,TRUE);
         end;
       end;
     end;
 
-  dispose_pzval_array(param);
+  dispose_pzval_array(p);
 end;
 
 procedure event_get(ht: integer; return_value: pzval; return_value_ptr: pzval;
   this_ptr: pzval; return_value_used: integer; TSRMLS_DC: Pointer); cdecl;
 var
-  param: pzval_array;
+  p: pzval_array;
   Obj: TObject;
   r: pzval;
 begin
-  if zend_get_parameters_ex(ht, param) <> SUCCESS then
+  if zend_get_parameters_my(ht, p, TSRMLS_DC) <> SUCCESS then
   begin
     zend_wrong_param_count(TSRMLS_DC);
     exit;
   end;
-  Obj := TObject(Z_LVAL(param[0]^));
+  Obj := TObject(Z_LVAL(p[0]^));
   if Obj <> nil then
 
     with GetEventController(Obj, TSRMLS_DC) do
     begin
-      ZVAL_FALSE(return_value);
+      ZVALVAL(return_value,FALSE);
 
-      r := GetFirstEvent(Z_STRVAL(param[1]^));
+      r := GetFirstEvent(Z_STRVAL(p[1]^));
       if r = nil then
-        ZVAL_NULL(return_value)
+        ZVALVAL(return_value)
       else
         zval_copy(return_value, r);
     end;
 
-  dispose_pzval_array(param);
+  dispose_pzval_array(p);
 end;
 
 procedure InitializeEventSystem(PHPEngine: TPHPEngine);
@@ -942,8 +948,8 @@ begin
 {$IFDEF ADD_SYN_EV}
   EventAddNewType('OnClose', @THandlerFuncs.onSynClose, TSynCompletionProposal);
   EventAddNewType('OnMouseCursor', @THandlerFuncs.onMouseCursor);
-    EventAddNewType('OnDropFiles', @THandlerFuncs.onDropFiles);
 {$ENDIF}
+  EventAddNewType('OnDropFiles', @THandlerFuncs.onDropFiles, TDropFilesTarget);
   EventAddNewType('OnChange', @THandlerFuncs.onVSInsChange, TNxCustomInspector);
   EventAddNewType('OnEdit', @THandlerFuncs.onVSInsEdit, TNxCustomInspector);
   EventAddNewType('OnToolbarClick', @THandlerFuncs.onVSInsToolBarClick,
@@ -973,10 +979,18 @@ begin
   EventAddNewType('OnTooltip', @THandlerFuncs.OnTooltip);
   EventAddNewType('OnContentsSizeChange', @THandlerFuncs.OnContentsSizeChange);
 
-  EventAddNewType('OnChromiumLibLoad', @THandlerFuncs.OnChromiumLibLoad, TChromium);
+  EventAddNewType('OnChromiumLibLoad', @THandlerFuncs.OnChromiumLibLoad);
 {$ENDIF}
+  EventAddNewType('OnCreate', @THandlerFuncs.OnCreate);
+  EventAddNewType('OnDestroy', @THandlerFuncs.OnDestroy);
+  EventAddNewType('OnHitTest', @THandlerFuncs.OnHitTest);
   EventAddNewType('OnBrushSet', @THandlerFuncs.OnBrushSet);
+  EventAddNewType('OnFontSet', @THandlerFuncs.OnFontSet);
   EventAddNewType('OnPenSet', @THandlerFuncs.OnPenSet);
+  EventAddNewType('OnBrushChange', @THandlerFuncs.OnBrushChange);
+  EventAddNewType('OnFontChange', @THandlerFuncs.OnFontChange);
+  EventAddNewType('OnPenChange', @THandlerFuncs.OnPenChange);
+
   EventAddNewType('OnTimer', @THandlerFuncs.onTimer);
 
   SafeCommand := TList.Create;
@@ -1467,7 +1481,7 @@ begin
     Self.Args[0] := ALLOC_ZVAL;
     INIT_PZVAL(Self.Args[0]);
   end;
-  ZVAL_LONG(Self.Args[0], integer(This));
+  ZVALVAL(Self.Args[0], integer(This));
 {$ENDIF}
   for i := 1 to Cnt do
   begin
@@ -1486,27 +1500,28 @@ begin
 
     case Args[i - 1].vtype of
       vtInteger:
-        ZVAL_LONG({$IFDEF PHP7}tmp{$ELSE}Self.Args[i]{$ENDIF}, Args[i - 1].VInteger);
+        ZVALVAL({$IFDEF PHP7}tmp{$ELSE}Self.Args[i]{$ENDIF}, Args[i - 1].VInteger);
       vtObject:
       begin
       {$IFDEF VS_EDITOR}
         if TPersistent(Args[i - 1].VPointer) is TUnicodeStrings then
         begin
-         ZVAL_ARRAY({$IFDEF PHP7}tmp{$ELSE}Self.Args[i]{$ENDIF}, TUnicodeStrings(TPersistent(Args[i - 1].VPointer)).text.split([#10]) );
+
+         ZVAL_ARRAY({$IFDEF PHP7}tmp{$ELSE}Self.Args[i]{$ENDIF}, TUnicodeStrings(TPersistent(Args[i - 1].VPointer)).Text.Split([#10,#13]) );
         end else
       {$ENDIF}
-          ZVAL_LONG({$IFDEF PHP7}tmp{$ELSE}Self.Args[i]{$ENDIF}, integer(Args[i - 1].VPointer));
+          ZVALVAL({$IFDEF PHP7}tmp{$ELSE}Self.Args[i]{$ENDIF}, integer(Args[i - 1].VPointer));
       end;
       vtPointer:
       begin
-        ZVAL_LONG({$IFDEF PHP7}tmp{$ELSE}Self.Args[i]{$ENDIF}, integer(Args[i - 1].VPointer));
+        ZVALVAL({$IFDEF PHP7}tmp{$ELSE}Self.Args[i]{$ENDIF}, integer(Args[i - 1].VPointer));
       end;
       vtInt64:
-        ZVAL_DOUBLE({$IFDEF PHP7}tmp{$ELSE}Self.Args[i]{$ENDIF}, Args[i - 1].VInt64^);
+        ZVALVAL({$IFDEF PHP7}tmp{$ELSE}Self.Args[i]{$ENDIF}, Args[i - 1].VInt64^);
       vtExtended:
-        ZVAL_DOUBLE({$IFDEF PHP7}tmp{$ELSE}Self.Args[i]{$ENDIF}, Args[i - 1].VExtended^);
+        ZVALVAL({$IFDEF PHP7}tmp{$ELSE}Self.Args[i]{$ENDIF}, Args[i - 1].VExtended^);
       vtBoolean:
-        ZVAL_BOOL({$IFDEF PHP7}tmp{$ELSE}Self.Args[i]{$ENDIF}, Args[i - 1].VBoolean);
+        ZVALVAL({$IFDEF PHP7}tmp{$ELSE}Self.Args[i]{$ENDIF}, Args[i - 1].VBoolean);
       vtString:
         ZVAL_STRINGL({$IFDEF PHP7}tmp{$ELSE}Self.Args[i]{$ENDIF}, @(Args[i - 1].VString^[0]),
           Length(Args[i - 1].VString^), True);
@@ -1540,7 +1555,7 @@ begin
           ZVAL_STRINGL({$IFDEF PHP7}tmp{$ELSE}Self.Args[i]{$ENDIF}, zend_pchar(S), 1, True);
         end;
       vtCurrency:
-        ZVAL_DOUBLE({$IFDEF PHP7}tmp{$ELSE}Self.Args[i]{$ENDIF}, double(Args[i - 1].VCurrency^));
+        ZVALVAL({$IFDEF PHP7}tmp{$ELSE}Self.Args[i]{$ENDIF}, double(Args[i - 1].VCurrency^));
       vtChar:
         begin
           S := Args[i - 1].VChar;
@@ -1549,7 +1564,7 @@ begin
     else
       begin
         ShowMessage('Реализовать : ' + inttostr(ord(Args[i - 1].vtype)));
-        ZVAL_NULL({$IFDEF PHP7}tmp{$ELSE}Self.Args[i]{$ENDIF});
+        ZVALVAL({$IFDEF PHP7}tmp{$ELSE}Self.Args[i]{$ENDIF});
       end;
     end;
     {$IFDEF PHP7}
@@ -1568,7 +1583,7 @@ begin
   end;
   {$ENDIF}
 
-  ZVAL_BOOL(Return, True);
+  ZVALVAL(Return, True);
   for i := 0 to CallBack.Count - 1 do
   begin
     Execute(CallBack[i]);
@@ -2268,12 +2283,11 @@ procedure THandlerFuncs.onChromiumBeforeBrowse(Sender: TObject; const browser: I
 var
   H: TPHPScriptEventHandler;
 begin
-  Result := True;
-  H := EventRun(Sender, 'OnBeforeBrowse', [request.url, request.Method,
-    integer(request.TransitionType), isRedirect, Result], False);
+  H := EventRun(Sender, 'OnBeforeBrowse', [string(request.url), string(request.Method),
+    integer(request.TransitionType), isRedirect, True], False);
   if H <> nil then
   begin
-    Result := not H.ParamBool(5);
+    Result := H.ParamBool(5);
     H.ClearArgs;
   end;
 end;
@@ -2401,15 +2415,49 @@ procedure THandlerFuncs.OnChromiumLibLoad(Sender: TObject);
 begin
   EventRun(Sender, 'OnChromiumLibLoad');
 end;
+{$ENDIF}
+procedure THandlerFuncs.OnDestroy(Sender:TObject);
+begin
+  EventRun(Sender, 'OnDestroy');
+end;
+
+procedure THandlerFuncs.OnCreate(Sender:TObject);
+begin
+  EventRun(Sender, 'OnCreate');
+end;
+
+procedure THandlerFuncs.OnHitTest(Sender:TObject; var HitResult:integer);
+var
+  H: TPHPScriptEventHandler;
+begin
+  H := EventRun(Sender, 'OnHitTest', [HitResult], false);
+  if H <> nil then
+  begin
+    HitResult := H.ParamInt(1);
+    H.ClearArgs;
+  end;
+end;
 
 procedure THandlerFuncs.OnBrushSet(Sender: TObject; Value: TBrush; var Co: Boolean);
 var
   H: TPHPScriptEventHandler;
 begin
-  H := EventRun(Sender, 'OnBrushSet', [integer(TBrush), Co]);
+  H := EventRun(Sender, 'OnBrushSet', [integer(Value), Co], False);
   if H <> nil then
   begin
-    Co := not H.ParamBool(3);
+    Co := H.ParamBool(2);
+    H.ClearArgs;
+  end;
+end;
+
+procedure THandlerFuncs.OnFontSet(Sender: TObject; Value: TFont; var Co: Boolean);
+var
+  H: TPHPScriptEventHandler;
+begin
+  H := EventRun(Sender, 'OnFontSet', [integer(Value), Co], False);
+  if H <> nil then
+  begin
+    Co := H.ParamBool(2);
     H.ClearArgs;
   end;
 end;
@@ -2418,14 +2466,28 @@ procedure THandlerFuncs.OnPenSet(Sender: TObject; Value: TPen; var Co: Boolean);
 var
   H: TPHPScriptEventHandler;
 begin
-  H := EventRun(Sender, 'OnPenSet', [integer(TPen), Co]);
+  H := EventRun(Sender, 'OnPenSet', [integer(Value), Co], False);
   if H <> nil then
   begin
-    Co := not H.ParamBool(3);
+    Co := H.ParamBool(2);
     H.ClearArgs;
   end;
 end;
-{$ENDIF}
+
+procedure THandlerFuncs.OnBrushChange(Sender: TObject);
+begin
+  EventRun(Sender, 'OnBrushChange');
+end;
+
+procedure THandlerFuncs.OnFontChange(Sender: TObject);
+begin
+  EventRun(Sender, 'OnFontChange');
+end;
+
+procedure THandlerFuncs.OnPenChange(Sender: TObject);
+begin
+  EventRun(Sender, 'OnPenChange');
+end;
 
 procedure THandlerFuncs.SafeOnTimer(Sender: TObject);
 var
@@ -2608,7 +2670,7 @@ begin
   {$ELSE}
   SetLength(Args, 2);
   Args[0] := MAKE_STD_ZVAL;
-  ZVAL_LONG(Args[0], integer(Self.Main));
+  ZVALVAL(Args[0], integer(Self.Main));
 
   Args[1] := MAKE_STD_ZVAL;
   ZVAL_STRINGL(Args[1], zend_pchar(MyData), Length(MyData), True);

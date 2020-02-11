@@ -1,0 +1,72 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <ProjectGuid>{E3CB7C4C-58F0-46FF-A8DF-848E1977D6FC}</ProjectGuid>
+    </PropertyGroup>
+    <ItemGroup>
+        <Projects Include="soulEngine.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="SynEdit-master\Packages\101B\SynEdit_R.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="SynEdit-master\Packages\101B\SynEdit_D.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="C:\Users\Andrew\Documents\Embarcadero\Studio\Projects\Sizectrl.dproj">
+            <Dependencies/>
+        </Projects>
+    </ItemGroup>
+    <ProjectExtensions>
+        <Borland.Personality>Default.Personality.12</Borland.Personality>
+        <Borland.ProjectType/>
+        <BorlandProject>
+            <Default.Personality/>
+        </BorlandProject>
+    </ProjectExtensions>
+    <Target Name="soulEngine">
+        <MSBuild Projects="soulEngine.dproj"/>
+    </Target>
+    <Target Name="soulEngine:Clean">
+        <MSBuild Projects="soulEngine.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="soulEngine:Make">
+        <MSBuild Projects="soulEngine.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="SynEdit_R">
+        <MSBuild Projects="SynEdit-master\Packages\101B\SynEdit_R.dproj"/>
+    </Target>
+    <Target Name="SynEdit_R:Clean">
+        <MSBuild Projects="SynEdit-master\Packages\101B\SynEdit_R.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="SynEdit_R:Make">
+        <MSBuild Projects="SynEdit-master\Packages\101B\SynEdit_R.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="SynEdit_D">
+        <MSBuild Projects="SynEdit-master\Packages\101B\SynEdit_D.dproj"/>
+    </Target>
+    <Target Name="SynEdit_D:Clean">
+        <MSBuild Projects="SynEdit-master\Packages\101B\SynEdit_D.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="SynEdit_D:Make">
+        <MSBuild Projects="SynEdit-master\Packages\101B\SynEdit_D.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Sizectrl">
+        <MSBuild Projects="C:\Users\Andrew\Documents\Embarcadero\Studio\Projects\Sizectrl.dproj"/>
+    </Target>
+    <Target Name="Sizectrl:Clean">
+        <MSBuild Projects="C:\Users\Andrew\Documents\Embarcadero\Studio\Projects\Sizectrl.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="Sizectrl:Make">
+        <MSBuild Projects="C:\Users\Andrew\Documents\Embarcadero\Studio\Projects\Sizectrl.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Build">
+        <CallTarget Targets="soulEngine;SynEdit_R;SynEdit_D;Sizectrl"/>
+    </Target>
+    <Target Name="Clean">
+        <CallTarget Targets="soulEngine:Clean;SynEdit_R:Clean;SynEdit_D:Clean;Sizectrl:Clean"/>
+    </Target>
+    <Target Name="Make">
+        <CallTarget Targets="soulEngine:Make;SynEdit_R:Make;SynEdit_D:Make;Sizectrl:Make"/>
+    </Target>
+    <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
+</Project>

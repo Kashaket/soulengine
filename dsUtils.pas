@@ -95,7 +95,7 @@ procedure clipboard_setFiles;
    i, cnt: integer;
 begin
   if ht < 1 then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
-  zend_get_parameters_ex(ht, p);
+  zend_get_parameters_my(ht, p, TSRMLS_DC);
 
   FileList := '';
   {$IFDEF PHP7}
@@ -160,7 +160,7 @@ procedure clipboard_assign;
   Pic: TPicture;
 begin
   if ht < 1 then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
-  zend_get_parameters_ex(ht, p);
+  zend_get_parameters_my(ht, p, TSRMLS_DC);
 {$IFDEF PHP7}
 if (ht > 1) and (p[1]^.u1.v._type <> IS_NULL) then
 {$ELSE}
@@ -233,7 +233,7 @@ end;
 
 procedure clipboard_get;
 begin
-   ZVAL_LONG(return_value, Integer(Clipboard));
+   ZVALVAL(return_value, Integer(Clipboard));
 end;
 
 procedure clipboard_checkformat;
@@ -241,56 +241,56 @@ var p: pzval_array;
 format: zend_ustr;
 begin
   if ht <> 1 then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
-  zend_get_parameters_ex(ht, p);
+  zend_get_parameters_my(ht, p, TSRMLS_DC);
   format := LowerCase(Z_STRVAL(p[0]^));
   if (format = 'text') or (format = 'word') or (format = '1') then
-  ZVAL_BOOL( return_value, Clipboard.HasFormat( CF_TEXT ) or Clipboard.HasFormat( CF_OEMTEXT )
+  ZVALVAL( return_value, Clipboard.HasFormat( CF_TEXT ) or Clipboard.HasFormat( CF_OEMTEXT )
   or Clipboard.HasFormat( CF_UNICODETEXT ) or Clipboard.HasFormat( CF_LOCALE )
   or Clipboard.HasFormat( CF_DSPTEXT ) )
   else if (format = 'pic') or (format = 'picture') or (format = '2') then
-  ZVAL_BOOL(return_value, Clipboard.HasFormat( CF_GIF ) or Clipboard.HasFormat( CF_BITMAP )
+  ZVALVAL(return_value, Clipboard.HasFormat( CF_GIF ) or Clipboard.HasFormat( CF_BITMAP )
   or Clipboard.HasFormat( CF_METAFILEPICT ) or Clipboard.HasFormat( CF_TIFF )
   or Clipboard.HasFormat( CF_DIB ) or Clipboard.HasFormat( CF_DIBV5 )
   or Clipboard.HasFormat( CF_DSPBITMAP ) or Clipboard.HasFormat( CF_DSPMETAFILEPICT )
   or Clipboard.HasFormat( CF_DSPENHMETAFILE ) or Clipboard.HasFormat( CF_PICTURE ))
   else if (format = 'c') or (format='component') or (format='3') then
-  ZVAL_BOOL(return_value, Clipboard.HasFormat( CF_COMPONENT ) )
+  ZVALVAL(return_value, Clipboard.HasFormat( CF_COMPONENT ) )
   else if (format = 'aud') or (format='audio') or (format='sound') or (format='4') then
-  ZVAL_BOOL(return_value, Clipboard.HasFormat( CF_WAVE ) or Clipboard.HasFormat( CF_RIFF ) )
+  ZVALVAL(return_value, Clipboard.HasFormat( CF_WAVE ) or Clipboard.HasFormat( CF_RIFF ) )
   else if (format = 'hdrop') or (format='drop') or (format='dragdrop') or (format='5') then
-  ZVAL_BOOL(return_value, Clipboard.HasFormat( CF_HDROP ) )
+  ZVALVAL(return_value, Clipboard.HasFormat( CF_HDROP ) )
   else if (format = 'gdi') or (format = 'gdiobj') or (format='6') then
-  ZVAL_BOOL(return_value, Clipboard.HasFormat( CF_GDIOBJFIRST ) and Clipboard.HasFormat( CF_GDIOBJLAST ))
+  ZVALVAL(return_value, Clipboard.HasFormat( CF_GDIOBJFIRST ) and Clipboard.HasFormat( CF_GDIOBJLAST ))
   else if (format = 'palette') or (format = 'pal') or (format='hpalette') or (format='7') then
-  ZVAL_BOOL(return_value, Clipboard.HasFormat(CF_PALETTE))
+  ZVALVAL(return_value, Clipboard.HasFormat(CF_PALETTE))
   else if (format = 'pen') or (format='hpen') or (format='pendata') or (format='8') then
-  ZVAL_BOOL(return_value, Clipboard.HasFormat( CF_PENDATA ) )
+  ZVALVAL(return_value, Clipboard.HasFormat( CF_PENDATA ) )
   else if (format = 'cust') or (format='custom') or (format='9') then
-  ZVAL_BOOL(return_value, Clipboard.HasFormat( CF_PRIVATEFIRST ) or Clipboard.HasFormat( CF_PRIVATELAST ) )
+  ZVALVAL(return_value, Clipboard.HasFormat( CF_PRIVATEFIRST ) or Clipboard.HasFormat( CF_PRIVATELAST ) )
   else if (format = 'ownerdisplay') or (format = 'ownerdisp') or (format='display') or (format='10') then
-  ZVAL_BOOL(return_value, Clipboard.HasFormat( CF_OWNERDISPLAY ))
+  ZVALVAL(return_value, Clipboard.HasFormat( CF_OWNERDISPLAY ))
   else
-  ZVAL_LONG(return_value, -1);
+  ZVALVAL(return_value, -1);
   dispose_pzval_array(p);
 end;
 procedure exemod_count;
 begin
-   ZVAL_LONG(return_value, exemod.getcnt);
+   ZVALVAL(return_value, exemod.getcnt);
 end;
 procedure clipboard_assignpic;
 var p: pzval_array; o: TObject;
 label e1;
 begin
   if ht <> 1 then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
-  zend_get_parameters_ex(ht, p);
-  ZVAL_FALSE(return_value);
+  zend_get_parameters_my(ht, p, TSRMLS_DC);
+  ZVALVAL(return_value,False);
     o := TObject(Z_LVAL(p[0]^));
     if Clipboard.FormatCount = 0  then goto e1;
     if not Assigned(o) then goto e1;
     if not (o is TPicture) then goto e1;
 
    (TObject(Z_LVAL(p[0]^)) as TPicture).Assign(Clipboard);
-   ZVAL_TRUE(return_value);
+   ZVALVAL(return_value,True);
   e1:
     dispose_pzval_array(p);
 end;

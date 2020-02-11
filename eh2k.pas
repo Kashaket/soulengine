@@ -6,14 +6,16 @@ uses
   Generics.Collections,
   Rtti,
   TypInfo,
-  System.SysUtils{$IFNDEF ADD_VEVENT}
+  System.SysUtils
+  , VCL.Forms
+  , System.Classes
+  , WinApi.Windows
   , dwsHashtables, System.Classes, zendAPI, phpApi, ZENDTypes, php4delphi
-  , uPhpEvents
-  {$ENDIF};
+  , core;
 
 type
   TBaseEvent = class;           //класс псевдо-события(ИЙЫЫ)
-  PPVarRec = ^PVarRec;          //указатель на указатель на  TVarRec
+  //PPVarRec = ^PVarRec;          //указатель на указатель на  TVarRec
                               //TVarRec - запись переменной, используется Delphi в событиях
                               //Фролов видимо про неё не подумал...
   TEventBeforeNotify = reference to procedure(Base: TBaseEvent;
@@ -21,16 +23,13 @@ type
 
   TBaseEvent = class
   private
-   {$IFDEF ADD_VEVENT}
+    //Список обработчиков
     {Количество}
-    ListEventsCallCount: Cardinal;   //Список обработчиков, я вырезал для дс
-                                    //т.к всё равно он ни к чему
-    ListEventsCall: array [0 .. 255] of TEventBeforeNotify;
+     ListEventsCallCount: Cardinal;
     {Сам список}
-   {$ELSE}
-//    procedure PreparePHPArgs(RArgs: array of PVarRec);
-//    procedure CallPHP(PHPFuncPointer: pointer);
-   {$ENDIF}
+    //А вот это списочек для дс, ЫЫЫ
+    ListEventsCall: array [0 .. 255] of pointer;
+
    {Настоящие обработчики событий, вызывающий псевдо-обработчик(и)}
     Procedure EventCall();
     Procedure EventCall1(A1: PVarRec);
@@ -192,7 +191,7 @@ A30, A31, A32, A33, A34, A35, A36, A37, A38, A39,
 A40, A41, A42, A43, A44, A45, A46, A47, A48, A49,
 A50, A51, A52, A53: PVarRec);
     {обработчик вызова события}
-    procedure Handler(PointArgs: Array of PPVarRec);
+    procedure Handler(PointArgs: Array of PVarRec);
   public
     {Оригинальный объект вызова события}
     Sender: TObject;
@@ -204,16 +203,6 @@ A50, A51, A52, A53: PVarRec);
     PropType: TRttiProperty;
     {Имя события}
     EventName: string;
-    {$IFNDEF ADD_VEVENT}
-    FImportClasses: boolean;
-    FImportConstants: boolean;
-    TSRMLS_DC: Pointer;
-    PHPReturn: Pointer;
-    CallBack: TList;
-
-    procedure addPHP(Data: pointer);
-    function GetCallback(Data: pointer): pointer;
-    {$ENDIF}
     {Конструктор класса обработчика}
     constructor Create(aSender: TObject; _PropType: TRttiProperty);
     {Деструктор класса}
@@ -237,56 +226,263 @@ A50, A51, A52, A53: PVarRec);
     function IsSet(aSender: TObject; PropName: string): Boolean; overload;
     function IsSet(aSender: TObject; Prop: TRttiProperty): Boolean; overload;
 
-    function ESet(aSender: TObject; PropName: string{$IFDEF ADD_VEVENT};p: pzval{$ENDIF})
+    function ESet(aSender: TObject;
+    const PropName: string;
+    const Events: array of pointer)
       : Boolean; overload;
-    function ESet(aSender: TObject; Prop: TRttiProperty{$IFDEF ADD_VEVENT};p: pzval{$ENDIF}): Boolean; overload;
-    {$IFDEF ADD_VEVENT}
-    function EAdd(aSender: TObject; PropName: string; Event: TEventBeforeNotify): Boolean; overload;
-    function EAdd(aSender: TObject; Prop: TRttiProperty;
-      Event: TEventBeforeNotify): Boolean; overload;
-    {$ENDIF}
-    function ERem(aSender: TObject; PropName: string): Boolean;
+    function ESet(aSender: TObject;
+    Prop: TRttiProperty;
+    const Events: array of pointer): Boolean; overload;
+    function EAdd(aSender: TObject;
+    const PropName: string;
+    const Events: array of pointer): Boolean; overload;
+
+    function ERem(aSender: TObject; const PropName: string): Boolean;
     constructor Create();
     destructor Destroy;
   end;
-
+TVarRecToObj = reference to procedure(z:pzval;v:TVarRec);
+TPHPObjToVarRec = reference to function(v:pzval):TVarRec;
+procedure VarRecToZval(VarRec: TVarRec; v: pzval; vice_city:TVarRecToObj=nil);
+function ZvalToVarRec(v: pzval;kind:word=nil;crimepoint: TObjectBConvertMethod=nil):TVarRec;
 var
   EventHookObject: TEventHook;
-
 implementation
+
+procedure VarRecToZval(VarRec: TVarRec; v: pzval; vice_city:TVarRecToObj=nil);
+begin
+  case VarRec of
+    vtInteger:        ZVALVAL(v, VarRec.VInteger);
+    vtBoolean:        ZVALVAL(v, VarRec.VBoolean);
+    vtChar:           ZVALVAL(v, zend_pchar(VarRec.VChar), True);
+    vtExtended:       ZVALVAL(v, VarRec.VExtended^);
+    vtString:         ZVALVAL(v, zend_ustr(VarRec.VString^), True);
+    vtPChar:          ZvalVAL(v, VarRec.VPChar);
+
+    vtPointer:
+     if Assigned(vice_city) then
+      vice_city(v,VarRec)
+    else
+      ZVALVAL(v, integer(VarRec.VPointer))
+    ;//HERE;
+    vtObject:
+     if Assigned(vice_city) then
+      vice_city(v,VarRec)
+    else
+      ZVALVAL(v, integer(VarRec.VObject))
+    ;//HERE;
+    vtClass:
+     if Assigned(vice_city) then
+      vice_city(v,VarRec)
+    else
+      ZVALVAL(v, VarRec.VClass.ClassName, Length(VarRec.VClass.ClassName))
+    ;//HERE;
+    {vtInterface:
+     if Assigned(vice_city) then
+        vice_city(v,VarRec)
+    else
+      ZVALVAL(v, integer(VarRec.VInterface^))
+    ;}//HERE;
+
+    vtPWideChar:       ZvalVAL(v, VarRec.VPWideChar);
+    vtWideChar:       ZvalVAL(v, VarRec.VWideChar);
+    vtAnsiString:     ZvalVAL(v, zend_pchar(zend_ustr(VarRec.VAnsiString)));
+    vtUnicodeString:  ZvalVAL(v, UnicodeString(VarRec._Reserved1));
+    vtCurrency:       ZvalVAl(v, VarRec.VCurrency^);
+
+    vtVariant:        VariantToZend(VarRec.VVariant^, v);
+    vtWideString:     ZvalVAL(v, zend_pchar(VarRec.VWideString^));
+    vtInt64:          ZvalVAL(v, NativeInt(VarRec.VInt64^));
+  end;
+end;
+
+function ZvalToVarRec(v: pzval;kind:word=nil;crimepoint:TObjectBConvertMethod=nil)
+:TVarRec;
+begin
+  Result.VType := kind;
+  case kind of
+    vtInteger:        Result.VInteger := Z_LVAL(v);
+    vtBoolean:        Result.VBoolean := Z_BVAL(v);
+    vtChar:           Result.VChar := Z_AChar(v);
+    vtExtended:       Result.VExtended := PExtended(Extended(Z_DVAL(v)));
+    vtString:         Result.VString := PShortString(ShortString(Z_STRVAL(v)));
+    vtPChar:          Result.VPChar := PAnsiChar(Z_AChar(v));
+
+    vtPointer:
+     if Assigned(vice_city) then
+      vice_city(v,VarRec)
+    else
+      ZVALVAL(v, integer(VarRec.VPointer))
+    ;//HERE;
+    vtObject:
+     if Assigned(vice_city) then
+      vice_city(v,VarRec)
+    else
+      ZVALVAL(v, integer(VarRec.VObject))
+    ;//HERE;
+    vtClass:
+     if Assigned(vice_city) then
+      vice_city(v,VarRec)
+    else
+      ZVALVAL(v, VarRec.VClass.ClassName, Length(VarRec.VClass.ClassName))
+    ;//HERE;
+    {vtInterface:
+     if Assigned(vice_city) then
+        vice_city(v,VarRec)
+    else
+      ZVALVAL(v, integer(VarRec.VInterface^))
+    ;//HERE; }
+
+    vtWideChar:       Result.VWideChar      := Z_WChar(v);
+    vtPWideChar:      Result.VWideChar      := PWideChar(Z_WChar(v));
+    vtAnsiString:     Result.VAnsiString    := AnsiString(Z_STRVAL(v));
+    vtUnicodeString:  Result.VUnicodeString := PUnicodeString(UnicodeString(Z_STRWVAL(v)));
+    vtCurrency:       Result.VCurrency      := PExtended(Extended(Z_DVAl(v)));
+
+    vtVariant:        Result.VVariant := PVariant(ZendToVariant(v,crimepoint));
+    vtWideString:     Result.VWideString := PWideString(Z_STRWVAL(v));
+    vtInt64:          Result.VInt64 := PInt64(Int64(Z_LVAL(v)));
+  end;
+end;
+
+procedure _c(id: integer;Result:pzval;n:Char;TSRMLS_DC:pointer);
+var arg,f: pzval;
+begin
+  f       := MAKE_STD_ZVAL;//Имя функции или функция
+  arg     := MAKE_STD_ZVAL;//Параметр~(~ы)
+  ZVALVAL(arg, id);
+  ZVALVAL(f, '_' + n, 2);
+  call_user_function
+  (
+  pzend_executor_globals(GetGlobalResourceDC('executor_globals_id',  TSRMLS_DC))
+  .function_table, nil, f, Result, 1, [arg]
+  ,TSRMLS_DC
+  );
+  freemem(arg);
+  freemem(f);
+end;
 
 constructor TEventHook.Create();
 begin
   FlList := TDictionary<String, TBaseEvent>.Create();
 end;
 
-procedure TBaseEvent.Handler(PointArgs: Array of PPVarRec);
+procedure TBaseEvent.Handler(PointArgs: Array of PVarRec);
 var
   I: Byte;
-  Args: TArray<PVarRec>;
+    psv: TpsvPHP;
+    Args: pzval_array_ex;
+    thread: TThread;
+    executor_globals, eg: pzend_executor_globals;
+    compiler_globals, cg: Pzend_compiler_globals;
+    lastConstants, lastFunctions, lastClasses: {$IFDEF PHP7}pzval{$ELSE}PHashTable{$ENDIF};
+    tsrmdc: pointer;
+    return {$IFDEF PHP7}, tmp{$ENDIF}: pzval;
+    sName: string;
+    strs: zend_ustr;
+    sOwner:integer;
+    isThread: boolean;
+    myMFC: TVarRecToObj;
 begin
   SetLength(Args, 0);
+  tsrmdc := mypsvPHP.TSRMLS_D;
+  executor_globals := GetGlobalResourceDC('executor_globals_id',  mypsvPHP.TSRMLS_D);
+  isThread := GetCurrentThreadId <> MainThreadId;
+  //--тут проверка на поток + костыль, кхм велосипед вернее
+    if isThread then
+    begin
+      thread :=  TThread.FCurrentThread;
+        psv := TpsvPHP.Create(nil);
+        {НИ В КОЕМ СЛУЧАЕ НЕ УБИРАТЬ ECHO 1, ДА ГОВНОКОД, НО ЭТО КАКОЙ-ТО ХИТРЫЙ КОСТЫЛЬ!}
+        psv.RunCode('echo 1; ' + '$GLOBALS["THREAD_SELF"] = ' +
+          IntToStr(integer(thread)) + ';');
+        compiler_globals := GetGlobalResourceDC('compiler_globals_id',  mypsvPHP.TSRMLS_D);;
+        eg := GetGlobalResourceDC('executor_globals_id',  psv.TSRMLS_D);
+        cg := GetGlobalResourceDC('compiler_globals_id',  psv.TSRMLS_D);
+      tsrmdc := psv.TSRMLS_D;
+        eg.current_module := executor_globals.current_module;
+        //Imports all functions from main ST-TS - php secured thread
+          lastFunctions := eg.function_table;
+          eg.function_table := executor_globals.function_table;
+
+
+       // if FThread.Main.FImportClasses then
+       // begin
+          lastClasses := eg.class_table;
+          eg.class_table := executor_globals.class_table;
+       // end;
+
+       // if FThread.Main.FImportConstants then
+       // begin
+          lastConstants := eg.zend_constants;
+          eg.zend_constants := executor_globals.zend_constants;
+       // end;
+
+        psv.thread := thread;
+        psv.RunCode('if (class_exists("TThread")) TThread::__init();');
+    end;
+
+  //---тут задаём инфу о событии (аналог SetEventInfo)
+  if Self.Sender is TComponent then
+  begin
+    sName := TComponent(Self.Sender).Name;
+    if Self.Sender is TForm then
+      sOwner := Integer(Self.Sender)
+    else
+      sOwner := Integer(TComponent(Self.Sender).Owner);
+  end
+  else
+  begin
+    sName := IntToStr(Integer(Self.Sender));
+    sOwner := 0;
+  end;
+  strs :=
+        zend_ustr(
+        '$GLOBALS["__eventInfo"] = '
+            + '["obj_name"=>"' + sName + '",'
+            + '"name"=>"'+Self.EventName+'",'
+            + '"self"=>'+StrToInt(Integer(Self.Sender))+'];'+ #10 + #13
+            + '$GLOBALS["__ownerComponent_last"][] = $GLOBALS["__ownerComponent"];'
+            + '$GLOBALS["__ownerComponent"] = ' + IntToStr(sOwner) + ';' + #10 + #13 +
+            'ob_start("__exEvents::echo_handler", PHP_OUTPUT_HANDLER_CONT);?>'
+        );
+  if isThread then
+     psv.RunCode(strs)
+  else
+    mypsvPHP.RunCode(strs);
+  myMfc = procedure(z:pzval;v:TVarRec)
+  begin
+      case V.Vtype of
+       vtPointer: _c(integer(v.VPointer), z, 'p', tsrmdc);
+       vtObject: _c(integer(v.VObject), z, 'c', tsrmdc);
+       vtClass: _c(integer(v.VClass), z, 'j', tsrmdc);
+       vtInterface: _c(integer(v.VObject), z, 'i', tsrmdc);
+      end;
+  end;
   if LengthArgs > 0 then    //если параметров у события больше нуля
   for I := 0 to LengthArgs-1 do
   begin
     SetLength(Args, I+1);
-    Args[I] := PointArgs[I]^;
+  //--тут следует подготовить параметры для функции-обработчика
+  //--они должны быть в ПОЛНОСТЬЮ готовом виде - объекты, параметры, строки и т.д
+      Args[I] := MAKE_STD_ZVAL;
+      VarRecToZval(PointArgs[I]^,Args[I],myMFC);
+  end else begin
+     SetLength(Args, 1);
+     Args[1] := MAKE_STD_ZVAL;
+     Args[1] := _c(integer(Self.Sender), Args[1], 'c', tsrmdc);
   end;
-  //вызываем процедуру обработки события от TEventHook
-  //(если таковая имеется)
-  if Assigned(EventHookObject.OnBefore) then begin
-    EventHookObject.OnBefore(self, Args);
-  end;
-  {$IFDEF ADD_VEVENT}
-  if ListEventsCallCount > 0 then
-  for I := Low(ListEventsCall) to ListEventsCallCount - 1 do
-    ListEventsCall[I](self, Args);
-  {$ELSE}
-   // CallPHP(Args);
-  {$ENDIF}
+  return := MAKE_STD_ZVAL;
+  for i := Low(ListEventsCall) to ListEventsCallCount - 1 do
+  //Тут вызываем пользовательский обработчик
+   call_user_function(executor_globals.function_table, nil,
+   ListEventsCall[i]{FUNCTION},
+   return, Length(Args), Args,
+   tsrmdc
+   //Тут вообще следует поставить psvPHP.TSRMLS_D, а не TSRMLS_DC, иначе вылеты в пткх00
+   );
   //Тут происходит самое интересное - магия указателей
-  //Задаём значение параметру события так, как будто оно было задано
-  //Прямо из него
+  //Задаём значение параметру события так, как будто оно было задано прямо из него
   if LengthArgs > 0 then   //если параметров у события больше нуля
   for I := Low(InfoArgs) to High(InfoArgs) do //пробегаемся по массиву переменных
   //в данном случае это - указатели на параметры
@@ -294,10 +490,82 @@ begin
   if InfoArgs[I].Flags * [pfVar, pfOut] <> [] then //тут нам и нужно инфо события
   //и его параметров - для проверки того, не является ли параметр переменной или
   //<<выходными данными>> - outer data
-    PointArgs[I]^ := @Args[I]; //модифицируем параметр по указателю, сменив его
+    PointArgs[I]^ := ZvalToVarRec(Args[I],PointArgs[I]^.VType);
     //Предыдущий указатель автоматически уничтожается, высвобождать его не требуется
   end;
-  Args := nil;
+  //---Енд
+  //--тут следует вызывать очистку параметров
+  if LengthArgs > 0 then    //если параметров у события больше нуля
+  begin
+  for I := 0 to LengthArgs-1 do
+  begin
+    {$IFDEF PHP7}
+    tmp := zend_hash_index_findZval(Args, i);
+    if tmp <> nil then
+      zval_dtor_func(tmp);
+    {$ELSE}
+    if Args[i] <> nil then
+      _zval_dtor_func(Args[i], nil, 0);
+    {$ENDIF}
+  end;
+  end else begin
+    {$IFDEF PHP7}
+    tmp := zend_hash_index_findZval(Args, 0);
+    if tmp <> nil then
+      zval_dtor_func(tmp);
+    {$ELSE}
+    if Args[0] <> nil then
+      _zval_dtor_func(Args[0], nil, 0);
+    {$ENDIF}
+  end;
+  {$IFDEF PHP7}
+  zend_hash_clean(Args.value.arr);
+  {$ELSE}
+  SetLength(Args, 0);
+  {$ENDIF}
+  _zval_dtor_func(return, nil, 0);//эту фигню мы так и не используем. А зачем? :)
+  //--Тут высвобождаем/удаляем инфу о событии
+  strs :=
+        zend_ustr(
+        'ob_end_flush();'
+        + '$GLOBALS["__ownerComponent"] = $GLOBALS["__ownerComponent_last"][count($GLOBALS["__ownerComponent_last"])-1];'
+        + 'unset($GLOBALS["__ownerComponent_last"][count($GLOBALS["__ownerComponent_last"])-1]);'
+        + '$GLOBALS["__ownerComponent_last"] = array_values($GLOBALS["__ownerComponent_last"]);'
+        + 'unset($GLOBALS["__eventInfo"]);'
+        );
+  //--Тут удаляем поток. ну а чё?
+  if isThread then
+    begin
+     psv.RunCode(strs);
+      try
+       // if FImportClasses then
+          eg.class_table := lastClasses;
+
+       // if FImportConstants then
+          eg.zend_constants := lastConstants;
+
+        eg.function_table := lastFunctions;
+        try
+          psv.ShutdownRequest;
+          psv.Destroy;
+        except
+          MessageBoxA(0,
+            'Error while exitting event'
+            + #10 + #13 + 'Type: Thread Event'
+            + #10 + #13 + 'Name:' + Sname  + '.' + Self.EventName
+            , 'PHP4Delphi', 0)
+        end;
+
+      finally
+        try
+          ts_free_thread(); // for zend_timeout to kill timer
+        except
+        //What a??? whst?
+        end;
+      end;
+
+    end else
+    mypsvPHP.RunCode(strs);
 end;
 
 constructor TBaseEvent.Create(aSender: TObject; _PropType: TRttiProperty);
@@ -307,25 +575,15 @@ begin
   EventName := PropType.Name;
   InfoArgs := TRttiInvokableType(PropType.PropertyType).GetParameters;
   LengthArgs := _PropType.PropertyType.Handle.TypeData.ParamCount;
-  {$IFDEF ADD_VEVENT}ListEventsCallCount := 0;{$ENDIF}
+  ListEventsCallCount := 0;
 end;
 
 destructor TBaseEvent.Destroy;
 begin
   SetLength(InfoArgs, 0);
-  {$IFDEF ADD_VEVENT}ListEventsCallCount := 0;{$ENDIF}
+  ListEventsCallCount := 0;
 end;
-{$IFNDEF ADD_VEVENT}
-function TBaseEvent.GetCallback(Data: Pointer): Pointer;
-begin
-  Result := Data;
-end;
-procedure TBaseEvent.addPHP(Data: pointer);
-begin
-  Data := GetCallback(Data);
-  CallBack.Add(Data);
-end;
-{$ENDIF}
+
 function TEventHook.IsSet(aSender: TObject; Prop: TRttiProperty;
   var Base: TBaseEvent): Boolean;
 begin
@@ -356,11 +614,13 @@ begin
   Result := IsSet(aSender, PropName, Base);
 end;
 
-function TEventHook.ESet(aSender: TObject; Prop: TRttiProperty{$IFDEF ADD_VEVENT};p: pzval{$ENDIF}): Boolean;
+function TEventHook.ESet(aSender: TObject; Prop: TRttiProperty;
+const Events: array of pointer): Boolean;
 var
   m: TMethod;
   Base: TBaseEvent;
   NameCase, PropName: string;
+  I: byte;
 begin
  Result := false;
   if (@aSender <> nil) and (Prop <> nil) then
@@ -485,63 +745,52 @@ begin
       end;
 
         Base := TBaseEvent.Create(aSender, Prop);
+        for I := 0 to Length(Events) do
+        begin
+          if Base.ListEventsCallCount = 256 then exit;
 
+          Base.ListEventsCall[Base.ListEventsCallCount] := Events[I];
+          inc(Base.ListEventsCallCount);
+        end;
         TObject(m.Data) := Base;
         setMethodProp(aSender, PropName, m);
-        {$IFDEF ADD_VEVENT}
-        Base.addPHP(c);
-        {$ENDIF}
         FlList.Add(NameCase, Base);
     end;
   end;
 end;
 
-function TEventHook.ESet(aSender: TObject; PropName: string{$IFDEF ADD_VEVENT}
-;p: pzval{$ENDIF}): Boolean;
+function TEventHook.ESet(aSender: TObject;
+const PropName: string;
+const Events:array of pointer): Boolean;
 begin
   if @aSender <> nil then
     Result := ESet(aSender, RttiContext.GetType(aSender.ClassInfo)
-      .GetProperty(PropName){$IFDEF ADD_VEVENT}, p{$ENDIF})
+      .GetProperty(PropName),Events)
   else
     Result := false;
 end;
-{$IFDEF ADD_VEVENT}
-function TEventHook.EAdd(aSender: TObject; Prop: TRttiProperty;
-  Event: TEventBeforeNotify): Boolean;
-var
-  Base: TBaseEvent;
-begin
-  Result := IsSet(aSender, Prop, Base);
-  if not Result then
-  begin
-    ESet(aSender, Prop);
-    Result := IsSet(aSender, Prop, Base);
-  end;
-  if Result then
-  begin
-    Base.ListEventsCall[Base.ListEventsCallCount] := Event;
-    inc(Base.ListEventsCallCount);
-  end;
-end;
 
-function TEventHook.EAdd(aSender: TObject; PropName: string;
-  Event: TEventBeforeNotify): Boolean;
+function TEventHook.EAdd(aSender: TObject;
+const PropName: string;
+const Event: array of pointer): Boolean;
 var
   Base: TBaseEvent;
+  I: byte;
 begin
   Result := IsSet(aSender, PropName, Base);
-  if not Result then
-  begin
-    ESet(aSender, PropName);
-    Result := IsSet(aSender, PropName, Base);
-  end;
   if Result then
   begin
-    Base.ListEventsCall[Base.ListEventsCallCount] := Event;
-    inc(Base.ListEventsCallCount);
-  end;
+    for I := 0 to Length(Events) do
+        begin
+          if Base.ListEventsCallCount = 256 then exit;
+
+          Base.ListEventsCall[Base.ListEventsCallCount] := Events[I];
+          inc(Base.ListEventsCallCount);
+        end;
+  end else
+    Result := ESet(aSender, PropName, Events);
 end;
-{$ENDIF}
+
 function TEventHook.ERem(aSender: TObject; PropName: string): Boolean;
 var
   Base: TBaseEvent;
@@ -563,86 +812,7 @@ begin
     Item.Value.Destroy;
 
   FlList.Free;
-end;{
-procedure TBaseEvent.CallPHP(PHPFuncPointer: pointer);
-  var
-  eg: pzend_executor_globals;
-  cg: Pzend_compiler_globals;
-
-  lastConstants, lastFunctions, lastClasses: PHashTable;
-begin
-  if self.Sender is TScriptThread then
-  begin
-    with TScriptThread(self.Sender) do
-    begin
-      try
-        psv := TpsvPHP.Create(nil);
-        //НИ В КОЕМ СЛУЧАЕ НЕ УБИРАТЬ ECHO 1, ДА ГОВНОКОД, НО ЭТО КАКОЙ-ТО ХИТРЫЙ КОСТЫЛЬ!
-        psv.RunCode('echo 1; ' + '$GLOBALS["THREAD_SELF"] = ' +
-          IntToStr(integer(self.Sender)) + ';');
-
-        eg := GetExecutorGlobals;
-        cg := GetCompilerGlobals;
-
-        eg.current_module := executor_globals.current_module;
-        //Imports all functions from main ST-TS - php secured thread
-          lastFunctions := eg.function_table;
-          eg.function_table := executor_globals.function_table;
-        if FThread.Main.FImportClasses then
-        begin
-          lastClasses := eg.class_table;
-          eg.class_table := executor_globals.class_table;
-        end;
-        if FThread.Main.FImportConstants then
-        begin
-          lastConstants := eg.zend_constants;
-          eg.zend_constants := executor_globals.zend_constants;
-        end;
-        psv.thread := self.Sender;
-        psv.RunCode('if (class_exists("TThread")) TThread::__init();');
-        try
-          call_user_function(cg.function_table, nil, PHPFuncPointer, pzval(PHPReturn),
-            self.LengthArgs, self.phpArgs, psv.TSRMLS_D);
-        except
-
-        end;
-
-        if self.FImportClasses then
-          eg.class_table := lastClasses;
-
-        if self.FImportConstants then
-          eg.zend_constants := lastConstants;
-
-        eg.function_table := lastFunctions;
-        try
-          psv.ShutdownRequest;
-          psv.Free;
-        except
-
-        end;
-
-      finally
-        try
-          ts_free_thread(); // for zend_timeout to kill timer
-        except
-
-        end;
-      end;
-
-    end;
-
-  end
-  else
-  begin
-    try
-      call_user_function(GetExecutorGlobals.function_table, nil, PHPFuncPointer,
-        pzval(PHPReturn), self.LengthArgs, self.phpArgs, self.TSRMLS_DC);
-    except
-      // ShowMessage(Z_STRVAL(Data));
-    end;
-  end;
 end;
-}
 Procedure TBaseEvent.EventCall;
 begin
   Handler([]);

@@ -563,15 +563,6 @@ type
     procedure PHPLibraryFunctions39Execute(Sender: TObject;
       Parameters: TFunctionParams; var ReturnValue: variant;
       ZendVar: TZendVariable; TSRMLS_DC: Pointer);
-    procedure _CanvasFunctions0Execute(Sender: TObject;
-      Parameters: TFunctionParams; var ReturnValue: variant;
-      ZendVar: TZendVariable; TSRMLS_DC: Pointer);
-    procedure _CanvasFunctions1Execute(Sender: TObject;
-      Parameters: TFunctionParams; var ReturnValue: variant;
-      ZendVar: TZendVariable; TSRMLS_DC: Pointer);
-    procedure _CanvasFunctions2Execute(Sender: TObject;
-      Parameters: TFunctionParams; var ReturnValue: variant;
-      ZendVar: TZendVariable; TSRMLS_DC: Pointer);
     procedure _TPictureLibFunctions15Execute(Sender: TObject;
       Parameters: TFunctionParams; var ReturnValue: variant;
       ZendVar: TZendVariable; TSRMLS_DC: Pointer);
@@ -653,58 +644,16 @@ type
     procedure _TStringGridFunctions6Execute(Sender: TObject;
       Parameters: TFunctionParams; var ReturnValue: variant;
       ZendVar: TZendVariable; TSRMLS_DC: Pointer);
-    procedure _CanvasFunctions3Execute(Sender: TObject;
-      Parameters: TFunctionParams; var ReturnValue: variant;
-      ZendVar: TZendVariable; TSRMLS_DC: Pointer);
-    procedure _CanvasFunctions4Execute(Sender: TObject;
-      Parameters: TFunctionParams; var ReturnValue: variant;
-      ZendVar: TZendVariable; TSRMLS_DC: Pointer);
-    procedure _CanvasFunctions5Execute(Sender: TObject;
-      Parameters: TFunctionParams; var ReturnValue: variant;
-      ZendVar: TZendVariable; TSRMLS_DC: Pointer);
-    procedure _CanvasFunctions6Execute(Sender: TObject;
-      Parameters: TFunctionParams; var ReturnValue: variant;
-      ZendVar: TZendVariable; TSRMLS_DC: Pointer);
-    procedure _CanvasFunctions7Execute(Sender: TObject;
-      Parameters: TFunctionParams; var ReturnValue: variant;
-      ZendVar: TZendVariable; TSRMLS_DC: Pointer);
     procedure _CanvasFunctions8Execute(Sender: TObject;
-      Parameters: TFunctionParams; var ReturnValue: variant;
-      ZendVar: TZendVariable; TSRMLS_DC: Pointer);
-    procedure _CanvasFunctions9Execute(Sender: TObject;
       Parameters: TFunctionParams; var ReturnValue: variant;
       ZendVar: TZendVariable; TSRMLS_DC: Pointer);
     {$IFDEF ADD_CHROMIUM}
     procedure chromtextevent(Sender: TObject; const aText : ustring);
     {$ENDIF}
-    procedure _CanvasFunctions10Execute(Sender: TObject;
-      Parameters: TFunctionParams; var ReturnValue: variant;
-      ZendVar: TZendVariable; TSRMLS_DC: Pointer);
-    procedure _CanvasFunctions11Execute(Sender: TObject;
-      Parameters: TFunctionParams; var ReturnValue: variant;
-      ZendVar: TZendVariable; TSRMLS_DC: Pointer);
-    procedure _CanvasFunctions12Execute(Sender: TObject;
-      Parameters: TFunctionParams; var ReturnValue: variant;
-      ZendVar: TZendVariable; TSRMLS_DC: Pointer);
-    procedure _CanvasFunctions13Execute(Sender: TObject;
-      Parameters: TFunctionParams; var ReturnValue: variant;
-      ZendVar: TZendVariable; TSRMLS_DC: Pointer);
-    procedure _CanvasFunctions14Execute(Sender: TObject;
-      Parameters: TFunctionParams; var ReturnValue: variant;
-      ZendVar: TZendVariable; TSRMLS_DC: Pointer);
-    procedure _CanvasFunctions15Execute(Sender: TObject;
-      Parameters: TFunctionParams; var ReturnValue: variant;
-      ZendVar: TZendVariable; TSRMLS_DC: Pointer);
-    procedure _CanvasFunctions16Execute(Sender: TObject;
-      Parameters: TFunctionParams; var ReturnValue: variant;
-      ZendVar: TZendVariable; TSRMLS_DC: Pointer);
     procedure _CanvasFunctions17Execute(Sender: TObject;
       Parameters: TFunctionParams; var ReturnValue: variant;
       ZendVar: TZendVariable; TSRMLS_DC: Pointer);
     procedure _CanvasFunctions18Execute(Sender: TObject;
-      Parameters: TFunctionParams; var ReturnValue: variant;
-      ZendVar: TZendVariable; TSRMLS_DC: Pointer);
-    procedure _CanvasFunctions19Execute(Sender: TObject;
       Parameters: TFunctionParams; var ReturnValue: variant;
       ZendVar: TZendVariable; TSRMLS_DC: Pointer);
     procedure _CanvasFunctions20Execute(Sender: TObject;
@@ -885,6 +834,9 @@ type
       Parameters: TFunctionParams; var ReturnValue: variant;
       ZendVar: TZendVariable; TSRMLS_DC: Pointer);
     procedure _TTreeFunctions7Execute(Sender: TObject;
+      Parameters: TFunctionParams; var ReturnValue: variant;
+      ZendVar: TZendVariable; TSRMLS_DC: Pointer);
+    procedure _TTreeFunctions8Execute(Sender: TObject;
       Parameters: TFunctionParams; var ReturnValue: variant;
       ZendVar: TZendVariable; TSRMLS_DC: Pointer);
     procedure libDialogsFunctions2Execute(Sender: TObject;
@@ -1091,9 +1043,6 @@ type
     procedure __WinUtilsFunctions3Execute(Sender: TObject;
       Parameters: TFunctionParams; var ReturnValue: variant;
       ZendVar: TZendVariable; TSRMLS_DC: Pointer);
-    procedure _TTreeFunctions8Execute(Sender: TObject;
-      Parameters: TFunctionParams; var ReturnValue: variant;
-      ZendVar: TZendVariable; TSRMLS_DC: Pointer);
     procedure guiFunctions14Execute(Sender: TObject;
       Parameters: TFunctionParams; var ReturnValue: variant;
       ZendVar: TZendVariable; TSRMLS_DC: Pointer);
@@ -1157,6 +1106,8 @@ type
     procedure _ChromiumFunctions3Execute(Sender: TObject;
       Parameters: TFunctionParams; var ReturnValue: Variant;
       ZendVar: TZendVariable; TSRMLS_DC: Pointer);
+    procedure PHPLibraryFunc1Exec(Sender: TObject; Parameters: TFunctionParams;
+      var ReturnValue: Variant; ZendVar: TZendVariable; TSRMLS_DC: Pointer);
   private
     { Private declarations }
     {$IFDEF ADD_CHROMIUM}
@@ -1552,7 +1503,7 @@ end;
 procedure TphpMOD.RunCode(S: zend_ustr);
 begin
   if not psvPHP.UseDelimiters then
-    S := '<? ' + S;
+    S := '<?php ' + S;
   psvPHP.RunCode(S);
   S := '';
 end;
@@ -2528,31 +2479,24 @@ procedure TphpMOD.PHPLibraryFunctions1Execute(Sender: TObject;
   Parameters: TFunctionParams; var ReturnValue: variant; ZendVar: TZendVariable;
   TSRMLS_DC: Pointer);
 var
-  Obj, Owner: TComponent;
-  P: TComponentClass;
+  Owner: TComponent;
+  P: TClass;
 begin
-  try
-    if Parameters[1].Value = aNil then
+  ReturnValue := 0;
+
+    if VarIsNull(Parameters[1].Value) or Parameters[1].Value = aNil then
       Owner := Application
     else
       Owner := ToComp(Parameters[1].Value);
-
-    P := TComponentClass(GetClass(Parameters[0].Value));
-
+    P := GetClass(Parameters[0].Value);
     if (P <> nil) then
     begin
 
-      Obj := TComponentClass(P).Create(Owner);
-      ReturnValue := integer(Obj);
-    end
-    else
-    begin
-      ReturnValue := 0;
+      if P.InheritsFrom(TComponent) then
+        ReturnValue := integer(TComponentClass(P).Create(Owner))
+      else
+        ReturnValue := integer(P.Create);
     end;
-
-  except
-    ReturnValue := 0;
-  end;
 end;
 
 procedure TphpMOD.PHPLibraryFunctions3Execute(Sender: TObject;
@@ -3445,7 +3389,7 @@ begin
 
   if O = nil then
   begin
-    ZVAL_NULL(ZendVar.AsZendVariable);
+    ZVALVAL(ZendVar.AsZendVariable);
     // := Null;
     exit;
   end;
@@ -3724,6 +3668,28 @@ procedure TphpMOD.PHPLibraryFunctions30Execute(Sender: TObject;
   TSRMLS_DC: Pointer);
 begin
   ToCntrl(Parameters[0].Value).SendToBack;
+end;
+
+procedure TphpMOD.PHPLibraryFunc1Exec(Sender: TObject;
+  Parameters: TFunctionParams; var ReturnValue: Variant; ZendVar: TZendVariable;
+  TSRMLS_DC: Pointer);
+{$IFDEF VS_EDITOR}
+var
+  ins :TNextInspector;
+{$ENDIF}
+begin
+{$IFDEF VS_EDITOR}
+  ins := TNextInspector(ToObj(Parameters, 0));
+
+  if Parameters[1].Value = null then
+    ins.Items.AddItem(nil,
+      TNxPropertyItem(ToObj(Parameters, 2)),
+      Parameters[3].Value)
+  else
+    ins.Items.AddItem(TNxPropertyItem(ToObj(Parameters, 1)),
+      TNxPropertyItem(ToObj(Parameters, 2)),
+      Parameters[3].Value);
+{$ENDIF}
 end;
 
 procedure TphpMOD.PHPLibraryFunctionCCopyExecute(Sender: TObject;
@@ -4410,41 +4376,6 @@ begin
   Application.ShowHint := True;
 end;
 
-procedure TphpMOD._CanvasFunctions0Execute(Sender: TObject;
-  Parameters: TFunctionParams; var ReturnValue: variant; ZendVar: TZendVariable;
-  TSRMLS_DC: Pointer);
-begin
-  TCanvas(ToObj(Parameters, 0)).MoveTo(Parameters[1].Value,
-    Parameters[2].Value);
-end;
-
-procedure TphpMOD._CanvasFunctions1Execute(Sender: TObject;
-  Parameters: TFunctionParams; var ReturnValue: variant; ZendVar: TZendVariable;
-  TSRMLS_DC: Pointer);
-begin
-  TCanvas(ToObj(Parameters, 0)).LineTo(Parameters[1].Value,
-    Parameters[2].Value);
-end;
-
-procedure TphpMOD._CanvasFunctions2Execute(Sender: TObject;
-  Parameters: TFunctionParams; var ReturnValue: variant; ZendVar: TZendVariable;
-  TSRMLS_DC: Pointer);
-var
-  X: TObject;
-begin
-  X := ToObj(Parameters, 0);
-  if X is TForm then
-    ReturnValue := integer(TForm(X).Canvas)
-  else if X is TPaintBox then
-    ReturnValue := integer(TPaintBox(X).Canvas)
-  else if X is TImage then
-    ReturnValue := integer(TImage(X).Canvas)
-  else if X is TMImage then
-    ReturnValue := integer(TMImage(X).Canvas)
-  else
-    ReturnValue := False;
-end;
-
 procedure TphpMOD._TPictureLibFunctions15Execute(Sender: TObject;
   Parameters: TFunctionParams; var ReturnValue: variant; ZendVar: TZendVariable;
   TSRMLS_DC: Pointer);
@@ -4749,46 +4680,6 @@ begin
       Parameters[2].Value;
 end;
 
-procedure TphpMOD._CanvasFunctions3Execute(Sender: TObject;
-  Parameters: TFunctionParams; var ReturnValue: variant; ZendVar: TZendVariable;
-  TSRMLS_DC: Pointer);
-begin
-  ReturnValue := integer(TControlCanvas.Create);
-end;
-
-procedure TphpMOD._CanvasFunctions4Execute(Sender: TObject;
-  Parameters: TFunctionParams; var ReturnValue: variant; ZendVar: TZendVariable;
-  TSRMLS_DC: Pointer);
-begin
-  if Parameters[1].Value = Null then
-    ReturnValue := integer(TControlCanvas(ToObj(Parameters, 0)).Control)
-  else
-    TControlCanvas(ToObj(Parameters, 0)).Control :=
-      ToCntrl(Parameters[1].Value);
-
-end;
-
-procedure TphpMOD._CanvasFunctions5Execute(Sender: TObject;
-  Parameters: TFunctionParams; var ReturnValue: variant; ZendVar: TZendVariable;
-  TSRMLS_DC: Pointer);
-begin
-  ReturnValue := TCanvas(ToObj(Parameters, 0)).TextHeight(Parameters[1].Value);
-end;
-
-procedure TphpMOD._CanvasFunctions6Execute(Sender: TObject;
-  Parameters: TFunctionParams; var ReturnValue: variant; ZendVar: TZendVariable;
-  TSRMLS_DC: Pointer);
-begin
-  TCanvas(ToObj(Parameters, 0)).Refresh;
-end;
-
-procedure TphpMOD._CanvasFunctions7Execute(Sender: TObject;
-  Parameters: TFunctionParams; var ReturnValue: variant; ZendVar: TZendVariable;
-  TSRMLS_DC: Pointer);
-begin
-  ReturnValue := TCanvas(ToObj(Parameters, 0)).TextWidth(Parameters[1].Value);
-end;
-
 procedure TphpMOD._CanvasFunctions8Execute(Sender: TObject;
   Parameters: TFunctionParams; var ReturnValue: variant; ZendVar: TZendVariable;
   TSRMLS_DC: Pointer);
@@ -4801,13 +4692,6 @@ begin
       Parameters[2].Value] := Parameters[3].Value;
 end;
 
-procedure TphpMOD._CanvasFunctions9Execute(Sender: TObject;
-  Parameters: TFunctionParams; var ReturnValue: variant; ZendVar: TZendVariable;
-  TSRMLS_DC: Pointer);
-begin
-  TCanvas(ToObj(Parameters, 0)).TextOut(Parameters[1].Value,
-    Parameters[2].Value, Parameters[3].Value);
-end;
 {$IFDEF ADD_CHROMIUM}
 procedure TphpMOD.chromtextevent(Sender: TObject; const aText : ustring);
 begin
@@ -4817,9 +4701,9 @@ end;
 procedure TphpMOD._ChromiumFunctions0Execute(Sender: TObject;
   Parameters: TFunctionParams; var ReturnValue: variant; ZendVar: TZendVariable;
   TSRMLS_DC: Pointer);
+{$IFDEF ADD_CHROMIUM}
 var
   arr: TArrayVariant;
-{$IFDEF ADD_CHROMIUM}
   Req: ICefRequest;
   kevent: TCefKeyEvent;
   mevent: TCefMouseEvent;
@@ -4990,10 +4874,10 @@ end;
 procedure TphpMOD._ChromiumFunctions1Execute(Sender: TObject;
   Parameters: TFunctionParams; var ReturnValue: variant; ZendVar: TZendVariable;
   TSRMLS_DC: Pointer);
-var
+{$IFDEF ADD_CHROMIUM}
+  var
   isGet: boolean;
 begin
-{$IFDEF ADD_CHROMIUM}
   isGet := Parameters[2].Value = Null;
   with TChromium(ToObj(Parameters, 0)) do
   begin
@@ -5025,6 +4909,8 @@ begin
         end;
     end;
   end;
+{$ELSE}
+begin
 {$ENDIF}
 end;
 
@@ -5041,7 +4927,7 @@ procedure TphpMOD._ChromiumFunctions3Execute(Sender: TObject;
 begin
 {$IFDEF ADD_CHROMIUM}
   ReturnValue := (TChromium(TObject( integer(Parameters[0].Value) )))
-  .CreateBrowser( TCEFWinControl(TObject( integer(Parameters[1].Value) )), 'TestName' );
+  .CreateBrowser( TCEFWinControl(TObject( integer(Parameters[1].Value) )), String(Parameters[2].Value));
 {$ENDIF}
 end;
 
@@ -5196,57 +5082,6 @@ begin
   ReturnValue := R.Left;
 end;
 
-procedure TphpMOD._CanvasFunctions10Execute(Sender: TObject;
-  Parameters: TFunctionParams; var ReturnValue: variant; ZendVar: TZendVariable;
-  TSRMLS_DC: Pointer);
-begin
-  ReturnValue := integer(TCanvas(ToObj(Parameters, 0)).Font);
-end;
-
-procedure TphpMOD._CanvasFunctions11Execute(Sender: TObject;
-  Parameters: TFunctionParams; var ReturnValue: variant; ZendVar: TZendVariable;
-  TSRMLS_DC: Pointer);
-begin
-  ReturnValue := integer(TCanvas(ToObj(Parameters, 0)).Brush);
-end;
-
-procedure TphpMOD._CanvasFunctions12Execute(Sender: TObject;
-  Parameters: TFunctionParams; var ReturnValue: variant; ZendVar: TZendVariable;
-  TSRMLS_DC: Pointer);
-begin
-  ReturnValue := integer(TCanvas(ToObj(Parameters, 0)).Pen);
-end;
-
-procedure TphpMOD._CanvasFunctions13Execute(Sender: TObject;
-  Parameters: TFunctionParams; var ReturnValue: variant; ZendVar: TZendVariable;
-  TSRMLS_DC: Pointer);
-begin
-  TCanvas(ToObj(Parameters, 0)).Rectangle(Parameters[1].Value,
-    Parameters[2].Value, Parameters[3].Value, Parameters[4].Value);
-end;
-
-procedure TphpMOD._CanvasFunctions14Execute(Sender: TObject;
-  Parameters: TFunctionParams; var ReturnValue: variant; ZendVar: TZendVariable;
-  TSRMLS_DC: Pointer);
-begin
-  TControlCanvas(ToObj(Parameters, 0)).Ellipse(Parameters[1].Value,
-    Parameters[2].Value, Parameters[3].Value, Parameters[4].Value);
-end;
-
-procedure TphpMOD._CanvasFunctions15Execute(Sender: TObject;
-  Parameters: TFunctionParams; var ReturnValue: variant; ZendVar: TZendVariable;
-  TSRMLS_DC: Pointer);
-begin
-  TControlCanvas(ToObj(Parameters, 0)).Lock();
-end;
-
-procedure TphpMOD._CanvasFunctions16Execute(Sender: TObject;
-  Parameters: TFunctionParams; var ReturnValue: variant; ZendVar: TZendVariable;
-  TSRMLS_DC: Pointer);
-begin
-  TControlCanvas(ToObj(Parameters, 0)).Unlock();
-end;
-
 procedure TphpMOD._CanvasFunctions17Execute(Sender: TObject;
   Parameters: TFunctionParams; var ReturnValue: variant; ZendVar: TZendVariable;
   TSRMLS_DC: Pointer);
@@ -5261,25 +5096,6 @@ procedure TphpMOD._CanvasFunctions18Execute(Sender: TObject;
 begin
   TControlCanvas(ToObj(Parameters, 0))
     .FillRect(TControlCanvas(ToObj(Parameters, 0)).ClipRect);
-end;
-
-procedure CanvasSetTextAngle(c: TCanvas; d: single);
-var
-  LogRec: TLOGFONT; { Информация о шрифте }
-begin
-  { Читаем текущюю инф. о шрифте }
-  GetObject(c.Font.Handle, SizeOf(LogRec), Addr(LogRec));
-  { Изменяем угол }
-  LogRec.lfEscapement := round(d * 10);
-  { Устанавливаем новые параметры }
-  c.Font.Handle := CreateFontIndirect(LogRec);
-end;
-
-procedure TphpMOD._CanvasFunctions19Execute(Sender: TObject;
-  Parameters: TFunctionParams; var ReturnValue: variant; ZendVar: TZendVariable;
-  TSRMLS_DC: Pointer);
-begin
-  CanvasSetTextAngle(TCanvas(ToObj(Parameters, 0)), Parameters[1].Value);
 end;
 
 procedure TphpMOD._CanvasFunctions20Execute(Sender: TObject;
@@ -5620,7 +5436,7 @@ procedure TphpMOD._TSynEditFunctions11Execute(Sender: TObject;
 begin
 {$IFDEF VS_EDITOR}
 {$IFDEF ADD_SYN_EV}
-  ReturnValue := TSynCompletionProposal(ToObj(Parameters, 0)).Form.Visible;
+  ReturnValue := TSynCompletionProposal(ToObj(Parameters, 0)).Form.ItemList.Count > 0;
 {$ENDIF}
 {$ENDIF}
 end;
@@ -6040,24 +5856,24 @@ end;
 procedure TphpMOD._TSynEditFunctions17Execute(Sender: TObject;
   Parameters: TFunctionParams; var ReturnValue: variant; ZendVar: TZendVariable;
   TSRMLS_DC: Pointer);
-  var texts: string;
-  o: TObject;
+{$IFDEF VS_EDITOR}
+  var c: TSynCompletionProposal;
+{$ENDIF}
 begin
 {$IFDEF VS_EDITOR}
 {$IFDEF ADD_SYN_EV}
-  o := ToObj(Parameters, 0);
-  if o is TSynCompletionProposal  then
+  ReturnValue := True;
+  if ToObj(Parameters, 0) is TSynCompletionProposal  then
   begin
-  texts := TSynCompletionProposal(o)
-    .Form.AssignedList.Text;
-    ReturnValue := TSynCompletionProposal(o)
-    .Form.AssignedList.Text.IsEmpty or TSynCompletionProposal(o)
-    .Form.AssignedList.Text.IsNullOrEmpty(texts) or TSynCompletionProposal(o)
-    .Form.AssignedList.Text.IsNullOrWhiteSpace(texts);
-  End
-  Else
-  Begin
-    ReturnValue := False;
+    c := TSynCompletionProposal(ToObj(Parameters, 0));
+    ReturnValue :=
+    (c.Form.AssignedList.Text = '')
+    or
+    (c.Form.AssignedList.Count = 0)
+    or
+     (c.Form.ItemList.Text = '')
+    or
+      (c.Form.ItemList.Count = 0);
   End;
 {$ENDIF}
 {$ENDIF}
@@ -6675,10 +6491,20 @@ procedure TphpMOD._TTreeFunctions8Execute(Sender: TObject;
   Parameters: TFunctionParams; var ReturnValue: variant; ZendVar: TZendVariable;
   TSRMLS_DC: Pointer);
 var
-  t: TTreeView;
+  Expanded: boolean;
+  Recurs: boolean;
 begin
-  t := TTreeView(ToObj(Parameters, 0));
-  ZendVar.AsInteger := integer(t.Items);
+  Expanded := Parameters[1].Value;
+  Recurs := Parameters[2].Value;
+  if Expanded = True then
+  begin
+    TTreeNode(ToObj(Parameters, 0)).Expand(Recurs);
+  end
+  else
+  begin
+    TTreeNode(ToObj(Parameters, 0)).Collapse(Recurs);
+  end;
+
 end;
 
 procedure TphpMOD.OSApiFunctions26Execute(Sender: TObject;

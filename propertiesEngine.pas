@@ -15,11 +15,11 @@ function existProperty(id: integer; prop: string): boolean;
 function ValueFromVariant(V: Variant; Kind: TTypeKind): TValue;
 function VariantFromValue(v: TValue): Variant;
 function existMethod( id: integer; method: string ): boolean;
+function hasRType( id: integer; method: string ): boolean;
 function existMethodClass( classname: string; method: string ): boolean;
 function callMethod(id: integer; method: string; p: array of TValue): TValue;
 procedure listMethod( id: integer; arr1: PWSDate );
 procedure listMethodfClass( classname: string; arr2: PWSDate; arr1: PWSDate );
-procedure form_fixwm( Handle: THandle );
 function evt_params(classname: string; propname: string): String; overload;
 function evt_params(id: integer; propname: string): String; overload;
 procedure evt_param_names(classname: string; propname: string; arr1: PWSDate);
@@ -64,15 +64,7 @@ begin
       //Inc(Params[0].AsObject.ClassName, Base.EventName);
     end);
 end;}
-procedure form_fixwm(Handle: THandle);
-begin
-  if Handle <> 0 then
-   SetWindowLong(
-      Handle,
-      GWL_STYLE,
-      GetWindowLong(Handle, GWL_STYLE) And Not WS_ClipChildren
-    );
-end;
+
 function LoadTypeLib(LibraryName: string) : Boolean;
 var
     GetLibM: LibModuleListAddres;
@@ -370,7 +362,7 @@ begin
            for b := 0 to TypeData^.ParamCount-1 do
            begin
              SetLength(arr1^, Length(arr1^) + 1);
-
+              Result := '';
               Flags := PParamFlags(Ptr)^;
               Inc(Ptr, SizeOf(TParamFlags));
               if pfConst in Flags then Result := Result + 'constant ';
@@ -393,7 +385,7 @@ var
   Ptr: PByte;
   B: Byte;
   TypeInfo: PTypeInfo;
-
+  S: string;
 begin
     SetLength(arr1^, 0);
           if( Assigned( GetClass( classname ) ) ) then
@@ -406,10 +398,54 @@ begin
           begin
            for b := 0 to TypeData^.ParamCount-1 do
            begin
+             Inc(Ptr, SizeOf(TParamFlags));
              SetLength(arr1^, Length(arr1^) + 1);
-             arr1^[High(arr1^)] := String(PShortString(Ptr)^);
+             S := String(PShortString(Ptr)^);
+             if S = 'Sender' then
+              arr1^[High(arr1^)] := '$self'
+             else
+              arr1^[High(arr1^)] :=  '$' + LowerCase(S);
+
+              Inc(Ptr, 1 + Length(PShortString(Ptr)^));
+              Inc(Ptr, 1 + Length(PShortString(Ptr)^));
             end;
           end;
+end;
+
+function hasRType( id: integer; method: string ): boolean;
+var
+  ctx     : TRttiContext;
+  lType   : TRttiType;
+  lMethod : TRttiMethod;
+  c       : TObject;
+
+begin
+  Result := False;
+  ctx := TRttiContext.Create;
+
+  c   := TObject(integer(id));
+  lType:=ctx.GetType(c.ClassInfo);
+
+  try
+    if Assigned(lType) then
+      begin
+       lMethod:=lType.GetMethod(method);
+
+       if Assigned( lMethod.ReturnType )  then
+       if lMethod.ReturnType.TypeKind <> tkUnknown then
+       begin
+        Result := True;
+       end;
+      end;
+  finally
+  if Assigned(lType) then
+  begin
+    lType.Free;
+  if Assigned(lMethod) then
+    lMethod.Free;
+  end;
+    ctx.Free;
+  end;
 end;
 
 function existMethod( id: integer; method: string ): boolean;
@@ -698,6 +734,7 @@ var
   lMethod : TRttiMethod;
   c       : TObject;
 begin
+  Result := TValue.Empty;
   ctx := TRttiContext.Create;
   c   := TObject(integer(id));
   lType:=ctx.GetType(c.ClassInfo);

@@ -181,7 +181,8 @@ type
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
-    function AddChild(ItemClass: TNxItemClass; S: string = ''): TNxPropertyItem;
+    function AddChild(ItemClass: string; S: string = ''): TNxPropertyItem; overload;
+    function AddChild(ItemClass: TNxItemClass; S: string = ''): TNxPropertyItem; overload;
     function GetFirstChild: TNxPropertyItem;
     function GetFirstSibling: TNxPropertyItem;
     function GetLastSibling: TNxPropertyItem;
@@ -329,8 +330,11 @@ type
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
-    function AddChild(Item: TNxPropertyItem; ItemClass: TNxItemClass; S: string = ''): TNxPropertyItem;
-    function AddChildFirst(Item: TNxPropertyItem; ItemClass: TNxItemClass; S: string = ''): TNxPropertyItem;
+    function AddChild(Item: TNxPropertyItem; ItemClass: TNxItemClass; S: string = ''): TNxPropertyItem; overload;
+    function AddChildFirst(Item: TNxPropertyItem; ItemClass: TNxItemClass; S: string = ''): TNxPropertyItem; overload;
+    function AddChild(Item: TNxPropertyItem; ItemClass:string; S: string): TNxPropertyItem; overload;
+    function AddChildFirst(Item: TNxPropertyItem; ItemClass:string; S: string = ''): TNxPropertyItem; overload;
+
     function IndexOf(Item: TNxPropertyItem): Integer;
     function Insert(Item: TNxPropertyItem; ItemClass: TNxItemClass; const S: WideString): TNxPropertyItem;
     procedure AddItem(Parent, Item: TNxPropertyItem; Position: TAddPosition = apLast;
@@ -976,6 +980,11 @@ function TNxPropertyItem.AddChild(
   ItemClass: TNxItemClass; S: string = ''): TNxPropertyItem;
 begin
   Result := FItems.AddChild(Self, ItemClass, S);
+end;
+
+function TNxPropertyItem.AddChild(ItemClass: string; S: string = ''): TNxPropertyItem;
+begin
+  Result := FItems.AddChild(Self, TNxItemClass(GetClass(ItemClass)), S);
 end;
 
 function TNxPropertyItem.GetFirstChild: TNxPropertyItem;
@@ -1775,7 +1784,7 @@ begin
     AddItem(Item, Result);
   except
     Result := nil;
-  end;            
+  end;
 end;
 
 function TNxPropertyItems.AddChildFirst(Item: TNxPropertyItem;
@@ -1789,6 +1798,16 @@ begin
   except
     Result := nil;
   end;
+end;
+
+function TNxPropertyItems.AddChild(Item: TNxPropertyItem; ItemClass:string; S: string): TNxPropertyItem;
+begin
+  Result := Self.AddChild(Item, TNxItemClass(GetClass(ItemClass)), S);
+end;
+
+function TNxPropertyItems.AddChildFirst(Item: TNxPropertyItem; ItemClass:string; S: string): TNxPropertyItem;
+begin
+  Result := Self.AddChildFirst(Item, TNxItemClass(GetClass(ItemClass)), S);
 end;
 
 function TNxPropertyItems.IndexOf(Item: TNxPropertyItem): Integer;

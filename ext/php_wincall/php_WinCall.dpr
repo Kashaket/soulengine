@@ -575,20 +575,18 @@ var
   tmp, tmp2: ppzval;
   stre: string;
 begin
-
   argCount := args.Value.ht.nNumOfElements;
   SetLength(argList, argCount);
   stre := Z_STRVAL(nameFunc^);
+  //here
   for i := 0 to argCount - 1 do
   begin
     if zend_hash_quick_find(args.Value.ht, nil, 0, i, tmp) = SUCCESS then
     begin
       zend_hash_quick_find(Types^.Value.ht, nil, 0, i, tmp2);
-
       argList[i] := ParEx(string(Z_STRVAL(tmp2^)), tmp^, i, stre);
     end;
   end;
-
   Result := System.Rtti.Invoke(func, argList, CallingConvention,
     GetTypeInfoStr(string(Z_STRVAL(RetType)), stre));
 end;
@@ -679,7 +677,6 @@ begin
 
       ZvalVAL(return_value, LoadFunctionDll(DllName^^.Value.str.val, func,
         nameFunc));
-
       ZvalVAL(funcr^, nativeint(func));
     end
     else
@@ -700,8 +697,7 @@ begin
     @CC) = SUCCESS) then
   begin
     _convert_to_string(CC^, nil, 0);
-
-    case StrToInt(Z_STRWVAL(CC^)) of
+    case StrToInt(Z_STRVAL(CC^)) of
       0:
         CallingConvention := ccStdCall;
       1:
@@ -711,11 +707,13 @@ begin
       3:
         CallingConvention := ccReg;
       4:
-        CallingConvention := ccSafeCall;
+        CallingConvention := ccSafeCall
+      else CallingConvention := ccStdCall;
     end;
-
-    TestSetRet(return_value, LibCall(nameFunc, Pointer(ZvalInt(funcr^^)),
-      RetType^, args^, Types^, CallingConvention));
+    TestSetRet(return_value,
+    LibCall(nameFunc, Pointer(ZvalInt(funcr^^)),  //<--Problems
+      RetType^, args^, Types^, CallingConvention)
+      );
   end;
 end;
 
@@ -770,15 +768,15 @@ begin
     + 'Class WinCBase { const stdcall = 0; const pascal = 1; const cdecl = 2; const reg = 3; const safecall = 4; static '
     + '$Libs = array(); static $base = array(); private $NameClass = ''''; private $NameLib = ''''; public function '
     + '__construct($NameClass, $NameLib) { $NameClass = trim($NameClass); if (preg_match(''/^[a-z_\x7f-\xff][a-z0-9_\x7f-\xff]*$/'', $NameClass, $v)) '
-    + '{ $this->NameClass = $NameClass; if (is_file($NameLib) or is_file($GLOBALS[''_ENV''][''windir''] . ''\System32\\'' . $NameLib)) { $this->NameLib = $NameLib; } '
+    + '{ $this->NameClass = $NameClass; if (is_file($NameLib) or is_file(getenv(''windir'') . ''\System32\\'' . $NameLib)) { $this->NameLib = $NameLib; } '
     + 'else { trigger_error("Библиотека не найдена по пути: $NameLib", E_USER_ERROR); } } else { trigger_error'
     + '("Имя класса ''{$NameClass}'' не сооствствует стандартам шаблона ^[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*$.", E_USER_ERROR); '
     + '} } public function add($CallConv, $Type, $NameFunction) { if(is_array($NameFunction)) $NFunc = trim(strtolower($NameFunction[0])); else $NFunc = '
     + 'trim(strtolower($NameFunction)); if(preg_match(''/^[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*$/'', $NFunc)!== 1) { trigger_error'
     + '("Имя функции ''$NFunc '' не сооствствует стандартам шаблона ^[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*$.", E_USER_ERROR); return; } '
-    + 'if (preg_match(''/^[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*$/'', $this->NameClass, $v)) { if (is_file($this->NameLib) or is_file($GLOBALS[''_ENV''][''windir''] '
-    + '. ''\System32\\'' . $this->NameLib)) { $func = 0; if (($Result = PHPLoadFunctionDll($this->NameLib, &$func, $NameFunction)) == 0) { $TypeArgs = func_get_args(); '
-    + 'unset($TypeArgs[0], $TypeArgs[1], $TypeArgs[2]); $ClassName = $this->NameClass; if (!class_exists($ClassName)) eval('' Class '' . $ClassName . '' extends WinCallTOOP { } ''); '
+    + 'if (preg_match(''/^[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*$/'', $this->NameClass, $v)) { if (is_file($this->NameLib) or is_file(getenv(''windir'') '
+    + '. ''\System32\\'' . $this->NameLib)) { $func = 0; if (($Result = PHPLoadFunctionDll($this->NameLib, $func, $NameFunction)) == 0) { $TypeArgs = func_get_args(); '
+    + 'unset($TypeArgs[0], $TypeArgs[1], $TypeArgs[2]); $ClassName = $this->NameClass; if (!class_exists($ClassName,false)) eval('' Class '' . $ClassName . '' extends WinCallTOOP { } ''); '
     + '$ADD = array(); $ADD[''CallConv''] = $CallConv; $ADD[''addr''] = $func; $ADD[''RetType''] = $Type; $ADD[''TypeArgs''] = array_values($TypeArgs); $ADD[''Count''] = '
     + 'count($ADD[''TypeArgs'']); $ClassName::$List[$NFunc] = $ADD; } elseif ($Result == 1) { trigger_error("Библиотека не найдена по пути : {$this->NameLib}", E_USER_ERROR); } '
     + 'elseif ($Result == -1) { } else { trigger_error(''AddBaseFunction: '' . PHPGetLastError() . PHP_EOL . ''ResultCode:'' . $Result, E_USER_ERROR); } } else { '

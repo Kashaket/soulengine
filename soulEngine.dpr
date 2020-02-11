@@ -3,7 +3,7 @@ program soulEngine;
 {$IFDEF PHP_UNICE}
   {$DEFINE Unicode}
 {$ENDIF}
-{$I 'sDef.inc'}
+{$I sDef.inc}
 uses
   Forms,
   Dialogs,
@@ -13,21 +13,10 @@ uses
   uPHPMod in 'uPHPMod.pas' {phpMOD: TDataModule},
   uGuiScreen in 'uGuiScreen.pas',
   uApplication in 'uApplication.pas',
-  {$IFDEF VS_EDITOR}
-  uPHPCatButtons in 'uPHPCatButtons.pas',
-  uVSEditor in 'uVSEditor.pas',
-  {$ENDIF }
   regGui in 'regGui.pas';
 
 {$R *.res}
 
-{
-
-  $IFDEF ADD_HTMLREAD
-  uHTMLView in 'units\uHTMLView.pas',
-  $ENDIF
-
-}
 
 begin
   Application.Initialize;
@@ -39,14 +28,8 @@ begin
   Application.CreateForm(T__mainForm, __mainForm);
   Application.CreateForm(T__fMain, __fMain);
   Application.CreateForm(T__mainForm, __mainForm);
-  //TStyleManager.TrySetStyle('Turquoise Gray');
   Application.CreateForm(T__fMain, __fMain);
   Application.CreateForm(TphpMOD, phpMOD);
-  {$IFDEF VS_EDITOR}
-  Application.CreateForm(TphpVSEditor, phpVSEditor);
-  Application.CreateForm(TPHPCatButtons, PHPCatButtons);
-  {$ENDIF}
-
    T__fMain.loadEngine(dllPHPPath);
 
     __mainForm.FormActivate(__mainForm);

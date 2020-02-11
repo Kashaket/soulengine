@@ -548,6 +548,28 @@ object phpMOD: TphpMOD
             ParamType = tpString
           end>
         OnExecute = PHPLibraryFunctions68Execute
+      end
+      item
+        FunctionName = 'vs_inspector_additem'
+        Tag = 0
+        Parameters = <
+          item
+            Name = 'p1'
+            ParamType = tpUnknown
+          end
+          item
+            Name = 'p2'
+            ParamType = tpUnknown
+          end
+          item
+            Name = 'p3'
+            ParamType = tpUnknown
+          end
+          item
+            Name = 'p4'
+            ParamType = tpUnknown
+          end>
+        OnExecute = PHPLibraryFunc1Exec
       end>
     Left = 536
     Top = 256
@@ -3498,110 +3520,6 @@ object phpMOD: TphpMOD
   object _Canvas: TPHPLibrary
     Functions = <
       item
-        FunctionName = 'canvas_moveto'
-        Tag = 0
-        Parameters = <
-          item
-            Name = 'P1'
-            ParamType = tpUnknown
-          end
-          item
-            Name = 'P2'
-            ParamType = tpUnknown
-          end
-          item
-            Name = 'P3'
-            ParamType = tpUnknown
-          end>
-        OnExecute = _CanvasFunctions0Execute
-      end
-      item
-        FunctionName = 'canvas_lineto'
-        Tag = 0
-        Parameters = <
-          item
-            Name = 'P1'
-            ParamType = tpUnknown
-          end
-          item
-            Name = 'P2'
-            ParamType = tpUnknown
-          end
-          item
-            Name = 'P3'
-            ParamType = tpUnknown
-          end>
-        OnExecute = _CanvasFunctions1Execute
-      end
-      item
-        FunctionName = 'component_canvas'
-        Tag = 0
-        Parameters = <
-          item
-            Name = 'P1'
-            ParamType = tpUnknown
-          end>
-        OnExecute = _CanvasFunctions2Execute
-      end
-      item
-        FunctionName = 'control_canvas'
-        Tag = 0
-        Parameters = <>
-        OnExecute = _CanvasFunctions3Execute
-      end
-      item
-        FunctionName = 'canvas_control'
-        Tag = 0
-        Parameters = <
-          item
-            Name = 'P1'
-            ParamType = tpUnknown
-          end
-          item
-            Name = 'P2'
-            ParamType = tpUnknown
-          end>
-        OnExecute = _CanvasFunctions4Execute
-      end
-      item
-        FunctionName = 'canvas_textheight'
-        Tag = 0
-        Parameters = <
-          item
-            Name = 'P1'
-            ParamType = tpUnknown
-          end
-          item
-            Name = 'P2'
-            ParamType = tpUnknown
-          end>
-        OnExecute = _CanvasFunctions5Execute
-      end
-      item
-        FunctionName = 'canvas_refresh'
-        Tag = 0
-        Parameters = <
-          item
-            Name = 'P1'
-            ParamType = tpUnknown
-          end>
-        OnExecute = _CanvasFunctions6Execute
-      end
-      item
-        FunctionName = 'canvas_textwidth'
-        Tag = 0
-        Parameters = <
-          item
-            Name = 'P1'
-            ParamType = tpUnknown
-          end
-          item
-            Name = 'P2'
-            ParamType = tpUnknown
-          end>
-        OnExecute = _CanvasFunctions7Execute
-      end
-      item
         FunctionName = 'canvas_pixel'
         Tag = 0
         Parameters = <
@@ -3624,130 +3542,6 @@ object phpMOD: TphpMOD
         OnExecute = _CanvasFunctions8Execute
       end
       item
-        FunctionName = 'canvas_textout'
-        Tag = 0
-        Parameters = <
-          item
-            Name = 'P1'
-            ParamType = tpUnknown
-          end
-          item
-            Name = 'P2'
-            ParamType = tpUnknown
-          end
-          item
-            Name = 'P3'
-            ParamType = tpUnknown
-          end
-          item
-            Name = 'P4'
-            ParamType = tpUnknown
-          end>
-        OnExecute = _CanvasFunctions9Execute
-      end
-      item
-        FunctionName = 'canvas_font'
-        Tag = 0
-        Parameters = <
-          item
-            Name = 'P1'
-            ParamType = tpUnknown
-          end>
-        OnExecute = _CanvasFunctions10Execute
-      end
-      item
-        FunctionName = 'canvas_brush'
-        Tag = 0
-        Parameters = <
-          item
-            Name = 'P1'
-            ParamType = tpUnknown
-          end>
-        OnExecute = _CanvasFunctions11Execute
-      end
-      item
-        FunctionName = 'canvas_pen'
-        Tag = 0
-        Parameters = <
-          item
-            Name = 'P1'
-            ParamType = tpUnknown
-          end>
-        OnExecute = _CanvasFunctions12Execute
-      end
-      item
-        FunctionName = 'canvas_rectangle'
-        Tag = 0
-        Parameters = <
-          item
-            Name = 'P1'
-            ParamType = tpUnknown
-          end
-          item
-            Name = 'P2'
-            ParamType = tpUnknown
-          end
-          item
-            Name = 'P3'
-            ParamType = tpUnknown
-          end
-          item
-            Name = 'P4'
-            ParamType = tpUnknown
-          end
-          item
-            Name = 'P5'
-            ParamType = tpUnknown
-          end>
-        OnExecute = _CanvasFunctions13Execute
-      end
-      item
-        FunctionName = 'canvas_ellipse'
-        Tag = 0
-        Parameters = <
-          item
-            Name = 'P1'
-            ParamType = tpUnknown
-          end
-          item
-            Name = 'P2'
-            ParamType = tpUnknown
-          end
-          item
-            Name = 'P3'
-            ParamType = tpUnknown
-          end
-          item
-            Name = 'P4'
-            ParamType = tpUnknown
-          end
-          item
-            Name = 'P5'
-            ParamType = tpUnknown
-          end>
-        OnExecute = _CanvasFunctions14Execute
-      end
-      item
-        FunctionName = 'canvas_lock'
-        Tag = 0
-        Parameters = <
-          item
-            Name = 'P1'
-            ParamType = tpUnknown
-          end>
-        OnExecute = _CanvasFunctions15Execute
-      end
-      item
-        FunctionName = 'canvas_unlock'
-        Tag = 0
-        Parameters = <
-          item
-            Name = 'P1'
-            ParamType = tpUnknown
-          end>
-        OnExecute = _CanvasFunctions16Execute
-      end
-      item
         FunctionName = 'canvas_drawbitmap'
         Tag = 0
         Parameters = <
@@ -3768,30 +3562,6 @@ object phpMOD: TphpMOD
             ParamType = tpUnknown
           end>
         OnExecute = _CanvasFunctions17Execute
-      end
-      item
-        FunctionName = 'canvas_clear'
-        Tag = 0
-        Parameters = <
-          item
-            Name = 'P1'
-            ParamType = tpUnknown
-          end>
-        OnExecute = _CanvasFunctions18Execute
-      end
-      item
-        FunctionName = 'canvas_angle'
-        Tag = 0
-        Parameters = <
-          item
-            Name = 'P1'
-            ParamType = tpUnknown
-          end
-          item
-            Name = 'P2'
-            ParamType = tpUnknown
-          end>
-        OnExecute = _CanvasFunctions19Execute
       end
       item
         FunctionName = 'canvas_writebitmap'
@@ -4313,6 +4083,24 @@ object phpMOD: TphpMOD
             ParamType = tpUnknown
           end>
         OnExecute = _TTreeFunctions7Execute
+      end
+      item
+        FunctionName = 'tree_expand'
+        Tag = 0
+        Parameters = <
+          item
+            Name = 'P1'
+            ParamType = tpUnknown
+          end
+          item
+            Name = 'P2'
+            ParamType = tpUnknown
+          end
+          item
+            Name = 'P3'
+            ParamType = tpUnknown
+          end>
+        OnExecute = _TTreeFunctions8Execute
       end>
     Left = 168
     Top = 320
@@ -4673,6 +4461,10 @@ object phpMOD: TphpMOD
           item
             Name = 'p2'
             ParamType = tpUnknown
+          end
+          item
+            Name = 'p3'
+            ParamType = tpString
           end>
         OnExecute = _ChromiumFunctions3Execute
       end>

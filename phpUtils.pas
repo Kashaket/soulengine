@@ -24,7 +24,7 @@ var
 function readPr(param: pzval_array; index: integer): variant;
 procedure readPrs(param: pzval_array; ht: integer);
 function checkPrs(ht, Count: integer; var TSRMLS_DC: pointer): boolean;
-function checkPrs2(ht: integer; var Param: pzval_array;
+function checkPrs2(ht: integer; var Params: pzval_array;
   var TSRMLS_DC: pointer): boolean;
 procedure regConstL(Name: string; Value: integer);
 procedure regConstD(Name: string; Value: double);
@@ -67,7 +67,7 @@ end;
 
 function readPr(param: pzval_array; index: integer): variant;
 begin
-  Result := zval2variant(param[index]^^);
+  Result := ZendToVariant(param[index]^);
 end;
 
 procedure readPrs(param: pzval_array; ht: integer);
@@ -91,10 +91,10 @@ begin
   end;
 end;
 
-function checkPrs2(ht: integer; var Param: pzval_array; var TSRMLS_DC: pointer): boolean;
+function checkPrs2(ht: integer; var Params: pzval_array; var TSRMLS_DC: pointer): boolean;
 begin
   Result := True;
-  if (not (zend_get_parameters_ex(ht, Param) = SUCCESS)) then
+  if (not (zend_get_parameters_my(ht, Params, TSRMLS_DC) = SUCCESS)) then
   begin
     zend_wrong_param_count(TSRMLS_DC);
     Result := False;

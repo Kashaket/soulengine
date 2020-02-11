@@ -1,0 +1,84 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <ProjectGuid>{13AF7ED3-F9DF-4FF5-A207-05A71EA114BA}</ProjectGuid>
+    </PropertyGroup>
+    <ItemGroup>
+        <Projects Include="tb2k\Packages\tb2k_d14.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="tb2k\Packages\tb2kdsgn_d14.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="TBX-master\Packages\D2010\TBX_D2010.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="TBX-master\Packages\D2010\TBX_D2010_Design.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="C:\Users\Andrew\Documents\Embarcadero\Studio\Projects\NextEngineSet.dproj">
+            <Dependencies/>
+        </Projects>
+    </ItemGroup>
+    <ProjectExtensions>
+        <Borland.Personality>Default.Personality.12</Borland.Personality>
+        <Borland.ProjectType/>
+        <BorlandProject>
+            <Default.Personality/>
+        </BorlandProject>
+    </ProjectExtensions>
+    <Target Name="tb2k_d14">
+        <MSBuild Projects="tb2k\Packages\tb2k_d14.dproj"/>
+    </Target>
+    <Target Name="tb2k_d14:Clean">
+        <MSBuild Projects="tb2k\Packages\tb2k_d14.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="tb2k_d14:Make">
+        <MSBuild Projects="tb2k\Packages\tb2k_d14.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="tb2kdsgn_d14">
+        <MSBuild Projects="tb2k\Packages\tb2kdsgn_d14.dproj"/>
+    </Target>
+    <Target Name="tb2kdsgn_d14:Clean">
+        <MSBuild Projects="tb2k\Packages\tb2kdsgn_d14.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="tb2kdsgn_d14:Make">
+        <MSBuild Projects="tb2k\Packages\tb2kdsgn_d14.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="TBX_D2010">
+        <MSBuild Projects="TBX-master\Packages\D2010\TBX_D2010.dproj"/>
+    </Target>
+    <Target Name="TBX_D2010:Clean">
+        <MSBuild Projects="TBX-master\Packages\D2010\TBX_D2010.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="TBX_D2010:Make">
+        <MSBuild Projects="TBX-master\Packages\D2010\TBX_D2010.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="TBX_D2010_Design">
+        <MSBuild Projects="TBX-master\Packages\D2010\TBX_D2010_Design.dproj"/>
+    </Target>
+    <Target Name="TBX_D2010_Design:Clean">
+        <MSBuild Projects="TBX-master\Packages\D2010\TBX_D2010_Design.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="TBX_D2010_Design:Make">
+        <MSBuild Projects="TBX-master\Packages\D2010\TBX_D2010_Design.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="NextEngineSet">
+        <MSBuild Projects="C:\Users\Andrew\Documents\Embarcadero\Studio\Projects\NextEngineSet.dproj"/>
+    </Target>
+    <Target Name="NextEngineSet:Clean">
+        <MSBuild Projects="C:\Users\Andrew\Documents\Embarcadero\Studio\Projects\NextEngineSet.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="NextEngineSet:Make">
+        <MSBuild Projects="C:\Users\Andrew\Documents\Embarcadero\Studio\Projects\NextEngineSet.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Build">
+        <CallTarget Targets="tb2k_d14;tb2kdsgn_d14;TBX_D2010;TBX_D2010_Design;NextEngineSet"/>
+    </Target>
+    <Target Name="Clean">
+        <CallTarget Targets="tb2k_d14:Clean;tb2kdsgn_d14:Clean;TBX_D2010:Clean;TBX_D2010_Design:Clean;NextEngineSet:Clean"/>
+    </Target>
+    <Target Name="Make">
+        <CallTarget Targets="tb2k_d14:Make;tb2kdsgn_d14:Make;TBX_D2010:Make;TBX_D2010_Design:Make;NextEngineSet:Make"/>
+    </Target>
+    <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
+</Project>
