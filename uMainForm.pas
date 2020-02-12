@@ -106,7 +106,17 @@ begin
   end
   else if ExtractFileExt(f) = '.pse' then
   begin
-    phpMOD.RunCode(File2String(zend_ustr(f)));
+    phpMOD.RunFile(f);
+  end
+  else if
+  ((ParamStr(1) = '-t') or (ParamStr(1) = '-test'))
+  and
+  (selfScript = '')
+  and
+  FileExists(ExtractFilePath(ParamStr(0)) + '/tests/-t.php')
+  then
+  begin
+    phpMOD.RunFile(ExtractFilePath(ParamStr(0)) + '/tests/-t.php');
   end
   else if ParamStr(1) <> '-run' then
   begin

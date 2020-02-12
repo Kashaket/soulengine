@@ -1,6 +1,6 @@
 unit uPHPMod;
 {$I PHP.inc}
-{$I 'sDef.inc'}
+{$I sDef.inc}
 
 interface
 
@@ -25,7 +25,7 @@ uses
   Messages, MImage, GIFImage2, Jpeg, Grids,
   CaptionedDockTree2,
    Vcl.Imaging.PNGImage, svgimage,
-  Clipbrd, {$IFDEF PHP_UNICE}System.WideStrUtils,{$ELSE}System.AnsiStrings,{$ENDIF}
+  Clipbrd, {$IFDEF PHP_UNICODE}System.WideStrUtils,{$ELSE}System.AnsiStrings,{$ENDIF}
 
 {$IFDEF MSWINDOWS}
   ActiveX, ShlObj, WinInet, System.UITypes,
@@ -1249,8 +1249,6 @@ begin
 end;
 
 function ZendToVariant(const Value: pppzval): variant;
-var
-  S: zend_ustr;
 begin
   {$IFDEF PHP7}
    case Value^^^.u1.v._type of
@@ -1262,10 +1260,7 @@ begin
     2:
       Result := Value^^^.Value.dval;
     6:
-      begin
-        S := Value^^^.Value.str.Val;
-        Result := S;
-      end;
+      Result := Z_STRVAL(Value^^);
     4, 5:
       Result := Unassigned;
   end;
@@ -1361,22 +1356,22 @@ begin
     case VarType(AR[I]) of
       varInteger, varSmallint, varLongWord, 17:
         add_assoc_long_ex(HT, ToPChar(Keys[I]),
-        {$IFDEF PHP_UNICE}Length{$ELSE}System.AnsiStrings.StrLen{$ENDIF}(ToPChar(Keys[I]) ) +
+        {$IFDEF PHP_UNICODE}Length{$ELSE}System.AnsiStrings.StrLen{$ENDIF}(ToPChar(Keys[I]) ) +
           1, AR[I]);
       varDouble, varSingle:
         add_assoc_double_ex(HT, ToPChar(Keys[I]),
-        {$IFDEF PHP_UNICE}Length{$ELSE}System.AnsiStrings.StrLen{$ENDIF}(ToPChar(Keys[I])) +
+        {$IFDEF PHP_UNICODE}Length{$ELSE}System.AnsiStrings.StrLen{$ENDIF}(ToPChar(Keys[I])) +
           1, AR[I]);
       varBoolean:
         add_assoc_bool_ex(HT, ToPChar(Keys[I]),
-        {$IFDEF PHP_UNICE}Length{$ELSE}System.AnsiStrings.StrLen{$ENDIF}(ToPChar(Keys[I])) +
+        {$IFDEF PHP_UNICODE}Length{$ELSE}System.AnsiStrings.StrLen{$ENDIF}(ToPChar(Keys[I])) +
           1, AR[I]);
       varEmpty:
         add_assoc_null_ex(HT, ToPChar(Keys[I]),
-        {$IFDEF PHP_UNICE}Length{$ELSE}System.AnsiStrings.StrLen{$ENDIF}(ToPChar(Keys[I])) + 1);
+        {$IFDEF PHP_UNICODE}Length{$ELSE}System.AnsiStrings.StrLen{$ENDIF}(ToPChar(Keys[I])) + 1);
       varString, 258:
         add_assoc_string_ex(HT, Key,
-        {$IFDEF PHP_UNICE}Length{$ELSE}System.AnsiStrings.StrLen{$ENDIF}(Key) + 1, S, 1);
+        {$IFDEF PHP_UNICODE}Length{$ELSE}System.AnsiStrings.StrLen{$ENDIF}(Key) + 1, S, 1);
     end;
   end;
 end;
@@ -1512,8 +1507,9 @@ procedure TphpMOD.RunFile(FName: string);
 begin
   if not FileExists(FName) then
     exit;
-  psvPHP.FileName := zend_ustr(FName);
-  psvPHP.RunCode(File2String(FName));
+  psvPHP.FileName := FName;
+  psvPHP.Execute;
+  //psvPHP.RunCode(File2String(FName));
 end;
 
 procedure TphpMOD.RunModuleFile(FName: string);
@@ -2218,7 +2214,7 @@ var
   Prop: zend_ustr;
   V: variant;
 begin
-  Prop := {$IFDEF PHP_UNICE}UTF8LowerCase{$ELSE}AnsiLowerCase{$ENDIF}(Parameters[0].ZendVariable.AsString);
+  Prop := {$IFDEF PHP_UNICODE}UTF8LowerCase{$ELSE}AnsiLowerCase{$ENDIF}(Parameters[0].ZendVariable.AsString);
   V := Parameters[1].Value;
 
   with Application do
@@ -2893,7 +2889,7 @@ begin
         try
           Move(zend_pchar(Value)^, pData^, Len);
           EmptyClipboard;
-          SetClipboardData({$IFDEF PHP_UNICE}CF_UNICODETEXT{$ELSE}CF_TEXT{$ENDIF}, hData);
+          SetClipboardData({$IFDEF PHP_UNICODE}CF_UNICODETEXT{$ELSE}CF_TEXT{$ENDIF}, hData);
         finally
           GlobalUnlock(hData);
         end;
@@ -2909,28 +2905,28 @@ begin
     Result := False;
 end;
 
-function GetClipboardText(Wnd: HWND; var {$IFDEF PHP_UNICE}strr{$ELSE}str{$ENDIF}: zend_ustr): boolean;
+function GetClipboardText(Wnd: HWND; var {$IFDEF PHP_UNICODE}strr{$ELSE}str{$ENDIF}: zend_ustr): boolean;
 var
   hData: HGlobal;
-  {$IFDEF PHP_UNICE}str: String;{$ENDIF}
+  {$IFDEF PHP_UNICODE}str: String;{$ENDIF}
 begin
   Result := True;
   if OpenClipboard(Wnd) then
   begin
     try
-      hData := GetClipboardData({$IFDEF PHP_UNICE}CF_UNICODETEXT{$ELSE}CF_TEXT{$ENDIF});
+      hData := GetClipboardData({$IFDEF PHP_UNICODE}CF_UNICODETEXT{$ELSE}CF_TEXT{$ENDIF});
       if hData <> 0 then
       begin
         try
-          SetString(str, {$IFDEF PHP_UNICE}PChar{$ELSE}PAnsiChar{$ENDIF}(GlobalLock(hData)), GlobalSize(hData));
+          SetString(str, {$IFDEF PHP_UNICODE}PChar{$ELSE}PAnsiChar{$ENDIF}(GlobalLock(hData)), GlobalSize(hData));
         finally
           GlobalUnlock(hData);
         end;
       end
       else
         Result := False;
-      {$IFDEF PHP_UNICE}strr{$ELSE}str{$ENDIF}
-       := {$IFDEF PHP_UNICE}UTF8Encode(PChar(@str[1])){$ELSE}PAnsiChar(@str[1]){$ENDIF};
+      {$IFDEF PHP_UNICODE}strr{$ELSE}str{$ENDIF}
+       := {$IFDEF PHP_UNICODE}UTF8Encode(PChar(@str[1])){$ELSE}PAnsiChar(@str[1]){$ENDIF};
     finally
       CloseClipboard;
     end;
@@ -6255,7 +6251,7 @@ begin
   P := TPicture(ToObj(Parameters, 0));
   M := TMemoryStream.Create;
   String2Stream(Parameters[1].ZendVariable.AsString, M);
-  format := {$IFDEF PHP_UNICE}UTF8LowerCase{$ELSE}AnsiLowerCase{$ENDIF}(Parameters[2].ZendVariable.AsString);
+  format := {$IFDEF PHP_UNICODE}UTF8LowerCase{$ELSE}AnsiLowerCase{$ENDIF}(Parameters[2].ZendVariable.AsString);
 
   if (format = 'png') then
   begin

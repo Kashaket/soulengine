@@ -17,7 +17,6 @@ uses
   dwsHashtables, zendAPI, phpApi, dsStdCtrl,
   {$IFDEF PHP7} hzend_types, {$ENDIF}
    ZENDTypes, php4delphi
-  {$IFDEF PHP_UNICE}, WideStrUtils{$ENDIF}
 {$IFDEF ADD_CHROMIUM}
     , uCefApplication, uCefChromium,  uCefChromiumOptions,
    uCEFv8Handler, uCEFv8Value, uCEFTypes,
@@ -406,10 +405,7 @@ begin
       dest.Value.lval := src.Value.lval;
     IS_DOUBLE:
       dest.Value.dval := src.Value.dval;
-    IS_STRING:
-      begin
-        ZVAL_STRINGL(dest, src.Value.str.val, src.Value.str.len, True);
-      end;
+    IS_STRING: ZVAL_STRINGU(dest, Z_STRUVAL(src), True);
     IS_ARRAY:
       begin
         tmp := nil;
@@ -1281,10 +1277,7 @@ begin
           sizeof(zval));
         {$ENDIF}
       end;
-    IS_STRING:
-      begin
-        ZVAL_STRINGL(Return, M.Value.str.val, M.Value.str.len, True);
-      end;
+    IS_STRING: ZVAL_STRINGU(Return, Z_STRUVAL(M), True);
     IS_OBJECT:
       begin
         {$IFDEF PHP7}
@@ -1322,7 +1315,7 @@ begin
     S := Z_STRVAL(Args[index]);
   {$ENDIF}
   if Length(S) > 0 then
-    Result := {$IFDEF PHP_UNICE}zend_uchar(S[1]){$ELSE}S[1]{$ENDIF}
+    Result := zend_uchar(S[1])
   else
     Result := #0;
 end;
@@ -1530,8 +1523,8 @@ begin
           if Args[i - 1].VAnsiString = nil then
             ZVAL_EMPTY_STRING({$IFDEF PHP7}tmp{$ELSE}Self.Args[i]{$ENDIF})
           else
-            ZVAL_STRINGL({$IFDEF PHP7}tmp{$ELSE}Self.Args[i]{$ENDIF}, zend_pchar(zend_uchar(Args[i - 1].VAnsiString)),
-              Length(ansistring(Args[i - 1].VAnsiString)), True);
+            ZVAL_STRINGL({$IFDEF PHP7}tmp{$ELSE}Self.Args[i]{$ENDIF}, zend_pchar(Args[i - 1].VAnsiString),
+              Length(AnsiString(Args[i - 1].VAnsiString)), True);
         end;
       vtWideString:
         begin
@@ -1547,7 +1540,7 @@ begin
             ZVAL_EMPTY_STRING({$IFDEF PHP7}tmp{$ELSE}Self.Args[i]{$ENDIF})
           else
             ZVAL_STRINGLW({$IFDEF PHP7}tmp{$ELSE}Self.Args[i]{$ENDIF}, PWideChar(Args[i - 1].VUnicodeString),
-              Length(unicodestring(Args[i - 1].VUnicodeString)), True);
+              Length(UnicodeString(Args[i - 1].VUnicodeString)), True);
         end;
       vtWideChar:
         begin

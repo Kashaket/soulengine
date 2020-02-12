@@ -931,7 +931,6 @@ begin
       end;
       ctx.Free;
   end;
-  o := nil;
 end;
 function setProperty2(o: TObject; prop: string; value: Variant): boolean;
 var
@@ -974,13 +973,11 @@ begin
   except
     on E:exception do
     begin
-    ctx.Free;
-    o := nil;
-    Exit;
+      ctx.Free;
+      Exit;
     end;
   end;
   end;
-  o := nil;
 end;
 {$ENDIF}
 function setProperty(id: integer; prop: string; Value: variant): boolean;
@@ -1014,14 +1011,11 @@ if not Assigned(o) then Exit;
       end
       else
         SetPropValue(o, prop, Value);
-      o := nil;
       inf := nil;
     end {$IFDEF NEWRTTI}else Result:=setProperty2(o, prop, Value){$ENDIF};
   except
     on E: Exception do
     begin
-      o := nil;
-      oc:= nil;
       inf := nil;
       Result := False;
     end;
@@ -1043,7 +1037,6 @@ begin
       end
       else
         Result := {$IFDEF NEWRTTI}getProperty2(id, prop){$ELSE}Null{$ENDIF};
-      o := nil;
   end;
 end;
 procedure getEnumPropValues(classname, prop: string; arr1, arr2: PWSDate);
@@ -1109,10 +1102,7 @@ begin
 Result := -1;
   o := TObject(integer(id));
   if not Assigned(o) then Exit;
-  if prop = 'owner' then begin
-                           o := nil;
-                           Exit;
-                         end;
+  if prop = 'owner' then  Exit;
 
   inf := TypInfo.GetPropInfo(o, prop);
   if inf <> nil then
@@ -1131,7 +1121,6 @@ Result := -1;
    end;
    ctx.Free;
   end;
-  o := nil;
   inf := nil;
 end;
 
@@ -1147,7 +1136,6 @@ begin
   //inf := TypInfo._InternalGetPropInfo(o.ClassInfo, prop);
   Result := (TypInfo.GetPropInfo(o, prop) <> nil) or (ctx.GetType(o.ClassType).GetProperty(prop) <> nil);
   ctx.Free();
-  o := nil;
 end;
 
 function getProperties(id: integer; tktype: integer): string;

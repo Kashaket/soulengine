@@ -2,7 +2,7 @@ unit dwsHashtables;
 {$I PHP.inc}
 interface
 
-uses SysUtils, ZendTypes {$IFDEF PHP_UNICE}, WideStrUtils{$ENDIF};
+uses SysUtils, ZendTypes {$IFDEF PHP_UNICODE}, WideStrUtils{$ENDIF};
 
 type
   ValueType = zend_ustr;
@@ -98,7 +98,7 @@ begin
   begin
     HashTable[I] := Ord(I);
     InsensitiveHashTable[I] := Ord(
-    {$IFDEF PHP_UNICE}
+    {$IFDEF PHP_UNICODE}
       Utf8UpperCase(Utf8String(I))[1]
     {$ELSE}
       AnsiString(AnsiUpperCase(string(I)))[1]

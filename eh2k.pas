@@ -286,12 +286,12 @@ begin
 
     vtPWideChar:       ZvalVAL(v, VarRec.VPWideChar);
     vtWideChar:       ZvalVAL(v, VarRec.VWideChar);
-    vtAnsiString:     ZvalVAL(v, zend_pchar(zend_ustr(VarRec.VAnsiString)));
+    vtAnsiString:     ZvalVAL(v, VarRec.VAnsiString^);
     vtUnicodeString:  ZvalVAL(v, UnicodeString(VarRec._Reserved1));
     vtCurrency:       ZvalVAl(v, VarRec.VCurrency^);
 
     vtVariant:        VariantToZend(VarRec.VVariant^, v);
-    vtWideString:     ZvalVAL(v, zend_pchar(VarRec.VWideString^));
+    vtWideString:     ZvalVAL(v, VarRec.VWideString^);
     vtInt64:          ZvalVAL(v, NativeInt(VarRec.VInt64^));
   end;
 end;

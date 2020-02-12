@@ -1,9 +1,9 @@
 program soulEngine;
 {$I PHP.inc}
-{$IFDEF PHP_UNICE}
+{$I sDef.inc}
+{$IFDEF PHP_UNICODE}
   {$DEFINE Unicode}
 {$ENDIF}
-{$I sDef.inc}
 uses
   Forms,
   Dialogs,

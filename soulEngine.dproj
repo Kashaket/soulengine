@@ -52,6 +52,7 @@
         <Base>true</Base>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base)'!=''">
+        <DCC_CodePage>65001</DCC_CodePage>
         <DCC_AssertionsAtRuntime>false</DCC_AssertionsAtRuntime>
         <DCC_UnitSearchPath>images;DelphiSVG-master\gdip;DelphiSVG-master\svg;DelphiSVG-master\vcl\svgimage;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
         <SanitizedProjectName>soulEngine</SanitizedProjectName>

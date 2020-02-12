@@ -490,24 +490,6 @@ begin
   Inc(z.refcount);
 end;
 
-procedure ZVAL_STRINGL(z: pzval; s: PAnsiChar; l: Integer; duplicate: Boolean);
-var
-  __s: PAnsiChar;
-  __l: Integer;
-begin
-  if not assigned(s) then
-    __s := ''
-  else
-    __s := s;
-  __l := l;
-  z^.Value.str.Len := __l;
-  if duplicate then
-    z^.Value.str.val := estrndup(__s, __l)
-  else
-    z^.Value.str.val := __s;
-  z^._type := IS_STRING;
-end;
-
 procedure zval_copy(var dest: pzval; src: pzval);
 var
   tmp: Pointer;
@@ -520,7 +502,7 @@ begin
       dest.Value.dval := src.Value.dval;
     IS_STRING:
       begin
-        ZVAL_STRINGL(dest, src.Value.str.val, src.Value.str.Len, True);
+        ZVAL_STRINGU(dest, Z_STRUVAL(src), True);
       end;
     IS_ARRAY:
       begin
@@ -660,7 +642,7 @@ begin
         if ZValArrayKeyFind(funcname^, 1, tmp) then
         begin
           _convert_to_string(tmp^, nil, 0);
-          nameFunc := tmp^^.Value.str.val;
+          nameFunc := Z_STRVAL(tmp^);
         end;
       end
       else
@@ -674,7 +656,7 @@ begin
         end;
 
         zend_error((1 shl 8),
-          PAnsiChar(AnsiString(ExtractFileName(string(DllName^.Value.str.val)) +
+          PAnsiChar(AnsiString(ExtractFileName(Z_STRVAL(DllName)) +
           ':' + string(nameFunc) +
           ' Допустимиый вид массива array(''NameFunction'', ''NameFunction@12'')')
           ));
@@ -684,13 +666,13 @@ begin
     else
     begin
       _convert_to_string(funcname^, nil, 0);
-      nameFunc := funcname^^.Value.str.val;
+      nameFunc := Z_STRVAL(funcname^);
     end;
 
     if f then
     begin
 
-      ZvalVAL(return_value, LoadFunctionDll(DllName^^.Value.str.val, func,
+      ZvalVAL(return_value, LoadFunctionDll(Z_STRVAL(DllName^), func,
         nameFunc));
       ZvalVAL(funcr^, nativeint(func));
     end
