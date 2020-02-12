@@ -672,23 +672,23 @@ begin
             tkInt64:
               Result := v.AsInt64;
             tkWChar:
-              Result := zend_uchar(v.AsType<WideChar>);
+              Result := v.AsType<WideChar>;
             tkChar:
-              Result := zend_uchar(v.AsType<AnsiChar>);
+              Result := v.AsType<AnsiChar>;
             tkFloat:
               Result := v.AsExtended;
             tkString:
-              Result := zend_ustr(v.AsType<ShortString>);
+              Result := String(v.AsType<ShortString>);
             tkUString:
-              Result := zend_ustr(v.AsType<UTF8String>);
+              Result := v.AsType<UTF8String>;
             tkClass:
               Result := integer( v.AsObject );
             tkPointer:
               Result := integer( v.AsType<Pointer> );
             tkAnsiString:
-              Result := zend_ustr(v.AsType<AnsiString>);
+              Result := v.AsType<AnsiString>;
             tkWString:
-              Result := zend_ustr(v.AsType<WideString>);
+              Result := v.AsType<WideString>;
             tkVariant:
               Result := v.AsVariant;
             end;
