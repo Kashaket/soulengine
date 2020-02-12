@@ -90,6 +90,7 @@ interface
 uses
   sysutils,
   Windows,
+  AnsiStrings,
   Graphics,
   Types,
   Classes;
@@ -9355,7 +9356,7 @@ procedure TGIFApplicationExtension.SetAuthentication(const Value: string);
 begin
   if (Length(Value) < sizeof(TGIFAuthenticationCode)) then
     FillChar(FIdent.Authentication, sizeof(TGIFAuthenticationCode), 32);
-  StrLCopy(@(FIdent.Authentication[0]), PAnsiChar(Value), sizeof(TGIFAuthenticationCode));
+  AnsiStrings.StrLCopy(@(FIdent.Authentication[0]), PAnsiChar(Value), sizeof(TGIFAuthenticationCode));
 end;
 
 function TGIFApplicationExtension.GetIdentifier: string;
@@ -9367,7 +9368,7 @@ procedure TGIFApplicationExtension.SetIdentifier(const Value: string);
 begin
   if (Length(Value) < sizeof(TGIFIdentifierCode)) then
     FillChar(FIdent.Identifier, sizeof(TGIFIdentifierCode), 32);
-  StrLCopy(@(FIdent.Identifier[0]), PAnsiChar(Value), sizeof(TGIFIdentifierCode));
+  AnsiStrings.StrLCopy(@(FIdent.Identifier[0]), PAnsiChar(Value), sizeof(TGIFIdentifierCode));
 end;
 
 procedure TGIFApplicationExtension.SaveToStream(Stream: TStream);

@@ -4183,7 +4183,7 @@ begin
   if Address = nil then
     Exit;
   try
-    if Char(Address^) <> #$CC then
+    if AnsiChar(Address^) <> #$CC then
       Exit;
 
     NOP := $90;

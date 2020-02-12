@@ -171,7 +171,7 @@ begin
   // phpMOD.RunFile(engineDir+'include.php');
   if (DLLFolder = '') then
     DLLFolder := ExtractFilePath(ParamStr(0));
-
+  {$MESSAGE 'AnsiString - Don"t even mind change that, it is platform-specific for Win!'}
   if FileExists(engineDir + '\php.ini') then
     PHPEngine.IniPath := AnsiString(engineDir + '\php.ini')
   else if FileExists(iniDir + '\php.ini') then

@@ -540,7 +540,6 @@ begin
   H := GetEventController(Sender, nil);
   if H <> nil then
   begin
-  {$MESSAGE 'This might cause some bugs, or fix them Это может вызывать некоторые баги, ну или исправлять их...'}
     M := H.RunEvent(Event, []);
      if M <> nil then
       M.ClearArgs;
