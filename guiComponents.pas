@@ -9,7 +9,6 @@ interface
 
 uses
   Classes, SysUtils, Forms, regGUI, Controls, Windows,
-  {$IFDEF PHP7} hzend_types, {$ENDIF}
   zendTypes,
   ZENDAPI,
   phpTypes,

@@ -9,7 +9,6 @@ interface
 
 uses
   Classes, SysUtils, phpUtils, Forms, regGUI, Controls,
-  {$IFDEF PHP7} hzend_types, {$ENDIF}
   zendTypes,
   ZENDAPI,
   phpTypes,
@@ -117,13 +116,13 @@ begin
   if Value.IsUndefined or Value.IsNull then
     ZVAL_NULL(arg)
   else if Value.IsBool then
-    ZVAL_BOOL(arg, Value.GetBoolValue)
+    ZValVal(arg, Value.GetBoolValue)
   else if Value.IsInt then
-    ZVAL_LONG(arg, Value.GetIntValue)
+    ZValVal(arg, Value.GetIntValue)
   else if Value.IsDouble then
-    ZVAL_DOUBLE(arg, Value.GetDoubleValue)
+    ZValVal(arg, Value.GetDoubleValue)
   else if Value.IsDate then
-    ZVAL_DOUBLE(arg, Value.GetDateValue)
+    ZValVal(arg, Value.GetDateValue)
   else if Value.IsString then
   begin
     S := zend_ustr(Value.GetStringValue);

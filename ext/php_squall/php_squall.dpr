@@ -54,7 +54,7 @@ begin
 
   if ht > 0 then
   begin
-  if ( not (zend_get_parameters_ex(ht, param) = SUCCESS )) then
+  if ( not (zend_get_parameters_my(ht, param, TSRMLS_DC) = SUCCESS )) then
      begin
         zend_wrong_param_count(TSRMLS_DC);
         Exit;
@@ -65,25 +65,25 @@ begin
     0: begin
 
     try
-       ZVAL_LONG(return_value, SQUALL_Init(nil));
+       ZValVal(return_value, SQUALL_Init(nil));
      except
-        ZVAL_FALSE(return_value);
+        ZvalVal(return_value, FALSE);
     end; end;
     1: begin
       pr.Window := PHandle( param[0]^.value.lval );
       try
-       ZVAL_LONG(return_value, SQUALL_Init( pr ));
+       ZValVal(return_value, SQUALL_Init( pr ));
      except
-        ZVAL_FALSE(return_value);
+        ZvalVal(return_value, FALSE);
       end;
     end;
      2: begin
       pr.Window := PHandle( param[0]^.value.lval );
       pr.Device := param[1]^.value.lval;
       try
-       ZVAL_LONG(return_value, SQUALL_Init( pr ));
+       ZValVal(return_value, SQUALL_Init( pr ));
      except
-        ZVAL_FALSE(return_value);
+        ZvalVal(return_value, FALSE);
       end;
     end;
     3: begin
@@ -91,9 +91,9 @@ begin
       pr.Device := param[1]^.value.lval;
       pr.SampleRate := param[2]^.value.lval;
       try
-       ZVAL_LONG(return_value, SQUALL_Init( pr ));
+       ZValVal(return_value, SQUALL_Init( pr ));
      except
-        ZVAL_FALSE(return_value);
+        ZvalVal(return_value, FALSE);
       end;
     end;
     4: begin
@@ -102,9 +102,9 @@ begin
       pr.SampleRate := param[2]^.value.lval;
       pr.BitPerSample := param[3]^.value.lval;
       try
-       ZVAL_LONG(return_value, SQUALL_Init( pr ));
+       ZValVal(return_value, SQUALL_Init( pr ));
      except
-        ZVAL_FALSE(return_value);
+        ZvalVal(return_value, FALSE);
       end;
     end;
     5: begin
@@ -114,9 +114,9 @@ begin
       pr.BitPerSample := param[3]^.value.lval;
       pr.Channels := param[4]^.value.lval;
       try
-       ZVAL_LONG(return_value, SQUALL_Init( pr ));
+       ZValVal(return_value, SQUALL_Init( pr ));
      except
-        ZVAL_FALSE(return_value);
+        ZvalVal(return_value, FALSE);
       end;
     end;
     6: begin
@@ -127,9 +127,9 @@ begin
       pr.Channels := param[4]^.value.lval;
       pr.UseHW2D :=  param[5]^.value.lval;
       try
-       ZVAL_LONG(return_value, SQUALL_Init( pr ));
+       ZValVal(return_value, SQUALL_Init( pr ));
      except
-        ZVAL_FALSE(return_value);
+        ZvalVal(return_value, FALSE);
       end;
     end;
      7: begin
@@ -141,9 +141,9 @@ begin
       pr.UseHW2D :=  param[5]^.value.lval;
       pr.UseHW3D :=  param[6]^.value.lval;
       try
-       ZVAL_LONG(return_value, SQUALL_Init( pr ));
+       ZValVal(return_value, SQUALL_Init( pr ));
      except
-        ZVAL_FALSE(return_value);
+        ZvalVal(return_value, FALSE);
       end;
     end;
      8: begin
@@ -156,9 +156,9 @@ begin
       pr.UseHW3D :=  param[6]^.value.lval;
       pr.UseAlg  :=  param[7]^.value.lval;
       try
-       ZVAL_LONG(return_value, SQUALL_Init( pr ));
+       ZValVal(return_value, SQUALL_Init( pr ));
      except
-        ZVAL_FALSE(return_value);
+        ZvalVal(return_value, FALSE);
       end;
     end;
      9: begin
@@ -172,9 +172,9 @@ begin
       pr.UseAlg  :=  param[7]^.value.lval;
       pr.BufferSize :=  param[8]^.value.lval;
       try
-       ZVAL_LONG(return_value, SQUALL_Init( pr ));
+       ZValVal(return_value, SQUALL_Init( pr ));
      except
-        ZVAL_FALSE(return_value);
+        ZvalVal(return_value, FALSE);
       end;
     end;
      10: begin
@@ -189,9 +189,9 @@ begin
       pr.BufferSize :=  param[8]^.value.lval;
       pr.ListenerMode :=  param[9]^.value.lval;
       try
-       ZVAL_LONG(return_value, SQUALL_Init( pr ));
+       ZValVal(return_value, SQUALL_Init( pr ));
      except
-        ZVAL_FALSE(return_value);
+        ZvalVal(return_value, FALSE);
       end;
     end;
      11: begin
@@ -207,9 +207,9 @@ begin
       pr.ListenerMode :=  param[9]^.value.lval;
       pr.DistanceFactor :=  param[10]^.value.dval;
       try
-       ZVAL_LONG(return_value, SQUALL_Init( pr ));
+       ZValVal(return_value, SQUALL_Init( pr ));
      except
-        ZVAL_FALSE(return_value);
+        ZvalVal(return_value, FALSE);
       end;
     end;
      12: begin
@@ -226,9 +226,9 @@ begin
       pr.DistanceFactor :=  param[10]^.value.dval;
       pr.RolloffFactor :=  param[11]^.value.dval;
       try
-       ZVAL_LONG(return_value, SQUALL_Init( pr ));
+       ZValVal(return_value, SQUALL_Init( pr ));
      except
-        ZVAL_FALSE(return_value);
+        ZvalVal(return_value, FALSE);
       end;
     end;
      13: begin
@@ -246,9 +246,9 @@ begin
       pr.RolloffFactor :=  param[11]^.value.dval;
       pr.DopplerFactor :=  param[12]^.value.dval;
       try
-       ZVAL_LONG(return_value, SQUALL_Init( pr ));
+       ZValVal(return_value, SQUALL_Init( pr ));
      except
-        ZVAL_FALSE(return_value);
+        ZvalVal(return_value, FALSE);
       end;
     end;
    end;
@@ -268,9 +268,9 @@ begin
 
    try
      SQUALL_Free;
-     ZVAL_TRUE(return_value);
+     ZvalVal(return_value, TRUE);
    except
-       ZVAL_FALSE(return_value);
+       ZvalVal(return_value, FALSE);
    end;
 
 end;
@@ -287,17 +287,17 @@ begin
       Exit;
     end;
 
-  if ( not (zend_get_parameters_ex(ht, Param) = SUCCESS )) then
+  if ( not (zend_get_parameters_my(ht, Param, TSRMLS_DC) = SUCCESS )) then
     begin
       zend_wrong_param_count(TSRMLS_DC);
       Exit;
    end;
 
    try
-     ZVAL_LONG(return_value,
+     ZValVal(return_value,
                 SQUALL_Sample_LoadFile(PWideChar(param[0]^.value.str.val), 0, nil));
    except
-        ZVAL_FALSE(return_value);
+        ZvalVal(return_value, FALSE);
    end;
 
     dispose_pzval_array(param);
@@ -317,7 +317,7 @@ begin
       Exit;
     end;
 
-  if ( not (zend_get_parameters_ex(ht, Param) = SUCCESS )) then
+  if ( not (zend_get_parameters_my(ht, Param, TSRMLS_DC) = SUCCESS )) then
     begin
       zend_wrong_param_count(TSRMLS_DC);
       Exit;
@@ -330,9 +330,9 @@ begin
 
 
    try
-     ZVAL_LONG(return_value, SQUALL_Sample_Play(ID,LOOP,GROUP,START));
+     ZValVal(return_value, SQUALL_Sample_Play(ID,LOOP,GROUP,START));
    except
-       ZVAL_FALSE(return_value);
+       ZvalVal(return_value, FALSE);
    end;
 
     dispose_pzval_array(param);
@@ -349,15 +349,15 @@ begin
       zend_wrong_param_count(TSRMLS_DC); Exit;
   end;
 
-  if ( not (zend_get_parameters_ex(ht, Param) = SUCCESS )) then
+  if ( not (zend_get_parameters_my(ht, Param, TSRMLS_DC) = SUCCESS )) then
     begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
 
    ID   := param[0]^.value.lval;
 
    try
-     ZVAL_LONG(return_value, SQUALL_Sample_Stop(ID));
+     ZValVal(return_value, SQUALL_Sample_Stop(ID));
    except
-       ZVAL_FALSE(return_value);
+       ZvalVal(return_value, FALSE);
    end;
 
     dispose_pzval_array(param);
@@ -372,13 +372,13 @@ begin
       zend_wrong_param_count(TSRMLS_DC); Exit;
   end;
 
-  if ( not (zend_get_parameters_ex(ht, pr) = SUCCESS )) then
+  if ( not (zend_get_parameters_my(ht, pr, TSRMLS_DC) = SUCCESS )) then
     begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
 
    try
-     ZVAL_LONG(return_value, SQUALL_Sample_Pause(pr[0]^.value.lval,pr[1]^.value.lval));
+     ZValVal(return_value, SQUALL_Sample_Pause(pr[0]^.value.lval,pr[1]^.value.lval));
    except
-       ZVAL_FALSE(return_value);
+       ZvalVal(return_value, FALSE);
    end;
 
     dispose_pzval_array(pr);
@@ -394,13 +394,13 @@ begin
       zend_wrong_param_count(TSRMLS_DC); Exit;
   end;
 
-  if ( not (zend_get_parameters_ex(ht, pr) = SUCCESS )) then
+  if ( not (zend_get_parameters_my(ht, pr, TSRMLS_DC) = SUCCESS )) then
     begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
 
    try
-     ZVAL_LONG(return_value, SQUALL_SetDevice( ZendToVariant(pr[0]) ) );
+     ZValVal(return_value, SQUALL_SetDevice( ZendToVariant(pr[0]) ) );
    except
-       ZVAL_FALSE(return_value);
+       ZvalVal(return_value, FALSE);
    end;
 
     dispose_pzval_array(pr);
@@ -409,7 +409,7 @@ end;
 procedure _SQUALL_Sample_GetDevice(ht : integer; return_value : pzval; return_value_ptr : ppzval; this_ptr : pzval;
    return_value_used : integer; TSRMLS_DC : pointer); cdecl;
 begin
-     ZVAL_LONG(return_value, SQUALL_GetDevice())
+     ZValVal(return_value, SQUALL_GetDevice())
 end;
 
 procedure _SQUALL_Sample_Unload(ht : integer; return_value : pzval; return_value_ptr : ppzval; this_ptr : pzval;
@@ -421,14 +421,14 @@ begin
       zend_wrong_param_count(TSRMLS_DC); Exit;
   end;
 
-  if ( not (zend_get_parameters_ex(ht, pr) = SUCCESS )) then
+  if ( not (zend_get_parameters_my(ht, pr, TSRMLS_DC) = SUCCESS )) then
     begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
 
    try
-     ZVAL_TRUE(return_value);
+     ZvalVal(return_value, TRUE);
      SQUALL_Sample_Unload(pr[0]^.value.lval);
    except
-       ZVAL_FALSE(return_value);
+       ZvalVal(return_value, FALSE);
    end;
 
     dispose_pzval_array(pr);
@@ -438,10 +438,10 @@ procedure _SQUALL_Sample_UnloadAll(ht : integer; return_value : pzval; return_va
    return_value_used : integer; TSRMLS_DC : pointer); cdecl;
 begin
    try
-     ZVAL_TRUE(return_value);
+     ZvalVal(return_value, TRUE);
      SQUALL_Sample_UnloadAll();
    except
-       ZVAL_FALSE(return_value);
+       ZvalVal(return_value, FALSE);
    end;
 end;
 
@@ -458,15 +458,15 @@ begin
       zend_wrong_param_count(TSRMLS_DC); Exit;
   end;
 
-  if ( not (zend_get_parameters_ex(ht, pr) = SUCCESS )) then
+  if ( not (zend_get_parameters_my(ht, pr, TSRMLS_DC) = SUCCESS )) then
     begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
 
    try
-     ZVAL_LONG(return_value,
+     ZValVal(return_value,
         SQUALL_Sample_GetFileLength(pr[0]^.value.lval)
      );
    except
-       ZVAL_FALSE(return_value);
+       ZvalVal(return_value, FALSE);
    end;
 
     dispose_pzval_array(pr);
@@ -484,15 +484,15 @@ begin
       zend_wrong_param_count(TSRMLS_DC); Exit;
   end;
 
-  if ( not (zend_get_parameters_ex(ht, pr) = SUCCESS )) then
+  if ( not (zend_get_parameters_my(ht, pr, TSRMLS_DC) = SUCCESS )) then
     begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
 
    try
-     ZVAL_LONG(return_value,
+     ZValVal(return_value,
         SQUALL_Sample_GetFileLengthMs(pr[0]^.value.lval)
      );
    except
-       ZVAL_FALSE(return_value);
+       ZvalVal(return_value, FALSE);
    end;
 
     dispose_pzval_array(pr);
@@ -509,15 +509,15 @@ begin
       zend_wrong_param_count(TSRMLS_DC); Exit;
   end;
 
-  if ( not (zend_get_parameters_ex(ht, pr) = SUCCESS )) then
+  if ( not (zend_get_parameters_my(ht, pr, TSRMLS_DC) = SUCCESS )) then
     begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
 
    try
-     ZVAL_LONG(return_value,
+     ZValVal(return_value,
         SQUALL_Sample_GetFileFrequency(pr[0]^.value.lval)
      );
    except
-       ZVAL_FALSE(return_value);
+       ZvalVal(return_value, FALSE);
    end;
 
     dispose_pzval_array(pr);
@@ -537,7 +537,7 @@ begin
       zend_wrong_param_count(TSRMLS_DC); Exit;
   end;
 
-  if ( not (zend_get_parameters_ex(ht, pr) = SUCCESS )) then
+  if ( not (zend_get_parameters_my(ht, pr, TSRMLS_DC) = SUCCESS )) then
     begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
 
     ID      := ZendToVariant(pr[0]);
@@ -550,11 +550,11 @@ begin
     PAN     := pr[7]^.value.lval;
 
    try
-     ZVAL_LONG(return_value,
+     ZValVal(return_value,
         SQUALL_Sample_PlayEx(ID,LOOP,GROUP,START,PRIORITY,VALUE,FREQ,PAN)
      );
    except
-       ZVAL_FALSE(return_value);
+       ZvalVal(return_value, FALSE);
    end;
 
     dispose_pzval_array(pr);
@@ -574,7 +574,7 @@ begin
       zend_wrong_param_count(TSRMLS_DC); Exit;
   end;
 
-  if ( not (zend_get_parameters_ex(ht, pr) = SUCCESS )) then
+  if ( not (zend_get_parameters_my(ht, pr, TSRMLS_DC) = SUCCESS )) then
     begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
 
     HashToArray(pr[1]^.value.ht, AR);
@@ -605,11 +605,11 @@ begin
     def^.MaxDist       := ZendToVariant(tmp);
 
    try
-     ZVAL_LONG(return_value,
+     ZValVal(return_value,
         SQUALL_Sample_SetDefault(pr[0]^.value.lval, def)
      );
    except
-       ZVAL_FALSE(return_value);
+       ZvalVal(return_value, FALSE);
    end;
 
     FreeMem(def);
@@ -629,14 +629,14 @@ begin
       zend_wrong_param_count(TSRMLS_DC); Exit;
   end;
 
-  if ( not (zend_get_parameters_ex(ht, pr) = SUCCESS )) then
+  if ( not (zend_get_parameters_my(ht, pr, TSRMLS_DC) = SUCCESS )) then
     begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
 
 
     res := SQUALL_Sample_GetDefault(pr[0]^.value.lval, def);
 
     if res < 0 then
-        ZVAL_LONG(return_value, res)
+        ZValVal(return_value, res)
     else begin
 
         SetLength(AR,7);
@@ -673,7 +673,7 @@ begin
       zend_wrong_param_count(TSRMLS_DC); Exit;
   end;
 
-  if ( not (zend_get_parameters_ex(ht, pr) = SUCCESS )) then
+  if ( not (zend_get_parameters_my(ht, pr, TSRMLS_DC) = SUCCESS )) then
     begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
 
     ID   := pr[0]^.value.lval;
@@ -693,11 +693,11 @@ begin
     VELOCITY[2] := VEL[2];
 
    try
-     ZVAL_LONG(return_value,
+     ZValVal(return_value,
         SQUALL_Sample_Play3D(ID, LOOP, GROUP, START, @POSITION, @VELOCITY)
      );
    except
-       ZVAL_FALSE(return_value);
+       ZvalVal(return_value, FALSE);
    end;
 
     dispose_pzval_array(pr);
@@ -716,7 +716,7 @@ begin
       zend_wrong_param_count(TSRMLS_DC); Exit;
   end;
 
-  if ( not (zend_get_parameters_ex(ht, pr) = SUCCESS )) then
+  if ( not (zend_get_parameters_my(ht, pr, TSRMLS_DC) = SUCCESS )) then
     begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
 
     ID   := pr[0]^.value.lval;
@@ -742,12 +742,12 @@ begin
     VELOCITY[2] := VEL[2];
 
    try
-     ZVAL_LONG(return_value,
+     ZValVal(return_value,
         SQUALL_Sample_Play3DEx(ID, LOOP, GROUP, START, @POSITION, @VELOCITY,
         PRIORITY,VALUE,FREQ,min,max)
      );
    except
-       ZVAL_FALSE(return_value);
+       ZvalVal(return_value, FALSE);
    end;
 
     dispose_pzval_array(pr);
@@ -762,15 +762,15 @@ begin
       zend_wrong_param_count(TSRMLS_DC); Exit;
   end;
 
-  if ( not (zend_get_parameters_ex(ht, pr) = SUCCESS )) then
+  if ( not (zend_get_parameters_my(ht, pr, TSRMLS_DC) = SUCCESS )) then
     begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
 
    try
-     ZVAL_LONG(return_value,
+     ZValVal(return_value,
         SQUALL_Channel_Start(pr[0]^.value.lval)
      );
    except
-       ZVAL_FALSE(return_value);
+       ZvalVal(return_value, FALSE);
    end;
 
     dispose_pzval_array(pr);
@@ -785,15 +785,15 @@ begin
       zend_wrong_param_count(TSRMLS_DC); Exit;
   end;
 
-  if ( not (zend_get_parameters_ex(ht, pr) = SUCCESS )) then
+  if ( not (zend_get_parameters_my(ht, pr, TSRMLS_DC) = SUCCESS )) then
     begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
 
    try
-     ZVAL_LONG(return_value,
+     ZValVal(return_value,
         SQUALL_Channel_Pause(pr[0]^.value.lval, pr[1]^.value.lval)
      );
    except
-       ZVAL_FALSE(return_value);
+       ZvalVal(return_value, FALSE);
    end;
 
     dispose_pzval_array(pr);
@@ -808,15 +808,15 @@ begin
       zend_wrong_param_count(TSRMLS_DC); Exit;
   end;
 
-  if ( not (zend_get_parameters_ex(ht, pr) = SUCCESS )) then
+  if ( not (zend_get_parameters_my(ht, pr, TSRMLS_DC) = SUCCESS )) then
     begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
 
    try
-     ZVAL_LONG(return_value,
+     ZValVal(return_value,
         SQUALL_Channel_Stop(pr[0]^.value.lval)
      );
    except
-       ZVAL_FALSE(return_value);
+       ZvalVal(return_value, FALSE);
    end;
 
     dispose_pzval_array(pr);
@@ -831,15 +831,15 @@ begin
       zend_wrong_param_count(TSRMLS_DC); Exit;
   end;
 
-  if ( not (zend_get_parameters_ex(ht, pr) = SUCCESS )) then
+  if ( not (zend_get_parameters_my(ht, pr, TSRMLS_DC) = SUCCESS )) then
     begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
 
    try
-     ZVAL_LONG(return_value,
+     ZValVal(return_value,
         SQUALL_Channel_Status(pr[0]^.value.lval)
      );
    except
-       ZVAL_FALSE(return_value);
+       ZvalVal(return_value, FALSE);
    end;
 
     dispose_pzval_array(pr);
@@ -857,16 +857,16 @@ begin
       zend_wrong_param_count(TSRMLS_DC); Exit;
   end;
 
-  if ( not (zend_get_parameters_ex(ht, pr) = SUCCESS )) then
+  if ( not (zend_get_parameters_my(ht, pr, TSRMLS_DC) = SUCCESS )) then
     begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
 
     channel := pr[0]^.value.lval;
     vol := pr[1]^.value.lval;
 
    try
-     ZVAL_LONG(return_value,SQUALL_Channel_SetVolume(channel, vol));
+     ZValVal(return_value,SQUALL_Channel_SetVolume(channel, vol));
    except
-       ZVAL_FALSE(return_value);
+       ZvalVal(return_value, FALSE);
    end;
 
     dispose_pzval_array(pr);
@@ -882,15 +882,15 @@ begin
       zend_wrong_param_count(TSRMLS_DC); Exit;
   end;
 
-  if ( not (zend_get_parameters_ex(ht, pr) = SUCCESS )) then
+  if ( not (zend_get_parameters_my(ht, pr, TSRMLS_DC) = SUCCESS )) then
     begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
 
    try
-     ZVAL_LONG(return_value,
+     ZValVal(return_value,
         SQUALL_Channel_GetVolume(pr[0]^.value.lval)
      );
    except
-       ZVAL_FALSE(return_value);
+       ZvalVal(return_value, FALSE);
    end;
 
     dispose_pzval_array(pr);
@@ -906,15 +906,15 @@ begin
       zend_wrong_param_count(TSRMLS_DC); Exit;
   end;
 
-  if ( not (zend_get_parameters_ex(ht, pr) = SUCCESS )) then
+  if ( not (zend_get_parameters_my(ht, pr, TSRMLS_DC) = SUCCESS )) then
     begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
 
    try
-     ZVAL_LONG(return_value,
+     ZValVal(return_value,
         SQUALL_Channel_SetFrequency(pr[0]^.value.lval, pr[1]^.value.lval)
      );
    except
-       ZVAL_FALSE(return_value);
+       ZvalVal(return_value, FALSE);
    end;
 
     dispose_pzval_array(pr);
@@ -930,15 +930,15 @@ begin
       zend_wrong_param_count(TSRMLS_DC); Exit;
   end;
 
-  if ( not (zend_get_parameters_ex(ht, pr) = SUCCESS )) then
+  if ( not (zend_get_parameters_my(ht, pr, TSRMLS_DC) = SUCCESS )) then
     begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
 
    try
-     ZVAL_LONG(return_value,
+     ZValVal(return_value,
         SQUALL_Channel_GetFrequency(pr[0]^.value.lval)
      );
    except
-       ZVAL_FALSE(return_value);
+       ZvalVal(return_value, FALSE);
    end;
 
     dispose_pzval_array(pr);
@@ -951,14 +951,14 @@ var
       pr : pzval_array;
 begin
   if ht <> 2 then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
-  if ( not (zend_get_parameters_ex(ht, pr) = SUCCESS )) then
+  if ( not (zend_get_parameters_my(ht, pr, TSRMLS_DC) = SUCCESS )) then
     begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
 
    try
-     ZVAL_LONG(return_value,
+     ZValVal(return_value,
         SQUALL_Channel_SetPlayPosition(pr[0]^.value.lval, pr[1]^.value.lval)
      );
-   except ZVAL_FALSE(return_value); end;
+   except ZvalVal(return_value, FALSE); end;
     dispose_pzval_array(pr);
 end;
 
@@ -968,13 +968,13 @@ var
       pr : pzval_array;
 begin
   if ht <> 1 then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
-  if ( not (zend_get_parameters_ex(ht, pr) = SUCCESS )) then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
+  if ( not (zend_get_parameters_my(ht, pr, TSRMLS_DC) = SUCCESS )) then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
 
    try
-     ZVAL_LONG(return_value,
+     ZValVal(return_value,
         SQUALL_Channel_GetPlayPosition(pr[0]^.value.lval)
      );
-   except ZVAL_FALSE(return_value); end;
+   except ZvalVal(return_value, FALSE); end;
     dispose_pzval_array(pr);
 end;
 
@@ -984,14 +984,14 @@ var
       pr : pzval_array;
 begin
   if ht <> 2 then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
-  if ( not (zend_get_parameters_ex(ht, pr) = SUCCESS )) then
+  if ( not (zend_get_parameters_my(ht, pr, TSRMLS_DC) = SUCCESS )) then
     begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
 
    try
-     ZVAL_LONG(return_value,
+     ZValVal(return_value,
         SQUALL_Channel_SetPlayPositionMs(pr[0]^.value.lval, pr[1]^.value.lval)
      );
-   except ZVAL_FALSE(return_value); end;
+   except ZvalVal(return_value, FALSE); end;
     dispose_pzval_array(pr);
 end;
 
@@ -1002,13 +1002,13 @@ var
       pr : pzval_array;
 begin
   if ht <> 1 then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
-  if ( not (zend_get_parameters_ex(ht, pr) = SUCCESS )) then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
+  if ( not (zend_get_parameters_my(ht, pr, TSRMLS_DC) = SUCCESS )) then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
 
    try
-     ZVAL_LONG(return_value,
+     ZValVal(return_value,
         SQUALL_Channel_GetPlayPositionMs(pr[0]^.value.lval)
      );
-   except ZVAL_FALSE(return_value); end;
+   except ZvalVal(return_value, FALSE); end;
     dispose_pzval_array(pr);
 end;
 
@@ -1019,14 +1019,14 @@ var
       pr : pzval_array;
 begin
   if ht <> 3 then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
-  if ( not (zend_get_parameters_ex(ht, pr) = SUCCESS )) then
+  if ( not (zend_get_parameters_my(ht, pr, TSRMLS_DC) = SUCCESS )) then
     begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
 
    try
-     ZVAL_LONG(return_value,
+     ZValVal(return_value,
         SQUALL_Channel_SetFragment(pr[0]^.value.lval, pr[1]^.value.lval, pr[2]^.value.lval)
      );
-   except ZVAL_FALSE(return_value); end;
+   except ZvalVal(return_value, FALSE); end;
     dispose_pzval_array(pr);
 end;
 
@@ -1040,7 +1040,7 @@ var
       s,e,r: integer;
 begin
   if ht <> 1 then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
-  if ( not (zend_get_parameters_ex(ht, pr) = SUCCESS )) then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
+  if ( not (zend_get_parameters_my(ht, pr, TSRMLS_DC) = SUCCESS )) then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
 
    try
 
@@ -1049,9 +1049,9 @@ begin
      if (r >= 0) then
         ArrayToHash(['start','end'],[s,e], return_value)
      else
-        ZVAL_LONG(return_value,r);
+        ZValVal(return_value,r);
 
-   except ZVAL_FALSE(return_value); end;
+   except ZvalVal(return_value, FALSE); end;
     dispose_pzval_array(pr);
 end;
 
@@ -1064,14 +1064,14 @@ var
       pr : pzval_array;
 begin
   if ht <> 3 then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
-  if ( not (zend_get_parameters_ex(ht, pr) = SUCCESS )) then
+  if ( not (zend_get_parameters_my(ht, pr, TSRMLS_DC) = SUCCESS )) then
     begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
 
    try
-     ZVAL_LONG(return_value,
+     ZValVal(return_value,
         SQUALL_Channel_SetFragmentMs(pr[0]^.value.lval, pr[1]^.value.lval, pr[2]^.value.lval)
      );
-   except ZVAL_FALSE(return_value); end;
+   except ZvalVal(return_value, FALSE); end;
     dispose_pzval_array(pr);
 end;
 
@@ -1085,7 +1085,7 @@ var
       s, e, r: integer;
 begin
   if ht <> 1 then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
-  if ( not (zend_get_parameters_ex(ht, pr) = SUCCESS )) then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
+  if ( not (zend_get_parameters_my(ht, pr, TSRMLS_DC) = SUCCESS )) then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
 
    try
      r := SQUALL_Channel_GetFragmentMs(pr[0]^.value.lval, s, e);
@@ -1093,9 +1093,9 @@ begin
      if (r >= 0) then
         ArrayToHash(['start','end'],[s,e], return_value)
      else
-        ZVAL_LONG(return_value,r);
+        ZValVal(return_value,r);
 
-   except ZVAL_FALSE(return_value); end;
+   except ZvalVal(return_value, FALSE); end;
     dispose_pzval_array(pr);
 end;
 
@@ -1109,13 +1109,13 @@ var
       pr : pzval_array;
 begin
   if ht <> 1 then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
-  if ( not (zend_get_parameters_ex(ht, pr) = SUCCESS )) then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
+  if ( not (zend_get_parameters_my(ht, pr, TSRMLS_DC) = SUCCESS )) then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
 
    try
-     ZVAL_LONG(return_value,
+     ZValVal(return_value,
         SQUALL_Channel_GetLength(pr[0]^.value.lval)
      );
-   except ZVAL_FALSE(return_value); end;
+   except ZvalVal(return_value, FALSE); end;
     dispose_pzval_array(pr);
 end;
 
@@ -1125,13 +1125,13 @@ var
       pr : pzval_array;
 begin
   if ht <> 1 then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
-  if ( not (zend_get_parameters_ex(ht, pr) = SUCCESS )) then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
+  if ( not (zend_get_parameters_my(ht, pr, TSRMLS_DC) = SUCCESS )) then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
 
    try
-     ZVAL_LONG(return_value,
+     ZValVal(return_value,
         SQUALL_Channel_GetLengthMs(pr[0]^.value.lval)
      );
-   except ZVAL_FALSE(return_value); end;
+   except ZvalVal(return_value, FALSE); end;
     dispose_pzval_array(pr);
 end;
 
@@ -1144,14 +1144,14 @@ var
       pr : pzval_array;
 begin
   if ht <> 2 then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
-  if ( not (zend_get_parameters_ex(ht, pr) = SUCCESS )) then
+  if ( not (zend_get_parameters_my(ht, pr, TSRMLS_DC) = SUCCESS )) then
     begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
 
    try
-     ZVAL_LONG(return_value,
+     ZValVal(return_value,
         SQUALL_Channel_SetPriority(pr[0]^.value.lval, pr[1]^.value.lval)
      );
-   except ZVAL_FALSE(return_value); end;
+   except ZvalVal(return_value, FALSE); end;
     dispose_pzval_array(pr);
 end;
 
@@ -1164,13 +1164,13 @@ var
       pr : pzval_array;
 begin
   if ht <> 1 then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
-  if ( not (zend_get_parameters_ex(ht, pr) = SUCCESS )) then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
+  if ( not (zend_get_parameters_my(ht, pr, TSRMLS_DC) = SUCCESS )) then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
 
    try
-     ZVAL_LONG(return_value,
+     ZValVal(return_value,
         SQUALL_Channel_GetPriority(pr[0]^.value.lval)
      );
-   except ZVAL_FALSE(return_value); end;
+   except ZvalVal(return_value, FALSE); end;
     dispose_pzval_array(pr);
 end;
 
@@ -1184,14 +1184,14 @@ var
       pr : pzval_array;
 begin
   if ht <> 2 then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
-  if ( not (zend_get_parameters_ex(ht, pr) = SUCCESS )) then
+  if ( not (zend_get_parameters_my(ht, pr, TSRMLS_DC) = SUCCESS )) then
     begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
 
    try
-     ZVAL_LONG(return_value,
+     ZValVal(return_value,
         SQUALL_Channel_SetLoop(pr[0]^.value.lval, pr[1]^.value.lval)
      );
-   except ZVAL_FALSE(return_value); end;
+   except ZvalVal(return_value, FALSE); end;
     dispose_pzval_array(pr);
 end;
 
@@ -1204,13 +1204,13 @@ var
       pr : pzval_array;
 begin
   if ht <> 1 then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
-  if ( not (zend_get_parameters_ex(ht, pr) = SUCCESS )) then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
+  if ( not (zend_get_parameters_my(ht, pr, TSRMLS_DC) = SUCCESS )) then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
 
    try
-     ZVAL_LONG(return_value,
+     ZValVal(return_value,
         SQUALL_Channel_GetLoop(pr[0]^.value.lval)
      );
-   except ZVAL_FALSE(return_value); end;
+   except ZvalVal(return_value, FALSE); end;
     dispose_pzval_array(pr);
 end;
 
@@ -1224,14 +1224,14 @@ var
       pr : pzval_array;
 begin
   if ht <> 2 then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
-  if ( not (zend_get_parameters_ex(ht, pr) = SUCCESS )) then
+  if ( not (zend_get_parameters_my(ht, pr, TSRMLS_DC) = SUCCESS )) then
     begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
 
    try
-     ZVAL_LONG(return_value,
+     ZValVal(return_value,
         SQUALL_Channel_SetPan(pr[0]^.value.lval, pr[1]^.value.lval)
      );
-   except ZVAL_FALSE(return_value); end;
+   except ZvalVal(return_value, FALSE); end;
     dispose_pzval_array(pr);
 end;
 
@@ -1244,13 +1244,13 @@ var
       pr : pzval_array;
 begin
   if ht <> 1 then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
-  if ( not (zend_get_parameters_ex(ht, pr) = SUCCESS )) then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
+  if ( not (zend_get_parameters_my(ht, pr, TSRMLS_DC) = SUCCESS )) then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
 
    try
-     ZVAL_LONG(return_value,
+     ZValVal(return_value,
         SQUALL_Channel_GetPan(pr[0]^.value.lval)
      );
-   except ZVAL_FALSE(return_value); end;
+   except ZvalVal(return_value, FALSE); end;
     dispose_pzval_array(pr);
 end;
 
@@ -1261,13 +1261,13 @@ var
       pr : pzval_array;
 begin
   if ht <> 2 then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
-  if ( not (zend_get_parameters_ex(ht, pr) = SUCCESS )) then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
+  if ( not (zend_get_parameters_my(ht, pr, TSRMLS_DC) = SUCCESS )) then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
 
    try
-     ZVAL_LONG(return_value,
+     ZValVal(return_value,
         SQUALL_SetHardwareAcceleration(pr[0]^.value.lval, pr[1]^.value.lval)
      );
-   except ZVAL_FALSE(return_value); end;
+   except ZvalVal(return_value, FALSE); end;
     dispose_pzval_array(pr);
 end;
 
@@ -1287,9 +1287,9 @@ begin
      end
      else
      begin
-       ZVAL_LONG(return_value, res);
+       ZValVal(return_value, res);
      end;
-   except ZVAL_FALSE(return_value); end;
+   except ZvalVal(return_value, FALSE); end;
 end;
 
 procedure _SQUALL_SetSpeakerMode(ht : integer; return_value : pzval; return_value_ptr : ppzval; this_ptr : pzval;
@@ -1298,13 +1298,13 @@ var
       pr : pzval_array;
 begin
   if ht <> 1 then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
-  if ( not (zend_get_parameters_ex(ht, pr) = SUCCESS )) then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
+  if ( not (zend_get_parameters_my(ht, pr, TSRMLS_DC) = SUCCESS )) then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
 
    try
-     ZVAL_LONG(return_value,
+     ZValVal(return_value,
         SQUALL.SQUALL_SetSpeakerMode(pr[0]^.value.lval)
      );
-   except ZVAL_FALSE(return_value); end;
+   except ZvalVal(return_value, FALSE); end;
     dispose_pzval_array(pr);
 end;
 
@@ -1315,10 +1315,10 @@ begin
     if ht <> 0 then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
 
    try
-     ZVAL_LONG(return_value,
+     ZValVal(return_value,
         SQUALL.SQUALL_GetSpeakerMode()
      );
-   except ZVAL_FALSE(return_value); end;
+   except ZvalVal(return_value, FALSE); end;
 end;
 
 procedure _SQUALL_Set3DAlgorithm(ht : integer; return_value : pzval; return_value_ptr : ppzval; this_ptr : pzval;
@@ -1327,13 +1327,13 @@ var
       pr : pzval_array;
 begin
   if ht <> 1 then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
-    if ( not (zend_get_parameters_ex(ht, pr) = SUCCESS )) then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
+    if ( not (zend_get_parameters_my(ht, pr, TSRMLS_DC) = SUCCESS )) then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
 
    try
-     ZVAL_LONG(return_value,
+     ZValVal(return_value,
         SQUALL.SQUALL_Set3DAlgorithm(pr[0]^.value.lval)
      );
-   except ZVAL_FALSE(return_value); end;
+   except ZvalVal(return_value, FALSE); end;
     dispose_pzval_array(pr);
 end;
 
@@ -1343,10 +1343,10 @@ begin
   if ht <> 0 then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
 
    try
-     ZVAL_LONG(return_value,
+     ZValVal(return_value,
         SQUALL.SQUALL_Get3DAlgorithm()
      );
-   except ZVAL_FALSE(return_value); end;
+   except ZvalVal(return_value, FALSE); end;
 end;
 
 procedure _SQUALL_SetBufferSize(ht : integer; return_value : pzval; return_value_ptr : ppzval; this_ptr : pzval;
@@ -1355,13 +1355,13 @@ var
       pr : pzval_array;
 begin
   if ht <> 1 then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
-    if ( not (zend_get_parameters_ex(ht, pr) = SUCCESS )) then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
+    if ( not (zend_get_parameters_my(ht, pr, TSRMLS_DC) = SUCCESS )) then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
 
    try
-     ZVAL_LONG(return_value,
+     ZValVal(return_value,
         SQUALL.SQUALL_SetBufferSize(pr[0]^.value.lval)
      );
-   except ZVAL_FALSE(return_value); end;
+   except ZvalVal(return_value, FALSE); end;
     dispose_pzval_array(pr);
 end;
 
@@ -1371,10 +1371,10 @@ begin
   if ht <> 0 then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
 
    try
-     ZVAL_LONG(return_value,
+     ZValVal(return_value,
         SQUALL.SQUALL_GetBufferSize()
      );
-   except ZVAL_FALSE(return_value); end;
+   except ZvalVal(return_value, FALSE); end;
 end;
 
 procedure _SQUALL_GetNumDevice(ht : integer; return_value : pzval; return_value_ptr : ppzval; this_ptr : pzval;
@@ -1383,10 +1383,10 @@ begin
   if ht <> 0 then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
 
    try
-     ZVAL_LONG(return_value,
+     ZValVal(return_value,
         SQUALL.SQUALL_GetNumDevice()
      );
-   except ZVAL_FALSE(return_value); end;
+   except ZvalVal(return_value, FALSE); end;
 end;
 
 procedure _SQUALL_GetDeviceName(ht : integer; return_value : pzval; return_value_ptr : ppzval; this_ptr : pzval;
@@ -1398,7 +1398,7 @@ var
       res: integer;
 begin
   if ht <> 1 then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
-      if ( not (zend_get_parameters_ex(ht, pr) = SUCCESS )) then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
+      if ( not (zend_get_parameters_my(ht, pr, TSRMLS_DC) = SUCCESS )) then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
 
    try
    begin
@@ -1413,10 +1413,10 @@ begin
    end
    else
    begin
-     ZVAL_LONG(return_value, res);
+     ZValVal(return_value, res);
    end;
    end;
-   except ZVAL_FALSE(return_value); end;
+   except ZvalVal(return_value, FALSE); end;
     dispose_pzval_array(pr);
 end;
 
@@ -1429,7 +1429,7 @@ var
       res: integer;
 begin
   if ht <> 1 then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
-    if ( not (zend_get_parameters_ex(ht, pr) = SUCCESS )) then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
+    if ( not (zend_get_parameters_my(ht, pr, TSRMLS_DC) = SUCCESS )) then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
 
    try
    begin
@@ -1444,10 +1444,10 @@ begin
     end
     else
     begin
-      ZVAL_LONG(return_value, res);
+      ZValVal(return_value, res);
     end;
    end;
-   except ZVAL_FALSE(return_value); end;
+   except ZvalVal(return_value, FALSE); end;
     dispose_pzval_array(pr);
 end;
 
@@ -1457,8 +1457,8 @@ begin
   if ht <> 0 then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
 
    try
-      ZVAL_LONG(return_value, SQUALL.SQUALL_GetEAXVersion());
-   except ZVAL_FALSE(return_value); end;
+      ZValVal(return_value, SQUALL.SQUALL_GetEAXVersion());
+   except ZvalVal(return_value, FALSE); end;
 end;
 
 procedure _SQUALL_GetChannelsInfo(ht : integer; return_value : pzval; return_value_ptr : ppzval; this_ptr : pzval;
@@ -1485,10 +1485,10 @@ begin
    end
    else
    begin
-      ZVAL_LONG(return_value, res);
+      ZValVal(return_value, res);
    end;
    end;
-   except ZVAL_FALSE(return_value); end;
+   except ZvalVal(return_value, FALSE); end;
 end;
 
 procedure _SQUALL_Listener_SetParameters(ht : integer; return_value : pzval; return_value_ptr : ppzval; this_ptr : pzval;
@@ -1498,14 +1498,14 @@ var
       position, front, top, velocity: single;
 begin
   if ht <> 4 then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
-    if ( not (zend_get_parameters_ex(ht, pr) = SUCCESS )) then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
+    if ( not (zend_get_parameters_my(ht, pr, TSRMLS_DC) = SUCCESS )) then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
 
    try
      position :=  pr[0]^.value.dval;
      front    :=  pr[1]^.value.dval;
      top      :=  pr[2]^.value.dval;
      velocity :=  pr[3]^.value.dval;
-     ZVAL_LONG(return_value,
+     ZValVal(return_value,
         SQUALL.SQUALL_Listener_SetParameters (
         @position,
         @front,
@@ -1513,7 +1513,7 @@ begin
         @velocity
         )
      );
-   except ZVAL_FALSE(return_value); end;
+   except ZvalVal(return_value, FALSE); end;
     dispose_pzval_array(pr);
 end;
 
@@ -1543,9 +1543,9 @@ begin
     end
     else
     begin
-     ZVAL_LONG(return_value, res);
+     ZValVal(return_value, res);
     end;
-   except ZVAL_FALSE(return_value); end;
+   except ZvalVal(return_value, FALSE); end;
 end;
 
 procedure _SQUALL_Listener_SetVelocity(ht : integer; return_value : pzval; return_value_ptr : ppzval; this_ptr : pzval;
@@ -1555,16 +1555,16 @@ var
       velocity: single;
 begin
   if ht <> 1 then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
-    if ( not (zend_get_parameters_ex(ht, pr) = SUCCESS )) then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
+    if ( not (zend_get_parameters_my(ht, pr, TSRMLS_DC) = SUCCESS )) then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
 
    try
      velocity :=  pr[0]^.value.dval;
-     ZVAL_LONG(return_value,
+     ZValVal(return_value,
         SQUALL.SQUALL_Listener_SetVelocity (
         @velocity
         )
      );
-   except ZVAL_FALSE(return_value); end;
+   except ZvalVal(return_value, FALSE); end;
     dispose_pzval_array(pr);
 end;
 
@@ -1580,13 +1580,13 @@ begin
      res := SQUALL.SQUALL_Listener_GetVelocity (PSingle(velocity));
      if res >=0 then
      begin
-         ZVAL_DOUBLE(return_value, velocity);
+         ZvalVal(return_value, velocity);
      end
      else
      begin
-         ZVAL_LONG(return_value, res);
+         ZValVal(return_value, res);
      end;
-   except ZVAL_FALSE(return_value); end;
+   except ZvalVal(return_value, FALSE); end;
 end;
 
 procedure _SQUALL_Listener_SetPosition(ht : integer; return_value : pzval; return_value_ptr : ppzval; this_ptr : pzval;
@@ -1596,16 +1596,16 @@ var
       pos: single;
 begin
   if ht <> 1 then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
-    if ( not (zend_get_parameters_ex(ht, pr) = SUCCESS )) then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
+    if ( not (zend_get_parameters_my(ht, pr, TSRMLS_DC) = SUCCESS )) then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
 
    try
      pos :=  pr[0]^.value.dval;
-     ZVAL_LONG(return_value,
+     ZValVal(return_value,
         SQUALL.SQUALL_Listener_SetPosition (
         @pos
         )
      );
-   except ZVAL_FALSE(return_value); end;
+   except ZvalVal(return_value, FALSE); end;
     dispose_pzval_array(pr);
 end;
 
@@ -1620,13 +1620,13 @@ begin
      res := SQUALL.SQUALL_Listener_GetPosition (PSingle(pos));
      if res >=0 then
      begin
-         ZVAL_DOUBLE(return_value, pos);
+         ZvalVal(return_value, pos);
      end
      else
      begin
-         ZVAL_LONG(return_value, res);
+         ZValVal(return_value, res);
      end;
-   except ZVAL_FALSE(return_value); end;
+   except ZvalVal(return_value, FALSE); end;
 end;
 
 procedure _SQUALL_Listener_SetDistanceFactor(ht : integer; return_value : pzval; return_value_ptr : ppzval; this_ptr : pzval;
@@ -1636,16 +1636,16 @@ var
       pos: single;
 begin
   if ht <> 1 then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
-    if ( not (zend_get_parameters_ex(ht, pr) = SUCCESS )) then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
+    if ( not (zend_get_parameters_my(ht, pr, TSRMLS_DC) = SUCCESS )) then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
 
    try
      pos :=  pr[0]^.value.dval;
-     ZVAL_LONG(return_value,
+     ZValVal(return_value,
         SQUALL.SQUALL_Listener_SetDistanceFactor (
         pos
         )
      );
-   except ZVAL_FALSE(return_value); end;
+   except ZvalVal(return_value, FALSE); end;
     dispose_pzval_array(pr);
 end;
 
@@ -1661,13 +1661,13 @@ begin
      res := SQUALL.SQUALL_Listener_GetDistanceFactor (pos);
      if res >=0 then
      begin
-         ZVAL_DOUBLE(return_value, pos);
+         ZvalVal(return_value, pos);
      end
      else
      begin
-         ZVAL_LONG(return_value, res);
+         ZValVal(return_value, res);
      end;
-   except ZVAL_FALSE(return_value); end;
+   except ZvalVal(return_value, FALSE); end;
 end;
 
 procedure _SQUALL_Listener_SetFrolovFactor(ht : integer; return_value : pzval; return_value_ptr : ppzval; this_ptr : pzval;
@@ -1677,16 +1677,16 @@ var
       pos: single;
 begin
   if ht <> 1 then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
-    if ( not (zend_get_parameters_ex(ht, pr) = SUCCESS )) then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
+    if ( not (zend_get_parameters_my(ht, pr, TSRMLS_DC) = SUCCESS )) then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
 
    try
      pos :=  pr[0]^.value.dval;
-     ZVAL_LONG(return_value,
+     ZValVal(return_value,
         SQUALL.SQUALL_Listener_SetRolloffFactor (
         pos
         )
      );
-   except ZVAL_FALSE(return_value); end;
+   except ZvalVal(return_value, FALSE); end;
     dispose_pzval_array(pr);
 end;
                            //Rollof
@@ -1702,13 +1702,13 @@ begin
      res := SQUALL.SQUALL_Listener_GetRolloffFactor (pos);
      if res >=0 then
      begin
-         ZVAL_DOUBLE(return_value, pos);
+         ZvalVal(return_value, pos);
      end
      else
      begin
-         ZVAL_LONG(return_value, res);
+         ZValVal(return_value, res);
      end;
-   except ZVAL_FALSE(return_value); end;
+   except ZvalVal(return_value, FALSE); end;
 end;
 
 procedure _SQUALL_Listener_SetDopplerFactor(ht : integer; return_value : pzval; return_value_ptr : ppzval; this_ptr : pzval;
@@ -1718,16 +1718,16 @@ var
       pos: single;
 begin
   if ht <> 1 then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
-    if ( not (zend_get_parameters_ex(ht, pr) = SUCCESS )) then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
+    if ( not (zend_get_parameters_my(ht, pr, TSRMLS_DC) = SUCCESS )) then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
 
    try
      pos :=  pr[0]^.value.dval;
-     ZVAL_LONG(return_value,
+     ZValVal(return_value,
         SQUALL.SQUALL_Listener_SetDopplerFactor (
         pos
         )
      );
-   except ZVAL_FALSE(return_value); end;
+   except ZvalVal(return_value, FALSE); end;
     dispose_pzval_array(pr);
 end;
 
@@ -1743,13 +1743,13 @@ begin
      res := SQUALL.SQUALL_Listener_GetDopplerFactor (pos);
      if res >=0 then
      begin
-         ZVAL_DOUBLE(return_value, pos);
+         ZvalVal(return_value, pos);
      end
      else
      begin
-         ZVAL_LONG(return_value, res);
+         ZValVal(return_value, res);
      end;
-   except ZVAL_FALSE(return_value); end;
+   except ZvalVal(return_value, FALSE); end;
 end;
 
 procedure _SQUALL_Listener_Update(ht : integer; return_value : pzval; return_value_ptr : ppzval; this_ptr : pzval;
@@ -1757,10 +1757,10 @@ procedure _SQUALL_Listener_Update(ht : integer; return_value : pzval; return_val
 begin
   if ht <> 0 then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
    try
-     ZVAL_LONG(return_value,
+     ZValVal(return_value,
         SQUALL.SQUALL_Listener_Update ()
      );
-   except ZVAL_FALSE(return_value); end;
+   except ZvalVal(return_value, FALSE); end;
 end;
 
 procedure _SQUALL_Listener_EAX_SetPreset(ht : integer; return_value : pzval; return_value_ptr : ppzval; this_ptr : pzval;
@@ -1769,13 +1769,13 @@ var
       pr : pzval_array;
 begin
   if ht <> 1 then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
-    if ( not (zend_get_parameters_ex(ht, pr) = SUCCESS )) then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
+    if ( not (zend_get_parameters_my(ht, pr, TSRMLS_DC) = SUCCESS )) then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
 
    try
-     ZVAL_LONG(return_value,
+     ZValVal(return_value,
       SQUALL.SQUALL_Listener_EAX_SetPreset (pr[0]^.value.lval)
       );
-   except ZVAL_FALSE(return_value); end;
+   except ZvalVal(return_value, FALSE); end;
     dispose_pzval_array(pr);
 end;
 
@@ -1790,7 +1790,7 @@ var
 begin
 //4 + 1, 14 + 1, 24 + 1
   if (ht <> 5) and (ht <> 15) and (ht <> 25) then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
-    if ( not (zend_get_parameters_ex(ht, pr) = SUCCESS )) then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
+    if ( not (zend_get_parameters_my(ht, pr, TSRMLS_DC) = SUCCESS )) then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
 
    try
     case pr[0]^.value.lval of
@@ -1860,10 +1860,10 @@ begin
        props.eax3.Flags               := Cardinal(pr[24]^.value.lval);
     end;
     end;
-     ZVAL_LONG(return_value,
+     ZValVal(return_value,
       SQUALL.SQUALL_Listener_EAX_SetProperties (pr[0]^.value.lval, props)
       );
-   except ZVAL_FALSE(return_value); end;
+   except ZvalVal(return_value, FALSE); end;
     dispose_pzval_array(pr);
 end;
 
@@ -1877,7 +1877,7 @@ var
       ar, ar2: TArrayVariant;
 begin
   if (ht <> 1) then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
-    if ( not (zend_get_parameters_ex(ht, pr) = SUCCESS )) then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
+    if ( not (zend_get_parameters_my(ht, pr, TSRMLS_DC) = SUCCESS )) then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
 
    try
    res := SQUALL.SQUALL_Listener_EAX_GetProperties (pr[0]^.value.lval, props);
@@ -1948,9 +1948,9 @@ begin
    end
    else
    begin
-     ZVAL_LONG(return_value, res);
+     ZValVal(return_value, res);
    end;
-   except ZVAL_FALSE(return_value); end;
+   except ZvalVal(return_value, FALSE); end;
     dispose_pzval_array(pr);
 end;
 
@@ -1961,14 +1961,14 @@ var
       pos: single;
 begin
   if ht <> 2 then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
-    if ( not (zend_get_parameters_ex(ht, pr) = SUCCESS )) then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
+    if ( not (zend_get_parameters_my(ht, pr, TSRMLS_DC) = SUCCESS )) then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
 
    try
      pos :=  pr[1]^.value.dval;
-     ZVAL_LONG(return_value,
+     ZValVal(return_value,
         SQUALL.SQUALL_Channel_Set3DPosition (pr[0]^.value.lval, PSingle(pos))
      );
-   except ZVAL_FALSE(return_value); end;
+   except ZvalVal(return_value, FALSE); end;
     dispose_pzval_array(pr);
 end;
 
@@ -1980,19 +1980,19 @@ var
       res: integer;
 begin
   if ht <> 1 then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
-    if ( not (zend_get_parameters_ex(ht, pr) = SUCCESS )) then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
+    if ( not (zend_get_parameters_my(ht, pr, TSRMLS_DC) = SUCCESS )) then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
 
    try
      res := SQUALL.SQUALL_Channel_Set3DPosition (pr[0]^.value.lval, PSingle(pos));
      if res >=0 then
      begin
-         ZVAL_DOUBLE(return_value, pos);
+         ZvalVal(return_value, pos);
      end
      else
      begin
-         ZVAL_LONG(return_value, res);
+         ZValVal(return_value, res);
      end;
-   except ZVAL_FALSE(return_value); end;
+   except ZvalVal(return_value, FALSE); end;
     dispose_pzval_array(pr);
 end;
 
@@ -2003,17 +2003,17 @@ var
       pos: single;
 begin
   if ht <> 2 then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
-    if ( not (zend_get_parameters_ex(ht, pr) = SUCCESS )) then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
+    if ( not (zend_get_parameters_my(ht, pr, TSRMLS_DC) = SUCCESS )) then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
 
    try
      pos :=  pr[1]^.value.dval;
-     ZVAL_LONG(return_value,
+     ZValVal(return_value,
         SQUALL.SQUALL_Channel_SetVelocity (
         pr[0]^.value.lval,
         PSingle(pos)
         )
      );
-   except ZVAL_FALSE(return_value); end;
+   except ZvalVal(return_value, FALSE); end;
     dispose_pzval_array(pr);
 end;
 
@@ -2025,19 +2025,19 @@ var
       res: integer;
 begin
   if ht <> 1 then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
-  if ( not (zend_get_parameters_ex(ht, pr) = SUCCESS )) then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
+  if ( not (zend_get_parameters_my(ht, pr, TSRMLS_DC) = SUCCESS )) then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
 
    try
      res := SQUALL.SQUALL_Channel_GetVelocity (pr[0]^.value.lval, PSingle(pos));
      if res >=0 then
      begin
-         ZVAL_DOUBLE(return_value, pos);
+         ZvalVal(return_value, pos);
      end
      else
      begin
-         ZVAL_LONG(return_value, res);
+         ZValVal(return_value, res);
      end;
-   except ZVAL_FALSE(return_value); end;
+   except ZvalVal(return_value, FALSE); end;
     dispose_pzval_array(pr);
 end;
 
@@ -2047,15 +2047,15 @@ var
       pr : pzval_array;
 begin
   if ht <> 3 then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
-  if ( not (zend_get_parameters_ex(ht, pr) = SUCCESS )) then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
+  if ( not (zend_get_parameters_my(ht, pr, TSRMLS_DC) = SUCCESS )) then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
 
    try
-     ZVAL_LONG(return_value,
+     ZValVal(return_value,
      SQUALL.SQUALL_Channel_SetMinMaxDistance (
      pr[0]^.value.lval,
      pr[1]^.value.dval,
      pr[2]^.value.dval));
-   except ZVAL_FALSE(return_value); end;
+   except ZvalVal(return_value, FALSE); end;
     dispose_pzval_array(pr);
 end;
 
@@ -2067,7 +2067,7 @@ var
       res: integer;
 begin
   if ht <> 1 then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
-    if ( not (zend_get_parameters_ex(ht, pr) = SUCCESS )) then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
+    if ( not (zend_get_parameters_my(ht, pr, TSRMLS_DC) = SUCCESS )) then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
 
    try
      res := SQUALL.SQUALL_Channel_GetMinMaxDistance (
@@ -2081,9 +2081,9 @@ begin
      end
     else
     begin
-      ZVAL_LONG(return_value, res);
+      ZValVal(return_value, res);
     end;
-   except ZVAL_FALSE(return_value); end;
+   except ZvalVal(return_value, FALSE); end;
     dispose_pzval_array(pr);
 end;
 
@@ -2093,10 +2093,10 @@ var
       pr : pzval_array;
 begin
   if ht <> 5 then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
-    if ( not (zend_get_parameters_ex(ht, pr) = SUCCESS )) then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
+    if ( not (zend_get_parameters_my(ht, pr, TSRMLS_DC) = SUCCESS )) then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
 
    try
-     ZVAL_LONG(return_value,
+     ZValVal(return_value,
      SQUALL.SQUALL_Channel_SetConeParameters (
         pr[0]^.value.lval,
         pr[1]^.value.dval,
@@ -2105,7 +2105,7 @@ begin
         pr[4]^.value.lval
         )
         );
-   except ZVAL_FALSE(return_value); end;
+   except ZvalVal(return_value, FALSE); end;
     dispose_pzval_array(pr);
 end;
 
@@ -2117,7 +2117,7 @@ var
       pos1, pos2, pos3, res: integer;
 begin
   if ht <> 1 then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
-  if ( not (zend_get_parameters_ex(ht, pr) = SUCCESS )) then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
+  if ( not (zend_get_parameters_my(ht, pr, TSRMLS_DC) = SUCCESS )) then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
 
    try
         res := SQUALL.SQUALL_Channel_GetConeParameters (
@@ -2138,9 +2138,9 @@ begin
      end
     else
     begin
-      ZVAL_LONG(return_value, res);
+      ZValVal(return_value, res);
     end;
-   except ZVAL_FALSE(return_value); end;
+   except ZvalVal(return_value, FALSE); end;
     dispose_pzval_array(pr);
 end;
 
@@ -2153,7 +2153,7 @@ var
 begin
 //4 + 1 + 1, 14 + 1 + 1, 24 + 1 + 1
   if (ht <> 3) and (ht <> 14) and (ht <> 20) then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
-    if ( not (zend_get_parameters_ex(ht, pr) = SUCCESS )) then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
+    if ( not (zend_get_parameters_my(ht, pr, TSRMLS_DC) = SUCCESS )) then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
 
    try
     case pr[1]^.value.lval of
@@ -2202,10 +2202,10 @@ begin
        props.eax3.Flags               := Cardinal(pr[19]^.value.lval);
     end;
     end;
-     ZVAL_LONG(return_value,
+     ZValVal(return_value,
       SQUALL.SQUALL_Channel_EAX_SetProperties (pr[0]^.value.lval, pr[1]^.value.lval, props)
       );
-   except ZVAL_FALSE(return_value); end;
+   except ZvalVal(return_value, FALSE); end;
     dispose_pzval_array(pr);
 end;
 
@@ -2218,7 +2218,7 @@ var
       props: squall_eax_channel_t;
 begin
   if (ht <> 2) then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
-    if ( not (zend_get_parameters_ex(ht, pr) = SUCCESS )) then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
+    if ( not (zend_get_parameters_my(ht, pr, TSRMLS_DC) = SUCCESS )) then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
 
    try
    res := SQUALL.SQUALL_Channel_EAX_GetProperties (pr[0]^.value.lval, pr[1]^.value.lval, props);
@@ -2226,7 +2226,7 @@ begin
    begin
     case pr[0]^.value.lval of
     1: begin
-      ZVAL_DOUBLE(return_value,
+      ZvalVal(return_value,
       props.eax1.Mix);
     end;
     2: begin
@@ -2272,9 +2272,9 @@ begin
    end
    else
    begin
-     ZVAL_LONG(return_value, res);
+     ZValVal(return_value, res);
    end;
-   except ZVAL_FALSE(return_value); end;
+   except ZvalVal(return_value, FALSE); end;
     dispose_pzval_array(pr);
 end;
 
@@ -2287,7 +2287,7 @@ var
       props: psquall_zoomfx_channel_t;
 begin
   if ht <> 6 then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
-  if ( not (zend_get_parameters_ex(ht, pr) = SUCCESS )) then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
+  if ( not (zend_get_parameters_my(ht, pr, TSRMLS_DC) = SUCCESS )) then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
 
    try
     HashToArray(pr[1]^.value.ht, ar1);
@@ -2312,11 +2312,11 @@ begin
     props.Top   := pos4;
     props.MacroFX  := pr[5]^.value.lval;
 
-     ZVAL_LONG(return_value,
+     ZValVal(return_value,
      SQUALL.SQUALL_Channel_ZOOMFX_SetProperties (
      pr[0]^.value.lval,
      props));
-   except ZVAL_FALSE(return_value); end;
+   except ZvalVal(return_value, FALSE); end;
     dispose_pzval_array(pr);
 end;
 
@@ -2329,7 +2329,7 @@ var
       props: squall_zoomfx_channel_t;
 begin
   if ht <> 1 then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
-    if ( not (zend_get_parameters_ex(ht, pr) = SUCCESS )) then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
+    if ( not (zend_get_parameters_my(ht, pr, TSRMLS_DC) = SUCCESS )) then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
 
    try
      res := SQUALL.SQUALL_Channel_ZOOMFX_GetProperties (
@@ -2362,9 +2362,9 @@ begin
      end
     else
     begin
-      ZVAL_LONG(return_value, res);
+      ZValVal(return_value, res);
     end;
-   except ZVAL_FALSE(return_value); end;
+   except ZvalVal(return_value, FALSE); end;
     dispose_pzval_array(pr);
 end;
 
@@ -2374,15 +2374,15 @@ var
       pr : pzval_array;
 begin
   if ht <> 2 then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
-    if ( not (zend_get_parameters_ex(ht, pr) = SUCCESS )) then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
+    if ( not (zend_get_parameters_my(ht, pr, TSRMLS_DC) = SUCCESS )) then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
 
    try
-     ZVAL_LONG(return_value,
+     ZValVal(return_value,
         SQUALL.SQUALL_ChannelGroup_Pause (pr[0]^.value.lval,
         pr[1]^.value.lval
         )
      );
-   except ZVAL_FALSE(return_value); end;
+   except ZvalVal(return_value, FALSE); end;
     dispose_pzval_array(pr);
 end;
 
@@ -2392,12 +2392,12 @@ var
       pr : pzval_array;
 begin
   if ht <> 1 then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
-    if ( not (zend_get_parameters_ex(ht, pr) = SUCCESS )) then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
+    if ( not (zend_get_parameters_my(ht, pr, TSRMLS_DC) = SUCCESS )) then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
 
    try
-      ZVAL_LONG(return_value,
+      ZValVal(return_value,
       SQUALL.SQUALL_ChannelGroup_Stop(pr[0]^.value.lval));
-   except ZVAL_FALSE(return_value); end;
+   except ZvalVal(return_value, FALSE); end;
     dispose_pzval_array(pr);
 end;
 
@@ -2407,15 +2407,15 @@ var
       pr : pzval_array;
 begin
   if ht <> 2 then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
-    if ( not (zend_get_parameters_ex(ht, pr) = SUCCESS )) then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
+    if ( not (zend_get_parameters_my(ht, pr, TSRMLS_DC) = SUCCESS )) then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
 
    try
-      ZVAL_LONG(return_value,
+      ZValVal(return_value,
       SQUALL.SQUALL_ChannelGroup_SetVolume(
       pr[0]^.value.lval,
       pr[1]^.value.lval
       ));
-   except ZVAL_FALSE(return_value); end;
+   except ZvalVal(return_value, FALSE); end;
     dispose_pzval_array(pr);
 end;
 
@@ -2425,15 +2425,15 @@ var
       pr : pzval_array;
 begin
   if ht <> 2 then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
-    if ( not (zend_get_parameters_ex(ht, pr) = SUCCESS )) then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
+    if ( not (zend_get_parameters_my(ht, pr, TSRMLS_DC) = SUCCESS )) then begin zend_wrong_param_count(TSRMLS_DC); Exit; end;
 
    try
-      ZVAL_LONG(return_value,
+      ZValVal(return_value,
       SQUALL.SQUALL_ChannelGroup_SetFrequency (
       pr[0]^.value.lval,
       pr[1]^.value.lval
       ));
-   except ZVAL_FALSE(return_value); end;
+   except ZvalVal(return_value, FALSE); end;
     dispose_pzval_array(pr);
 end;
 

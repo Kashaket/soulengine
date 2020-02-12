@@ -36,3 +36,5 @@ awCosnole.pas
 *.pas_s
 *.compiled
 *.dcu
+*.identcache
+*.stat

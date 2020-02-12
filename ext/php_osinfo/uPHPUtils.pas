@@ -178,7 +178,7 @@ end;
 
 function readPr(param: pzval_array; index: integer): Variant;
 begin
-    Result := zval2variant(param[index]^^);
+    Result := ZendApi.ZendToVariant(param[index]^);
 end;
 
 procedure readPrs(param: pzval_array; ht: integer);
@@ -204,7 +204,7 @@ end;
 function checkPrs2(ht: integer; var Param: pzval_array; var TSRMLS_DC: pointer): Boolean;
 begin
   Result := true;
-  if ( not (zend_get_parameters_ex(ht, Param) = SUCCESS )) then
+  if ( not (zend_get_parameters_my(ht, Param, TSRMLS_DC) = SUCCESS )) then
     begin
         zend_wrong_param_count(TSRMLS_DC);
         Result := false;

@@ -13,7 +13,6 @@ uses
   {$ifdef fpc}
   LCLType,
   {$endif}
-  {$IFDEF PHP7} hzend_types, {$ENDIF}
   zendTypes,
   ZENDAPI,
   phpTypes,

@@ -9,7 +9,6 @@ interface
 uses
   Classes,
   SysUtils,
-  {$IFDEF PHP7} hzend_types, {$ENDIF}
   zendTypes,
   Variants,
   ZENDAPI,
