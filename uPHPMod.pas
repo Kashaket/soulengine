@@ -9,7 +9,6 @@ uses
   phpLibrary,
   PHPCommon,
   php4delphi,
-  {$IFDEF PHP7} hzend_types, {$ENDIF}
   ZendTypes,
   ZendAPI,
   PHPTypes,

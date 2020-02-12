@@ -15,8 +15,8 @@ uses
   ExtCtrls, StdCtrls, ComCtrls, SizeControl,
   Forms, Dialogs, Buttons, Controls,
   dwsHashtables, zendAPI, phpApi, dsStdCtrl,
-  {$IFDEF PHP7} hzend_types, {$ENDIF}
    ZENDTypes, php4delphi
+  {$IFDEF PHP_UNICODE}, WideStrUtils{$ENDIF}
 {$IFDEF ADD_CHROMIUM}
     , uCefApplication, uCefChromium,  uCefChromiumOptions,
    uCEFv8Handler, uCEFv8Value, uCEFTypes,
