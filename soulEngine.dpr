@@ -27,8 +27,6 @@ begin
 
   Application.CreateForm(T__mainForm, __mainForm);
   Application.CreateForm(T__fMain, __fMain);
-  Application.CreateForm(T__mainForm, __mainForm);
-  Application.CreateForm(T__fMain, __fMain);
   Application.CreateForm(TphpMOD, phpMOD);
    T__fMain.loadEngine(dllPHPPath);
 

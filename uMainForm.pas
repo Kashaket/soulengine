@@ -117,6 +117,7 @@ begin
   then
   begin
     phpMOD.RunFile(ExtractFilePath(ParamStr(0)) + '/tests/-t.php');
+    Application.Terminate;
   end
   else if ParamStr(1) <> '-run' then
   begin
@@ -163,8 +164,8 @@ begin
   EM := TExeStream.Create(ParamStr(0));
 
   progDir := AnsiString(ExtractFilePath(Application.ExeName));
+
   moduleDir := progDir + 'ext\';
-  engineDir := progDir + 'engine\';
   if DirectoryExists(string(progDir) + 'core\') then
     engineDir := progDir + 'core\';
 
@@ -186,9 +187,8 @@ begin
       progDir := progDir + AnsiString(ExtractFilePath(f));
   end
   else if selfScript <> '' then
-    progDir := AnsiString(ExtractFilePath(ParamStr(0)))
-  else if f <> '' then
-    progDir := AnsiString(ExtractFilePath(f));
+    progDir := AnsiString(ExtractFilePath(ParamStr(0)));
+
   EM.Destroy;
   {$IFDEF ADD_CHROMIUM}
     LoadChromium;
