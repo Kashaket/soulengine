@@ -17,28 +17,28 @@ uses
 
 {$R *.res}
 function GetAdapterInfo(Lana: AnsiChar): String;
-var 
+var
   Adapter: TAdapterStatus;
   NCB: TNCB;
 begin
   FillChar(NCB, SizeOf(NCB), 0);
-  NCB.ncb_command := AnsiChar(NCBRESET);
+  NCB.ncb_command := Char(NCBRESET);
   NCB.ncb_lana_num := Lana;
-  if Netbios(@NCB) <> AnsiChar(NRC_GOODRET) then
+  if Netbios(@NCB) <> Char(NRC_GOODRET) then
   begin 
     Result := 'mac not found'; 
     Exit; 
   end; 
 
   FillChar(NCB, SizeOf(NCB), 0); 
-  NCB.ncb_command := AnsiChar(NCBASTAT);
-  NCB.ncb_lana_num := Lana; 
-  NCB.ncb_callname := '*'; 
+  NCB.ncb_command := Char(NCBASTAT);
+  NCB.ncb_lana_num := Lana;
+  NCB.ncb_callname := '*';
 
   FillChar(Adapter, SizeOf(Adapter), 0);
-  NCB.ncb_buffer := @Adapter; 
-  NCB.ncb_length := SizeOf(Adapter); 
-  if Netbios(@NCB) <> AnsiChar(NRC_GOODRET) then
+  NCB.ncb_buffer := @Adapter;
+  NCB.ncb_length := SizeOf(Adapter);
+  if Netbios(@NCB) <> Char(NRC_GOODRET) then
   begin 
     Result := 'mac not found'; 
     Exit; 
@@ -54,19 +54,19 @@ end;
 
 function GetMACAddress: string; 
 var 
-  AdapterList: TLanaEnum; 
+  AdapterList: TLanaEnum;
   NCB: TNCB; 
 begin 
   FillChar(NCB, SizeOf(NCB), 0);
-  NCB.ncb_command := AnsiChar(NCBENUM);
+  NCB.ncb_command := Char(NCBENUM);
   NCB.ncb_buffer := @AdapterList;
   NCB.ncb_length := SizeOf(AdapterList);
-  Netbios(@NCB); 
+  Netbios(@NCB);
   if Byte(AdapterList.length) > 0 then 
-    Result := GetAdapterInfo(AdapterList.lana[0]) 
+    Result := GetAdapterInfo(AdapterList.lana[0])
   else 
     Result := ''; 
-end; 
+end;
 
 function GetDisplayDevice: string;
 var
@@ -91,7 +91,7 @@ end;
 procedure php_info_module(zend_module : Pzend_module_entry; TSRMLS_DC : pointer); cdecl;
 begin
   php_info_print_table_start();
-  php_info_print_table_row(2, PAnsiChar('php OSINFO'), PAnsiChar('enabled'));
+  php_info_print_table_row(2, zend_pchar('php_OSINFO'), zend_pchar('enabled'));
   php_info_print_table_end();
 end;
 
@@ -298,18 +298,14 @@ end;
 
 procedure osinfo_dotnet(ht : integer; return_value: pzval; return_value_ptr: pzval; this_ptr : pzval;
    return_value_used : integer; TSRMLS_DC : pointer); cdecl;
-   var param : pzval_array;
 begin
   if not checkPrs(ht,0,TSRMLS_DC) then exit;
-   if not checkPrs2(ht,param,TSRMLS_DC) then exit;
 
    try
-        readPrs(param,ht);
-        ZVAL_STRING(return_value, PAnsiChar(DotNetVersion), true);
+        ZVAL_STRING(return_value, DotNetVersion, true);
    except
-       ZVAL_NULL(return_value);
+       ZValVal(return_value);
    end;
-   dispose_pzval_array(param);
 end;
 
 
@@ -326,69 +322,56 @@ end;
 
 procedure osinfo_isnt(ht : integer; return_value: pzval; return_value_ptr: pzval; this_ptr : pzval;
    return_value_used : integer; TSRMLS_DC : pointer); cdecl;
-   var param : pzval_array;
 begin
   if not checkPrs(ht,0,TSRMLS_DC) then exit;
-   if not checkPrs2(ht,param,TSRMLS_DC) then exit;
 
    try
-        //readPrs(param,ht);
-        ZVAL_BOOL(return_value, not isWin9x);
+        ZValVal(return_value, not isWin9x);
    except
-       ZVAL_NULL(return_value);
+       ZValVal(return_value);
    end;
-   dispose_pzval_array(param);
 end;
 
 
 procedure osinfo_winver(ht : integer; return_value: pzval; return_value_ptr: pzval; this_ptr : pzval;
    return_value_used : integer; TSRMLS_DC : pointer); cdecl;
-var param : pzval_array;
-    res: AnsiString;
-    WinVersion, DosVersion: Word;
+var
+    WinVersion: Word;
 begin
   if not checkPrs(ht,0,TSRMLS_DC) then exit;
-   if not checkPrs2(ht,param,TSRMLS_DC) then exit;
 
    try
-        //readPrs(param,ht);
         WinVersion := GetVersion and $0000FFFF;
-        Res := IntToStr(Lo(WinVersion))+'.'+IntToStr(Hi(WinVersion));
 
-        ZVAL_STRING(return_value, PAnsiChar(Res), false);
+        ZVAL_STRING(return_value, IntToStr(Lo(WinVersion))+'.'+IntToStr(Hi(WinVersion)), false);
    except
-       ZVAL_NULL(return_value);
+       ZValVal(return_value);
    end;
-   dispose_pzval_array(param);
 end;
 
 procedure osinfo_dosver(ht : integer; return_value: pzval; return_value_ptr: pzval; this_ptr : pzval;
    return_value_used : integer; TSRMLS_DC : pointer); cdecl;
-var param : pzval_array;
-    res: AnsiString;
-    WinVersion, DosVersion: Word;
+var
+    DosVersion: Word;
 begin
   if not checkPrs(ht,0,TSRMLS_DC) then exit;
-   if not checkPrs2(ht,param,TSRMLS_DC) then exit;
 
    try
         //readPrs(param,ht);
         DosVersion := GetVersion shr 16;
-        Res := IntToStr(Hi(DosVersion))+'.'+IntToStr(Lo(DosVersion));
 
-        ZVAL_STRING(return_value, PAnsiChar(Res), false);
+        ZVAL_STRING(return_value, IntToStr(Hi(DosVersion))+'.'+IntToStr(Lo(DosVersion)), false);
    except
-       ZVAL_NULL(return_value);
+       ZValVal(return_value);
    end;
-   dispose_pzval_array(param);
 end;
 
 
-function GetLocaleInformation(Flag: Integer): AnsiString;
+function GetLocaleInformation(Flag: Integer): String;
 var
-  pcLCA: array [0..20] of AnsiChar;
+  pcLCA: array [0..20] of Char;
 begin
-  if GetLocaleInfoA(LOCALE_SYSTEM_DEFAULT, Flag, pcLCA, 19) <= 0 then
+  if GetLocaleInfoW(LOCALE_SYSTEM_DEFAULT, Flag, pcLCA, 19) <= 0 then
     pcLCA[0] := #0;
   Result := pcLCA;
 end;
@@ -397,7 +380,6 @@ end;
 procedure osinfo_locale(ht : integer; return_value: pzval; return_value_ptr: pzval; this_ptr : pzval;
    return_value_used : integer; TSRMLS_DC : pointer); cdecl;
 var param : pzval_array;
-    res: AnsiString;
 begin
   if not checkPrs(ht,1,TSRMLS_DC) then exit;
    if not checkPrs2(ht,param,TSRMLS_DC) then exit;
@@ -405,11 +387,9 @@ begin
    try
         readPrs(param,ht);
 
-        Res := GetLocaleInformation( prs[0] );
-
-        ZVAL_STRING(return_value, PAnsiChar(Res), false);
+        ZVAL_STRING(return_value, GetLocaleInformation( prs[0] ), false);
    except
-       ZVAL_NULL(return_value);
+       ZValVal(return_value);
    end;
    dispose_pzval_array(param);
 end;
@@ -441,9 +421,9 @@ begin
           6: res := MS.dwAvailVirtual;
         end;
 
-        ZVAL_LONG(return_value, res);
+        ZValVal(return_value, res);
    except
-       ZVAL_NULL(return_value);
+       ZValVal(return_value);
    end;
    dispose_pzval_array(param);
 end;
@@ -501,49 +481,25 @@ end;
  
 procedure osinfo_isadmin(ht : integer; return_value: pzval; return_value_ptr: pzval; this_ptr : pzval;
    return_value_used : integer; TSRMLS_DC : pointer); cdecl;
-var param : pzval_array;
 begin
   if not checkPrs(ht,0,TSRMLS_DC) then exit;
-   if not checkPrs2(ht,param,TSRMLS_DC) then exit;
 
    try
-        readPrs(param,ht);
-        ZVAL_BOOL(return_value, IsAdmin);
+        ZValVal(return_value, IsAdmin);
    except
-       ZVAL_NULL(return_value);
+       ZValVal(return_value);
    end;
-   dispose_pzval_array(param);
 end;
 
-function GetBiosNumber: string;
-begin
- // result := string(pchar(ptr($FEC71)));
-end;
-
-procedure osinfo_biosnumber(ht : integer; return_value: pzval; return_value_ptr: pzval; this_ptr : pzval;
-   return_value_used : integer; TSRMLS_DC : pointer); cdecl;
-var param : pzval_array;
-begin
-  if not checkPrs(ht,0,TSRMLS_DC) then exit;
-   if not checkPrs2(ht,param,TSRMLS_DC) then exit;
-
-   try
-        //readPrs(param,ht);
-        ZVAL_STRING(return_value, PAnsiChar(GetBiosNumber), false);
-   except
-       ZVAL_NULL(return_value);
-   end;
-   dispose_pzval_array(param);
-end;
-
-function GetHardDiskSerial(const DriveLetter: AnsiChar): string;
+function GetHardDiskSerial(const DriveLetter: Char): string;
+type
+  VolumeInfo = array[0..MAX_PATH] of Char;
 var
   NotUsed:     DWORD;
   VolumeFlags: DWORD;
-  VolumeInfo:  array[0..MAX_PATH] of AnsiChar;
   VolumeSerialNumber: DWORD;
 begin
-  GetVolumeInformationA(PAnsiChar(DriveLetter + ':\'),
+  GetVolumeInformationW(PChar(DriveLetter + ':\'),
     nil, SizeOf(VolumeInfo), @VolumeSerialNumber, NotUsed,
     VolumeFlags, nil, 0);
   Result := Format('%8.8X',
@@ -554,7 +510,7 @@ end;
 procedure osinfo_diskserial(ht : integer; return_value: pzval; return_value_ptr: pzval; this_ptr : pzval;
    return_value_used : integer; TSRMLS_DC : pointer); cdecl;
 var param : pzval_array;
-    res: AnsiString;
+    res: String;
 begin
   if not checkPrs(ht,1,TSRMLS_DC) then exit;
    if not checkPrs2(ht,param,TSRMLS_DC) then exit;
@@ -565,17 +521,17 @@ begin
         res := prs[0];
         Res := GetHardDiskSerial( res[1] );
 
-        ZVAL_STRING(return_value, PAnsiChar(Res), false);
+        ZVAL_STRING(return_value, Res, false);
    except
-       ZVAL_NULL(return_value);
+       ZValVal(return_value);
    end;
    dispose_pzval_array(param);
 end;
 
-function GetDiskSize(drive: AnsiChar; var free_size, total_size: Int64): Boolean;
+function GetDiskSize(drive: Char; var free_size, total_size: Int64): Boolean;
  var
-   RootPath: array[0..4] of AnsiChar;
-   RootPtr: PAnsiChar;
+   RootPath: array[0..4] of Char;
+   RootPtr: PChar;
    current_dir: string;
  begin
    RootPath[0] := Drive;
@@ -586,7 +542,7 @@ function GetDiskSize(drive: AnsiChar; var free_size, total_size: Int64): Boolean
    current_dir := GetCurrentDir;
    if SetCurrentDir(drive + ':\') then
    begin
-      GetDiskFreeSpaceExA(RootPtr, Free_size, Total_size, nil);
+      GetDiskFreeSpaceExW(RootPtr, Free_size, Total_size, nil);
       // this to turn back to original dir
       SetCurrentDir(current_dir);
       Result := True;
@@ -603,7 +559,7 @@ function GetDiskSize(drive: AnsiChar; var free_size, total_size: Int64): Boolean
 procedure osinfo_diskfree(ht : integer; return_value: pzval; return_value_ptr: pzval; this_ptr : pzval;
    return_value_used : integer; TSRMLS_DC : pointer); cdecl;
 var param : pzval_array;
-    res: AnsiString;
+    res: String;
     size,size2: Int64;
     r: Double;
 begin
@@ -617,9 +573,9 @@ begin
 
         GetDiskSize( res[1], size, size2 );
         r   := size;
-        ZVAL_DOUBLE(return_value, r);
+        ZValVal(return_value, r);
    except
-       ZVAL_NULL(return_value);
+       ZValVal(return_value);
    end;
    dispose_pzval_array(param);
 end;
@@ -627,7 +583,7 @@ end;
 procedure osinfo_disktotal(ht : integer; return_value: pzval; return_value_ptr: pzval; this_ptr : pzval;
    return_value_used : integer; TSRMLS_DC : pointer); cdecl;
 var param : pzval_array;
-    res: AnsiString;
+    res: String;
     size,size2: Int64;
     r: double;
 begin
@@ -635,39 +591,33 @@ begin
    if not checkPrs2(ht,param,TSRMLS_DC) then exit;
 
    try
-        readPrs(param,ht);
-
-        res := prs[0];
+        res := Z_STRVAL(param[0]^);
         GetDiskSize( res[1], size, size2 );
         r := size2;
-        ZVAL_DOUBLE(return_value, r);
+        ZValVal(return_value, r);
    except
-       ZVAL_NULL(return_value);
+       ZValVal(return_value);
    end;
    dispose_pzval_array(param);
 end;
 
 procedure osinfo_macaddress(ht : integer; return_value: pzval; return_value_ptr: pzval; this_ptr : pzval;
    return_value_used : integer; TSRMLS_DC : pointer); cdecl;
-var param : pzval_array;
-    res: AnsiString;
+var
+    res: String;
 begin
   if not checkPrs(ht,0,TSRMLS_DC) then exit;
-   if not checkPrs2(ht,param,TSRMLS_DC) then exit;
 
-   try                    
-        //readPrs(param,ht);
-
+   try
         res := GetMACAddress;
         if res = 'mac not found' then
-          ZVAL_FALSE(return_value)
+          ZValVal(return_value, FALSE)
         else
-          ZVAL_STRING(return_value, PAnsiChar(res), false);
+          ZVAL_STRING(return_value, res, false);
 
    except
-       ZVAL_NULL(return_value);
+       ZValVal(return_value);
    end;
-   dispose_pzval_array(param);
 end;
 
 procedure osinfo_get(ht : integer; return_value: pzval; return_value_ptr: pzval; this_ptr : pzval;
@@ -696,10 +646,10 @@ begin
           9: res := SysInfo.wProcessorRevision;
         end;
 
-        ZVAL_LONG(return_value, res);
+        ZValVal(return_value, res);
 
    except
-       ZVAL_NULL(return_value);
+       ZValVal(return_value);
    end;
    dispose_pzval_array(param);
 end;
@@ -707,25 +657,21 @@ end;
 
 procedure osinfo_displaydevice(ht : integer; return_value: pzval; return_value_ptr: pzval; this_ptr : pzval;
    return_value_used : integer; TSRMLS_DC : pointer); cdecl;
-var param : pzval_array;
-    res: AnsiString;
+var
+    res: String;
 begin
   if not checkPrs(ht,0,TSRMLS_DC) then exit;
-   if not checkPrs2(ht,param,TSRMLS_DC) then exit;
 
    try
-        //readPrs(param,ht);
-
         res := GetDisplayDevice;
         if res = '' then
-          ZVAL_FALSE(return_value)
+          ZValVal(return_value, FALSE)
         else
-          ZVAL_STRING(return_value, PAnsiChar(res), false);
+          ZVAL_STRING(return_value, res, false);
 
    except
-       ZVAL_NULL(return_value);
+       ZValVal(return_value);
    end;
-   dispose_pzval_array(param);
 end;
 
 
@@ -740,62 +686,51 @@ begin
    try
         readPrs(param,ht);
 
-        res := GetDriveTypeA(ToPChar(prs[0]));
+        res := GetDriveTypeW(ToPChar(prs[0]));
 
-        ZVAL_LONG(return_value, res);
+        ZValVal(return_value, res);
 
    except
-       ZVAL_NULL(return_value);
+       ZValVal(return_value);
    end;
    dispose_pzval_array(param);
 end;
 
 
-function ReadComputerName:AnsiString;
-{�Drkb v.3(2007): www.drkb.ru,
-�Vit (Vitaly Nevzorov) - nevzorov@yahoo.com}
-
+function ReadComputerName:String;
 var
 i:DWORD;
-p:PAnsiChar;
+p:PChar;
 begin
-i:=255;
-GetMem(p, i);
-GetComputerNameA(p, i);
-Result:=AnsiString(p);
-FreeMem(p);
+  i:=255;
+  GetMem(p, i);
+  GetComputerNameW(p, i);
+  Result:=String(p);
+  FreeMem(p);
 end;
 
 procedure osinfo_computername(ht : integer; return_value: pzval; return_value_ptr: pzval; this_ptr : pzval;
    return_value_used : integer; TSRMLS_DC : pointer); cdecl;
-var param : pzval_array;
-    res: AnsiString;
 begin
   if not checkPrs(ht,0,TSRMLS_DC) then exit;
-   if not checkPrs2(ht,param,TSRMLS_DC) then exit;
 
    try
-        readPrs(param,ht);
-
-        res := ReadComputerName;
-
-        ZVAL_STRING(return_value, PAnsiChar(res), false);
+        ZVAL_STRING(return_value,  ReadComputerName, false);
 
    except
-       ZVAL_NULL(return_value);
+       ZValVal(return_value);
    end;
-   dispose_pzval_array(param);
 end;
 
 
-function GetUserFromWindows: AnsiString;
+function GetUserFromWindows: String;
 var
 UserName : string;
 UserNameLen : Dword;
 begin
 UserNameLen := 255;
 SetLength(userName, UserNameLen);
-if GetUserNameA(PAnsiChar(UserName), UserNameLen) then
+if GetUserNameW(PChar(UserName), UserNameLen) then
    Result := Copy(UserName,1,UserNameLen - 1)
 else
    Result := '';
@@ -804,46 +739,29 @@ end;
 
 procedure osinfo_username(ht : integer; return_value: pzval; return_value_ptr: pzval; this_ptr : pzval;
    return_value_used : integer; TSRMLS_DC : pointer); cdecl;
-var param : pzval_array;
-    res: AnsiString;
 begin
   if not checkPrs(ht,0,TSRMLS_DC) then exit;
-   if not checkPrs2(ht,param,TSRMLS_DC) then exit;
 
    try
-        //readPrs(param,ht);
-
-        res := GetUserFromWindows;
-
-        ZVAL_STRING(return_value, PAnsiChar(res), false);
-
+        ZVAL_STRING(return_value, GetUserFromWindows, false);
    except
-       ZVAL_NULL(return_value);
+       ZValVal(return_value);
    end;
-   dispose_pzval_array(param);
 end;
 
 
 
 procedure osinfo_syslang(ht : integer; return_value: pzval; return_value_ptr: pzval; this_ptr : pzval;
    return_value_used : integer; TSRMLS_DC : pointer); cdecl;
-var param : pzval_array;
-    res: AnsiString;
 begin
   if not checkPrs(ht,0,TSRMLS_DC) then exit;
-   if not checkPrs2(ht,param,TSRMLS_DC) then exit;
 
    try
-        //readPrs(param,ht);
-
-        res := GetLocaleInformation($0000003);
-
-        ZVAL_STRING(return_value, PAnsiChar(res), false);
+        ZVAL_STRING(return_value, GetLocaleInformation($0000003), false);
 
    except
-       ZVAL_NULL(return_value);
+       ZValVal(return_value);
    end;
-   dispose_pzval_array(param);
 end;
 
 var
@@ -874,9 +792,9 @@ begin
   ModuleEntry.module_number := 0;
   {$IFDEF PHP530}
   {$IFNDEF COMPILER_VC9}
-  ModuleEntry.build_id := strdup(PAnsiChar(ZEND_MODULE_BUILD_ID));
+  ModuleEntry.build_id := strdup(zend_pchar(ZEND_MODULE_BUILD_ID));
   {$ELSE}
-  ModuleEntry.build_id := DupStr(PAnsiChar(ZEND_MODULE_BUILD_ID));
+  ModuleEntry.build_id := DupStr(zend_pchar(ZEND_MODULE_BUILD_ID));
   {$ENDIF}
   {$ENDIF}
 

@@ -90,12 +90,12 @@ procedure gui_method_params(ht: integer; return_value: pzval; return_value_ptr: 
 procedure gui_get_all_unitsclasses(ht: integer; return_value: pzval; return_value_ptr: pzval;
   this_ptr: pzval; return_value_used: integer; TSRMLS_DC: pointer); cdecl;
   //Получение списка всех классов
-procedure lbpll(ht: integer; return_value: pzval; return_value_ptr: pzval;
+procedure rtl(ht: integer; return_value: pzval; return_value_ptr: pzval;
   this_ptr: pzval; return_value_used: integer; TSRMLS_DC: pointer); cdecl;
-  //Получение/загрузка bpl-библиотеки
-procedure ldl(ht: integer; return_value: pzval; return_value_ptr: pzval;
+  //Получение/загрузка bpl/dll-библиотеки
+procedure rtll(ht: integer; return_value: pzval; return_value_ptr: pzval;
   this_ptr: pzval; return_value_used: integer; TSRMLS_DC: pointer); cdecl;
-  //Получение/загрузка dll-библиотеки
+  //Проверяет загружена ли библиотека.
 procedure gpreadable(ht: integer; return_value: pzval; return_value_ptr: pzval;
   this_ptr: pzval; return_value_used: integer; TSRMLS_DC: pointer); cdecl;
 procedure gpwritable(ht: integer; return_value: pzval; return_value_ptr: pzval;
@@ -697,7 +697,7 @@ begin
   get_all_classes(@arrv);
   ZVAL_ARRAY(return_value, arrv);
 end;
-procedure ldl;
+procedure rtl;
 var
   p: pzval_array;
 begin
@@ -708,11 +708,11 @@ begin
   end;
   zend_get_parameters_my(ht, p, TSRMLS_DC);
 
-  ZVALVAL(return_value, LoadTypeLib(string(Z_STRVAL(p[0]^))));
+  ZVALVAL(return_value, LoadRTL(Z_STRVAL(p[0]^)));
 
   dispose_pzval_array(p);
 end;
-procedure lbpll;
+procedure rtll;
 var
   p: pzval_array;
 begin
@@ -723,10 +723,11 @@ begin
   end;
   zend_get_parameters_my(ht, p, TSRMLS_DC);
 
-  ZVALVAL(return_value, LoadTypePackage(string(Z_STRVAL(p[0]^))));
+  ZVALVAL(return_value, RTLLoaded(Z_STRVAL(p[0]^)));
 
   dispose_pzval_array(p);
 end;
+
 procedure gpreadable;
 var
   p: pzval_array;
@@ -783,8 +784,8 @@ begin
   PHPEngine.AddFunction('gui_class_prop_iswritable', @gpwritable);
   PHPEngine.AddFunction('gui_get_RecordInfo', @gui_get_RecordInfo);
 
-  PHPEngine.AddFunction('ldtl', @ldl);
-  PHPEngine.AddFunction('lbpl', @lbpll);
+  PHPEngine.AddFunction('rtl', @rtl);
+  PHPEngine.AddFunction('rtll', @rtll);
 end;
 
 

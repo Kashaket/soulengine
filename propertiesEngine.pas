@@ -42,8 +42,8 @@ procedure RegisterClassA(AClass: TPersistentClass);
 procedure RegisterClassAliasA(AClass: TPersistentClass; Alias: string);
 procedure RegisterClassAliasesA(AClass: TPersistentClass; Classes: array of string);
 function GetConstructor(rType: TRttiType) : TRttiMethod;
-function LoadTypeLib(LibraryName: string) : Boolean;
-function LoadTypePackage(PackageName: string) : Boolean;
+function LoadRTL(RTLPath: String): Boolean;
+function RTLLoaded(RTLName: String): Boolean;
 procedure getEnumPropValues(classname, prop: string; arr1, arr2: PWSDate);
 var Regs, TLLoads, BPLoads, Aliases, AliasesKeys: TWSDate;
 implementation
@@ -65,6 +65,12 @@ begin
     end);
 end;}
 
+function RTLLoaded(RTLName: string): Boolean;
+var RTL: String;
+begin
+  RTL := ExtractFileName(RTLName);
+  Result := isStrInArray(RTL, TLLoads) or isStrInArray(RTL, BPLoads);
+end;
 function LoadTypeLib(LibraryName: string) : Boolean;
 var
     GetLibM: LibModuleListAddres;
@@ -76,7 +82,7 @@ begin
    begin
     DllHandle := LoadLibrary(PWideChar(LibraryName));
     SetLength(TLLoads, Length(TLLoads)+1);
-    TLLoads[High(TLLoads)] := LibraryName;
+    TLLoads[High(TLLoads)] := ExtractFileName(LibraryName);
 
     if( DllHandle = 0 ) or ( DllHandle = null ) then
     begin
@@ -104,7 +110,7 @@ begin
    begin
     BPLHandle := LoadPackage(PackageName);
     SetLength(BPLoads, Length(BPLoads)+1);
-    BPLoads[High(BPLoads)] := PackageName;
+    BPLoads[High(BPLoads)] := ExtractFileName(PackageName);
     if( BPLHandle = 0 ) or ( BPLHandle = null ) then
     begin
       Result := False;
@@ -120,6 +126,16 @@ begin
     end;
    end;
 end;
+
+function LoadRTL(RTLPath: string): Boolean;
+begin
+  Result := False;
+  if RTLPath.EndsWith('.bpl', True) then
+    Result := LoadTypePackage(RTLPath)
+  else if RTLPath.EndsWith('.dll', True) then
+       Result := LoadTypeLib(RTLPath);
+end;
+
 function GetConstructor(rType: TRttiType) : TRttiMethod;
 var
   MaxParams:  integer;

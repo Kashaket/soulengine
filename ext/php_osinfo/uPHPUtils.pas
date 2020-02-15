@@ -27,7 +27,10 @@ uses
 
   function ToStr(V: Variant): String;
   function ToStrA(V: Variant): AnsiString;
-  function ToPChar(V: Variant): PAnsiChar;
+  function ToZStr(V: Variant): zend_ustr;
+  function ToPChar(V: Variant): PChar;
+  function ToZChar(V: Variant): zend_pchar;
+   function ToPCharA(V: Variant): PAnsiChar;
   function readPr(param: pzval_array; index: integer): Variant;
   procedure readPrs(param: pzval_array; ht: integer);
   function checkPrs(ht,count: integer; var TSRMLS_DC : pointer): Boolean;
@@ -118,8 +121,8 @@ begin
      varDouble,varSingle: add_index_double(ht,i,AR[i]);
      varBoolean: add_index_bool(ht,i,AR[I]);
      varEmpty: add_index_null(ht,i);
-     varString: add_index_string(ht,i,PAnsiChar(ToStr(AR[I])),1);
-     258: add_index_string(ht,i,PAnsiChar(AnsiString(ToStr(AR[I]))),1);
+     varString: add_index_string(ht,i,ToZChar(AR[I]),1);
+     258: add_index_string(ht,i,zend_pchar(zend_ustr(ToStr(AR[I]))),1);
      end;
    end;
 end;
@@ -130,22 +133,22 @@ procedure ArrayToHash(Keys,AR: Array of Variant; var HT: pzval); overload;
     tmp : pppzval;
     pp: pzval_array;
     v: Variant;
-    key: PAnsiChar;
-    s: PAnsiChar;
+    key: zend_pchar;
+    s: zend_pchar;
 begin
   _array_init(ht,nil,1);
   len := Length(AR);
   for i:=0 to len-1 do
    begin
      v := AR[I];
-     key := PAnsiChar(ToStrA(keys[i]));
+     key := ToZChar(keys[i]);
      s := PAnsiChar(ToStrA(v));
      case VarType(AR[i]) of
-     varInteger, varSmallint, varLongWord, 17: add_assoc_long_ex(ht,ToPChar(Keys[i]),strlen(ToPChar(Keys[i]))+1,AR[i]);
-     varDouble,varSingle: add_assoc_double_ex(ht,ToPChar(Keys[i]),strlen(ToPChar(Keys[i]))+1,AR[i]);
-     varBoolean: add_assoc_bool_ex(ht,ToPChar(Keys[i]),strlen(ToPChar(Keys[i]))+1,AR[I]);
-     varEmpty: add_assoc_null_ex(ht,ToPChar(Keys[i]),strlen(ToPChar(Keys[i]))+1);
-     varString,258: add_assoc_string_ex(ht,key,strlen(key)+1,s,1);
+     varInteger, varSmallint, varLongWord, 17: add_assoc_long_ex(ht,ToZChar(Keys[i]),strlen(ToPChar(Keys[i]))+1,AR[i]);
+     varDouble,varSingle: add_assoc_double_ex(ht,ToZChar(Keys[i]),Length(ToZStr(Keys[i]))+1,AR[i]);
+     varBoolean: add_assoc_bool_ex(ht,ToZChar(Keys[i]),Length(ToZStr(Keys[i]))+1,AR[I]);
+     varEmpty: add_assoc_null_ex(ht,ToZChar(Keys[i]),Length(ToZStr(Keys[i]))+1);
+     varString,258: add_assoc_string_ex(ht,key,Length(zend_ustr(key))+1,s,1);
      end;
    end;
 end;
@@ -157,7 +160,7 @@ begin
     if TSRMLS_DC = nil then
       TSRMLS_DC := ts_resource(0);
 
-  zend_register_long_constant(PAnsiChar(Name),length(name)+1, value, CONST_PERSISTENT or CONST_CS, 0, TSRMLS_DC);
+  zend_register_long_constant(zend_pchar(zend_ustr(Name)),length(name)+1, value, CONST_PERSISTENT or CONST_CS, 0, TSRMLS_DC);
 
 end;
 
@@ -171,9 +174,24 @@ begin
   Result := V;
 end;
 
-function ToPChar(V: Variant): PAnsiChar;
+function ToZStr(V: Variant): zend_ustr;
 begin
-  Result := PAnsiChar(ToStr(V));
+  Result := V;
+end;
+
+function ToPChar(V: Variant): PChar;
+begin
+  Result := PChar(ToStr(V));
+end;
+
+function ToZChar(V: Variant): zend_pchar;
+begin
+  Result := zend_pchar(ToZStr(V));
+end;
+
+function ToPCharA(V: Variant): PAnsiChar;
+begin
+  Result := PAnsiChar(ToStrA(V));
 end;
 
 function readPr(param: pzval_array; index: integer): Variant;
