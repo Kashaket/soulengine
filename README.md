@@ -19,13 +19,13 @@ Rewrited and Decompiled by Kashaket Corporation
 2) Add license for the engine code (optional)
 
 📦 Updated component packages:
-1) PHP4Delphi php 5.6 update by Andrew Zenin
+1) PHP4Delphi php 5.6 update by  Lev
 2) TB2k fatal error fix by Artem Ukolov
-3) DCEF load fix and panel update by Andrew Zenin
-4) Captioned Dock Tree fix-update by Andrew Zenin
-5) GIFImage Delphi 2010+ port by Andrew Zenin
-6) EXEMod rewrited by Andrew Zenin
-7) uNonVisual fix by Andrew Zenin
-8) CategoryButtons update by Andrew Zenin
-9) TSizeCtrl update by Andrew Zenin
-10) TShape update by Andrew Zenin
+3) DCEF load fix and panel update by Denis I.
+4) Captioned Dock Tree fix-update by Lev, idea - Denis R.
+5) GIFImage Delphi 2010+ port by Lev
+6) EXEMod update by Denis I., vghost
+7) uNonVisual fix by  Egor Prokophiev
+8) CategoryButtons update by Denis I., Lev, idea - Denis R.
+9) TSizeCtrl update by Lev
+10) TShape update by Lev
